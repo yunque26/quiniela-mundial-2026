@@ -3380,47 +3380,34 @@ function PanelView({
 
   async function syncFromAPI() {
     setSyncing(true);
-    setSyncLog(["🔄 Conectando con API gratuita..."]);
+    setSyncLog(["🔄 Conectando con openfootball (GitHub)..."]);
     try {
-      // Use a CORS proxy since worldcup26.ir may have CORS restrictions
-      const urls = [
-        "https://worldcup26.ir/get/games",
-        "https://corsproxy.io/?https://worldcup26.ir/get/games"
-      ];
-      let data = null;
-      for (const url of urls) {
-        try {
-          const resp = await fetch(url, {signal: AbortSignal.timeout(8000)});
-          if (resp.ok) { data = await resp.json(); break; }
-        } catch(e) { /* try next */ }
-      }
-      if (!data) throw new Error("No se pudo conectar. Intenta de nuevo.");
+      const url = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
+      const resp = await fetch(url, {signal: AbortSignal.timeout(10000)});
+      if (!resp.ok) throw new Error("Error HTTP " + resp.status);
+      const data = await resp.json();
+      const games = data.matches || [];
+      if (!games.length) throw new Error("No se recibieron partidos.");
 
-      // Normalize: API may return array or {games:[...]} or similar
-      const games = Array.isArray(data) ? data : (data.games || data.matches || data.data || []);
-      if (!games.length) throw new Error("La API no devolvió partidos.");
+      setSyncLog(prev => [...prev, `📦 ${games.length} partidos recibidos. Procesando...`]);
 
       let updated = 0, skipped = 0;
       const newMatches = {...results.matches};
 
       for (const g of games) {
-        // Try to find homeScore / awayScore (API varies)
-        const hScore = g.homeScore ?? g.home_score ?? g.score?.home ?? g.home?.score ?? null;
-        const aScore = g.awayScore ?? g.away_score ?? g.score?.away ?? g.away?.score ?? null;
-        if (hScore == null || aScore == null) { skipped++; continue; }
+        // Only process if score exists (ft = full time)
+        if (!g.score || !g.score.ft) { skipped++; continue; }
+        const hScore = g.score.ft[0];
+        const aScore = g.score.ft[1];
 
-        // Match team names to our codes
-        const hName = g.homeTeam?.name ?? g.home_team ?? g.home?.name ?? "";
-        const aName = g.awayTeam?.name ?? g.away_team ?? g.away?.name ?? "";
-        const hCode = g.homeTeam?.code ?? g.home_code ?? API_TEAM_MAP[hName] ?? null;
-        const aCode = g.awayTeam?.code ?? g.away_code ?? API_TEAM_MAP[aName] ?? null;
+        const hCode = API_TEAM_MAP[g.team1] ?? null;
+        const aCode = API_TEAM_MAP[g.team2] ?? null;
         if (!hCode || !aCode) { skipped++; continue; }
 
-        // Find matching group match
         const match = GROUPS.find(m => m.home === hCode && m.away === aCode);
         if (!match) { skipped++; continue; }
 
-        newMatches[match.id] = {h: parseInt(hScore,10), a: parseInt(aScore,10)};
+        newMatches[match.id] = {h: hScore, a: aScore};
         updated++;
       }
 
@@ -3428,9 +3415,12 @@ function PanelView({
         const next = {...results, matches: newMatches};
         await fbSet("results", next);
         setResults(next);
-        setSyncLog(prev => [...prev, `✅ ${updated} resultado(s) actualizados.`, skipped > 0 ? `⚠️ ${skipped} partidos sin datos aún.` : "🏆 Todos los datos recibidos."]);
+        setSyncLog(prev => [...prev,
+          `✅ ${updated} resultado(s) cargados en Firebase.`,
+          skipped > 0 ? `⏳ ${skipped} partidos aún sin resultado.` : "🏆 ¡Todo sincronizado!"
+        ]);
       } else {
-        setSyncLog(prev => [...prev, `ℹ️ Sin partidos nuevos. ${skipped} aún sin resultado.`]);
+        setSyncLog(prev => [...prev, `ℹ️ Sin resultados nuevos. ${skipped} partidos aún por jugarse.`]);
       }
     } catch(e) {
       setSyncLog(prev => [...prev, "❌ Error: " + e.message]);
@@ -3798,7 +3788,7 @@ function PanelView({
     className: "bar"
   }), "Resultados"), /*#__PURE__*/React.createElement("div", {
     className: "hint"
-  }, "Carga el ", /*#__PURE__*/React.createElement("b", null, "marcador final real"), " (90' + descuento; pr\xF3rroga/penales ", /*#__PURE__*/React.createElement("b", null, "no"), " suman)."), /*#__PURE__*/React.createElement("div", {className:"card pad", style:{marginTop:8}}, /*#__PURE__*/React.createElement("div", {className:"row between", style:{marginBottom:8}}, /*#__PURE__*/React.createElement("span", {style:{fontFamily:"var(--disp)",fontWeight:800,fontSize:13,textTransform:"uppercase"}}, "🔄 Sincronizar automáticamente"), /*#__PURE__*/React.createElement("span", {className:"chip green"}, "GRATIS")), /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}}, "Obtiene resultados reales desde una API pública del Mundial 2026 y los carga directamente en Firebase."), /*#__PURE__*/React.createElement("button", {className:"sync-btn", disabled:syncing, onClick:syncFromAPI}, syncing ? "⏳ Sincronizando..." : "⚽ Sincronizar resultados ahora"), syncLog.length > 0 && /*#__PURE__*/React.createElement("div", {className:"sync-log"}, syncLog.map((l,i)=>/*#__PURE__*/React.createElement("div",{key:i},l))), /*#__PURE__*/React.createElement("p", {className:"muted small", style:{marginTop:8,fontSize:10}}, "Fuente: worldcup26.ir — API abierta del Mundial 2026.")), /*#__PURE__*/React.createElement("div", {
+  }, "Carga el ", /*#__PURE__*/React.createElement("b", null, "marcador final real"), " (90' + descuento; pr\xF3rroga/penales ", /*#__PURE__*/React.createElement("b", null, "no"), " suman)."), /*#__PURE__*/React.createElement("div", {className:"card pad", style:{marginTop:8}}, /*#__PURE__*/React.createElement("div", {className:"row between", style:{marginBottom:8}}, /*#__PURE__*/React.createElement("span", {style:{fontFamily:"var(--disp)",fontWeight:800,fontSize:13,textTransform:"uppercase"}}, "🔄 Sincronizar automáticamente"), /*#__PURE__*/React.createElement("span", {className:"chip green"}, "GRATIS")), /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}}, "Obtiene resultados reales desde una API pública del Mundial 2026 y los carga directamente en Firebase."), /*#__PURE__*/React.createElement("button", {className:"sync-btn", disabled:syncing, onClick:syncFromAPI}, syncing ? "⏳ Sincronizando..." : "⚽ Sincronizar resultados ahora"), syncLog.length > 0 && /*#__PURE__*/React.createElement("div", {className:"sync-log"}, syncLog.map((l,i)=>/*#__PURE__*/React.createElement("div",{key:i},l))), /*#__PURE__*/React.createElement("p", {className:"muted small", style:{marginTop:8,fontSize:10}}, "Fuente: openfootball/worldcup.json (GitHub) \u2014 datos abiertos, sin key.")), /*#__PURE__*/React.createElement("div", {
     className: "card pad row between",
     style: {
       marginTop: 10,

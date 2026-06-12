@@ -734,7 +734,8 @@ function App() {
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [created, setCreated] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [adminMessages, setAdminMessages] = useState([]);
+  const [generalMessages, setGeneralMessages] = useState([]);
   const toastRef = useRef(null);
   const unsubRef = useRef({});
   function flash(msg) {
@@ -800,20 +801,30 @@ function App() {
     const u3 = fbListen("master", v => {
       if (v) setMasterHash(v);
     });
-    // messages listener
-    const u4 = fbListen("messages", v => {
+    // admin messages listener
+    const u4 = fbListen("messages/admin", v => {
       if (!v) {
-        setMessages([]);
+        setAdminMessages([]);
         return;
       }
       const arr = Array.isArray(v) ? v : Object.values(v);
-      setMessages(arr.sort((a, b) => b.ts - a.ts));
+      setAdminMessages(arr.sort((a, b) => b.ts - a.ts));
+    });
+    // general messages listener
+    const u5 = fbListen("messages/general", v => {
+      if (!v) {
+        setGeneralMessages([]);
+        return;
+      }
+      const arr = Array.isArray(v) ? v : Object.values(v);
+      setGeneralMessages(arr.sort((a, b) => b.ts - a.ts));
     });
     return () => {
       u1();
       u2();
       u3();
       u4();
+      u5();
     };
   }, [ready]);
 
@@ -1391,24 +1402,35 @@ function App() {
   const pendingCount = reqs.length;
 
   /* ---- MESSAGES ---- */
-  async function sendMessage(text, emoji) {
+  async function sendMessage(text, emoji, board) {
+    // board: "admin" (only master) or "general" (any approved member)
     if (!text || !text.trim()) return;
+    if (board === "admin" && !isMaster) {
+      flash("Solo el administrador puede publicar ahí");
+      return;
+    }
+    if (board === "general" && !canPlay) {
+      flash("Solo los participantes aprobados pueden publicar");
+      return;
+    }
     const msg = {
       id: uid(),
       text: text.trim(),
-      emoji: emoji || "📢",
-      author: me || "Admin",
+      emoji: emoji || "💬",
+      author: me || "?",
       ts: Date.now()
     };
-    const cur = (await fbGet("messages")) || [];
+    const path = "messages/" + board;
+    const cur = (await fbGet(path)) || [];
     const arr = Array.isArray(cur) ? cur : Object.values(cur);
-    await fbSet("messages", [...arr, msg]);
+    await fbSet(path, [...arr, msg]);
     flash("Mensaje publicado");
   }
-  async function deleteMessage(msgId) {
-    const cur = (await fbGet("messages")) || [];
+  async function deleteMessage(msgId, board) {
+    const path = "messages/" + board;
+    const cur = (await fbGet(path)) || [];
     const arr = (Array.isArray(cur) ? cur : Object.values(cur)).filter(m => m.id !== msgId);
-    await fbSet("messages", arr);
+    await fbSet(path, arr);
   }
   const ctx = {
     me,
@@ -1445,7 +1467,8 @@ function App() {
     lk,
     classicMode,
     tournamentStarted,
-    messages,
+    messages: adminMessages,
+    generalMessages,
     sendMessage,
     deleteMessage,
     approveRequest,
@@ -1947,38 +1970,54 @@ function HomeView({
   standings,
   results,
   messages,
+  generalMessages,
   sendMessage,
   deleteMessage,
   isMaster,
+  canPlay,
   tz,
   me,
   setView,
-  reqs,
-  lk,
-  preds,
-  safeKey
+  lk
 }) {
-  const [composing, setComposing] = useState(false);
-  const [msgText, setMsgText] = useState("");
-  const [msgEmoji, setMsgEmoji] = useState("📢");
-  const [showHistory, setShowHistory] = useState(false);
+  // Admin board state
+  const [aCompose, setACompose] = useState(false);
+  const [aTxt, setATxt] = useState("");
+  const [aEmoji, setAEmoji] = useState("📢");
+  // General board state
+  const [gCompose, setGCompose] = useState(false);
+  const [gTxt, setGTxt] = useState("");
+  const [gEmoji, setGEmoji] = useState("💬");
+  const [showAdminHist, setShowAdminHist] = useState(false);
+  const [showGenHist, setShowGenHist] = useState(false);
+  const [genVisible, setGenVisible] = useState(8);
 
-  // Pinned = most recent message
-  const pinned = messages[0] || null;
-  const history = messages.slice(1);
+  // Admin board: max 2 pinned, rest history
+  const adminPinned = messages.slice(0, 2);
+  const adminHist = messages.slice(2);
+
+  // General board: newest first
+  const genVisible8 = generalMessages.slice(0, genVisible);
+  const genHasMore = generalMessages.length > genVisible;
 
   // Stats
   const leader = standings[0] || null;
   const last = standings.length > 1 ? standings[standings.length - 1] : null;
-  const myPos = me ? standings.findIndex(s => s.name === me) + 1 : 0;
+  const myRank = me ? standings.findIndex(s => s.name === me) + 1 : 0;
 
   // Next match
   const nextMatch = GROUPS.find(g => !lk(g));
-  async function handleSend() {
-    if (!msgText.trim()) return;
-    await sendMessage(msgText, msgEmoji);
-    setMsgText("");
-    setComposing(false);
+  async function postAdmin() {
+    if (!aTxt.trim()) return;
+    await sendMessage(aTxt, aEmoji, "admin");
+    setATxt("");
+    setACompose(false);
+  }
+  async function postGeneral() {
+    if (!gTxt.trim()) return;
+    await sendMessage(gTxt, gEmoji, "general");
+    setGTxt("");
+    setGCompose(false);
   }
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "section"
@@ -1992,21 +2031,24 @@ function HomeView({
       margin: 0
     }
   }, /*#__PURE__*/React.createElement("span", {
-    className: "bar"
-  }), "Tabl\xF3n"), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "bar",
+    style: {
+      background: "var(--gold)"
+    }
+  }), "\uD83D\uDCE2 Admin"), isMaster && /*#__PURE__*/React.createElement("button", {
     className: "btn primary sm",
-    onClick: () => setComposing(v => !v)
-  }, composing ? "Cancelar" : "+ Mensaje")), isMaster && composing && /*#__PURE__*/React.createElement("div", {
+    onClick: () => setACompose(v => !v)
+  }, aCompose ? "Cancelar" : "+ Publicar")), isMaster && aCompose && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       marginBottom: 10
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "compose-emojis"
-  }, MSG_EMOJIS.map(e => /*#__PURE__*/React.createElement("button", {
+  }, ["📢", "🏆", "⚽", "🔥", "🎉", "⏰", "😬", "🎯", "🛡️", "💡", "👀", "🥳"].map(e => /*#__PURE__*/React.createElement("button", {
     key: e,
-    className: msgEmoji === e ? "sel" : "",
-    onClick: () => setMsgEmoji(e)
+    className: aEmoji === e ? "sel" : "",
+    onClick: () => setAEmoji(e)
   }, e))), /*#__PURE__*/React.createElement("textarea", {
     className: "bare",
     rows: 3,
@@ -2015,65 +2057,64 @@ function HomeView({
       resize: "none",
       lineHeight: 1.4
     },
-    placeholder: "Escribe tu mensaje aqu\xED\u2026",
-    value: msgText,
-    onChange: e => setMsgText(e.target.value)
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "row",
-    style: {
-      gap: 8,
-      marginTop: 8
-    }
-  }, /*#__PURE__*/React.createElement("button", {
+    placeholder: "Anuncio oficial, bienvenida, provocaci\xF3n\u2026",
+    value: aTxt,
+    onChange: e => setATxt(e.target.value)
+  }), /*#__PURE__*/React.createElement("button", {
     className: "btn primary",
     style: {
-      flex: 1
+      marginTop: 8,
+      width: "100%"
     },
-    disabled: !msgText.trim(),
-    onClick: handleSend
-  }, "Publicar"))), !pinned && /*#__PURE__*/React.createElement("div", {
+    disabled: !aTxt.trim(),
+    onClick: postAdmin
+  }, "Publicar en tabl\xF3n admin")), adminPinned.length === 0 && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       textAlign: "center",
-      padding: "24px 16px"
+      padding: "20px 16px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 32,
-      marginBottom: 6
+      fontSize: 28,
+      marginBottom: 4
     }
   }, "\uD83D\uDCED"), /*#__PURE__*/React.createElement("div", {
     className: "muted small"
-  }, "A\xFAn no hay mensajes.", isMaster ? " Publica el primero arriba." : "")), pinned && /*#__PURE__*/React.createElement("div", {
-    className: "msg-pin"
+  }, isMaster ? "Publica el primer anuncio arriba." : "Aún no hay anuncios del administrador.")), adminPinned.map((msg, idx) => /*#__PURE__*/React.createElement("div", {
+    key: msg.id,
+    className: "msg-pin",
+    style: {
+      marginBottom: idx === 0 && adminPinned.length > 1 ? 8 : 0
+    }
   }, /*#__PURE__*/React.createElement("div", {
     className: "msg-emoji"
-  }, pinned.emoji), /*#__PURE__*/React.createElement("div", {
+  }, msg.emoji), /*#__PURE__*/React.createElement("div", {
     className: "msg-text"
-  }, pinned.text), /*#__PURE__*/React.createElement("div", {
+  }, msg.text), /*#__PURE__*/React.createElement("div", {
     className: "row between"
   }, /*#__PURE__*/React.createElement("div", {
     className: "msg-meta"
-  }, pinned.author, " \xB7 ", fmtRelTime(pinned.ts)), isMaster && /*#__PURE__*/React.createElement("button", {
+  }, msg.author, " \xB7 ", fmtRelTime(msg.ts)), isMaster && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {
       fontSize: 10,
       padding: "3px 7px"
     },
-    onClick: () => deleteMessage(pinned.id)
-  }, "\u2715 Borrar"))), history.length > 0 && /*#__PURE__*/React.createElement("div", {
+    onClick: () => deleteMessage(msg.id, "admin")
+  }, "\u2715")))), adminHist.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
-      marginTop: 0
+      marginTop: 4
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {
       width: "100%",
-      marginBottom: showHistory ? 10 : 0
+      marginBottom: showAdminHist ? 10 : 0
     },
-    onClick: () => setShowHistory(v => !v)
-  }, showHistory ? "Ocultar" : "Ver", " historial (", history.length, ")"), showHistory && history.map(m => /*#__PURE__*/React.createElement("div", {
+    onClick: () => setShowAdminHist(v => !v)
+  }, showAdminHist ? "Ocultar" : "Ver", " historial admin (", adminHist.length, ")"), showAdminHist && adminHist.map(m => /*#__PURE__*/React.createElement("div", {
     key: m.id,
     className: "msg-history-item"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2092,7 +2133,7 @@ function HomeView({
       fontSize: 10,
       padding: "2px 6px"
     },
-    onClick: () => deleteMessage(m.id)
+    onClick: () => deleteMessage(m.id, "admin")
   }, "\u2715"))))))), standings.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
@@ -2102,7 +2143,7 @@ function HomeView({
   }, /*#__PURE__*/React.createElement("div", {
     className: "stat-card",
     style: {
-      borderColor: "rgba(246,197,68,.3)"
+      borderColor: "rgba(246,197,68,.35)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "si"
@@ -2112,7 +2153,7 @@ function HomeView({
     className: "sv"
   }, leader?.name || "—"), /*#__PURE__*/React.createElement("div", {
     className: "sp"
-  }, leader?.pts ?? 0, "pts")), myPos > 0 && me !== leader?.name ? /*#__PURE__*/React.createElement("div", {
+  }, leader?.pts ?? 0, "pts")), myRank > 0 && me !== leader?.name ? /*#__PURE__*/React.createElement("div", {
     className: "stat-card",
     style: {
       borderColor: "rgba(21,168,90,.3)"
@@ -2123,9 +2164,9 @@ function HomeView({
     className: "sl"
   }, "T\xFA"), /*#__PURE__*/React.createElement("div", {
     className: "sv"
-  }, "#", myPos), /*#__PURE__*/React.createElement("div", {
+  }, "#", myRank), /*#__PURE__*/React.createElement("div", {
     className: "sp"
-  }, standings[myPos - 1]?.pts ?? 0, "pts")) : /*#__PURE__*/React.createElement("div", {
+  }, standings[myRank - 1]?.pts ?? 0, "pts")) : /*#__PURE__*/React.createElement("div", {
     className: "stat-card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "si"
@@ -2168,24 +2209,128 @@ function HomeView({
     className: "nm-tname away"
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), !nextMatch && /*#__PURE__*/React.createElement("div", {
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "row between",
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: 0
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "bar",
+    style: {
+      background: "var(--sky)"
+    }
+  }), "\uD83D\uDCAC General"), (canPlay || isMaster) && /*#__PURE__*/React.createElement("button", {
+    className: "btn sm",
+    style: {
+      borderColor: "var(--sky)",
+      color: "var(--sky)"
+    },
+    onClick: () => setGCompose(v => !v)
+  }, gCompose ? "Cancelar" : "+ Escribir")), (canPlay || isMaster) && gCompose && /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "compose-emojis"
+  }, ["💬", "😂", "🔥", "😬", "🎉", "👀", "🤞", "😤", "🥶", "🤡", "💪", "🫡"].map(e => /*#__PURE__*/React.createElement("button", {
+    key: e,
+    className: gEmoji === e ? "sel" : "",
+    onClick: () => setGEmoji(e)
+  }, e))), /*#__PURE__*/React.createElement("textarea", {
+    className: "bare",
+    rows: 2,
+    style: {
+      marginTop: 8,
+      resize: "none",
+      lineHeight: 1.4
+    },
+    placeholder: "Di lo que piensas\u2026",
+    value: gTxt,
+    onChange: e => setGTxt(e.target.value)
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 8,
+      width: "100%",
+      background: "var(--sky)",
+      borderColor: "var(--sky)",
+      color: "#04243f"
+    },
+    disabled: !gTxt.trim(),
+    onClick: postGeneral
+  }, "Publicar")), !canPlay && !isMaster && /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginBottom: 8
+    }
+  }, "\xDAnete a la quiniela para poder escribir en el tabl\xF3n."), generalMessages.length === 0 && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       textAlign: "center",
-      padding: "20px"
+      padding: "20px 16px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 32
+      fontSize: 28,
+      marginBottom: 4
     }
-  }, "\uD83C\uDFC1"), /*#__PURE__*/React.createElement("div", {
-    className: "muted small",
+  }, "\uD83D\uDCAC"), /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, canPlay || isMaster ? "¡Sé el primero en escribir algo!" : "Aún no hay mensajes.")), genVisible8.map(msg => /*#__PURE__*/React.createElement("div", {
+    key: msg.id,
+    className: "card pad",
     style: {
-      marginTop: 6
+      marginBottom: 8
     }
-  }, "Fase de grupos finalizada"))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row between",
+    style: {
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 7
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 20
+    }
+  }, msg.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 13
+    }
+  }, msg.author), /*#__PURE__*/React.createElement("div", {
+    className: "msg-hist-meta"
+  }, fmtRelTime(msg.ts)))), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      fontSize: 10,
+      padding: "3px 7px"
+    },
+    onClick: () => deleteMessage(msg.id, "general")
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      lineHeight: 1.45,
+      color: "var(--text)"
+    }
+  }, msg.text))), genHasMore && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost",
+    style: {
+      width: "100%",
+      marginBottom: 8
+    },
+    onClick: () => setGenVisible(v => v + 8)
+  }, "Ver m\xE1s (", generalMessages.length - genVisible, " mensajes)")), /*#__PURE__*/React.createElement("div", {
     className: "section",
     style: {
       marginBottom: 24

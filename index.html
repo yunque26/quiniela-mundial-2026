@@ -807,8 +807,8 @@ function App() {
         setAdminMessages([]);
         return;
       }
-      const arr = Array.isArray(v) ? v : Object.values(v);
-      setAdminMessages(arr.sort((a, b) => b.ts - a.ts));
+      const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
+      setAdminMessages(arr.filter(Boolean).sort((a, b) => b.ts - a.ts));
     });
     // general messages listener
     const u5 = fbListen("messages/general", v => {
@@ -816,8 +816,8 @@ function App() {
         setGeneralMessages([]);
         return;
       }
-      const arr = Array.isArray(v) ? v : Object.values(v);
-      setGeneralMessages(arr.sort((a, b) => b.ts - a.ts));
+      const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
+      setGeneralMessages(arr.filter(Boolean).sort((a, b) => b.ts - a.ts));
     });
     return () => {
       u1();
@@ -1403,13 +1403,12 @@ function App() {
 
   /* ---- MESSAGES ---- */
   async function sendMessage(text, emoji, board) {
-    // board: "admin" (only master) or "general" (any approved member)
     if (!text || !text.trim()) return;
     if (board === "admin" && !isMaster) {
       flash("Solo el administrador puede publicar ahí");
       return;
     }
-    if (board === "general" && !canPlay) {
+    if (board === "general" && !canPlay && !isMaster) {
       flash("Solo los participantes aprobados pueden publicar");
       return;
     }
@@ -1420,17 +1419,26 @@ function App() {
       author: me || "?",
       ts: Date.now()
     };
-    const path = "messages/" + board;
-    const cur = (await fbGet(path)) || [];
-    const arr = Array.isArray(cur) ? cur : Object.values(cur);
-    await fbSet(path, [...arr, msg]);
-    flash("Mensaje publicado");
+    // Use push-style: each message gets its own key → no array conflicts
+    try {
+      await getDb().ref("messages/" + board).push(msg);
+      flash("Mensaje publicado ✓");
+    } catch (e) {
+      flash("Error al publicar");
+      console.error(e);
+    }
   }
   async function deleteMessage(msgId, board) {
-    const path = "messages/" + board;
-    const cur = (await fbGet(path)) || [];
-    const arr = (Array.isArray(cur) ? cur : Object.values(cur)).filter(m => m.id !== msgId);
-    await fbSet(path, arr);
+    try {
+      const snap = await getDb().ref("messages/" + board).get();
+      if (!snap.exists()) return;
+      const data = snap.val();
+      // Find the Firebase key whose id matches
+      const key = Object.keys(data).find(k => data[k].id === msgId);
+      if (key) await getDb().ref("messages/" + board + "/" + key).remove();
+    } catch (e) {
+      console.error("deleteMessage", e);
+    }
   }
   const ctx = {
     me,

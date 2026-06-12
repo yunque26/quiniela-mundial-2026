@@ -1504,11 +1504,12 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
       flash("Solo los participantes aprobados pueden publicar");
       return;
     }
+    const author = me || localStorage.getItem("q26:me") || "Anónimo";
     const msg = {
       id: uid(),
       text: text.trim(),
       emoji: emoji || "💬",
-      author: me || "?",
+      author,
       ts: Date.now()
     };
     // Use push-style: each message gets its own key → no array conflicts

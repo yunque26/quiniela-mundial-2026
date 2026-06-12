@@ -3438,10 +3438,7 @@ function PanelView({
     setSyncing(false);
   }
 
-
-    const r = results.matches[g.id];
-    return r && r.h != null && r.a != null;
-  }).length;
+  const loaded = GROUPS.filter(g => { const r = results.matches[g.id]; return r && r.h != null && r.a != null; }).length;
   const CreateBox = /*#__PURE__*/React.createElement("div", {
     className: "card pad"
   }, /*#__PURE__*/React.createElement("div", {

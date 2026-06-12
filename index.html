@@ -736,6 +736,11 @@ function App() {
   const [created, setCreated] = useState(null);
   const [adminMessages, setAdminMessages] = useState([]);
   const [generalMessages, setGeneralMessages] = useState([]);
+  // Track last-seen timestamp for general messages (per device)
+  const [lastSeenGeneral, setLastSeenGeneral] = useState(() => parseInt(localStorage.getItem("q26:lastSeenGeneral") || "0", 10));
+  // Push notification subscription state
+  const [pushSub, setPushSub] = useState(null);
+  const [pushSupported, setPushSupported] = useState(false);
   const toastRef = useRef(null);
   const unsubRef = useRef({});
   function flash(msg) {
@@ -779,6 +784,15 @@ function App() {
 
     // ticker
     const t = setInterval(() => setNow(Date.now()), 30000);
+    // Check push support
+    if ("Notification" in window && "serviceWorker" in navigator) {
+      setPushSupported(true);
+      navigator.serviceWorker.getRegistration().then(reg => {
+        reg?.pushManager?.getSubscription().then(sub => {
+          if (sub) setPushSub(sub);
+        });
+      });
+    }
     return () => clearInterval(t);
   }, []);
 
@@ -819,12 +833,29 @@ function App() {
       const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
       setGeneralMessages(arr.filter(Boolean).sort((a, b) => b.ts - a.ts));
     });
+    // notifications listener — shows push to any open tab that has permission
+    const u6 = fbListen("notifications", v => {
+      if (!v || Notification.permission !== "granted") return;
+      const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
+      if (arr.length === 0) return;
+      const latest = arr.sort((a, b) => b.ts - a.ts)[0];
+      const lastShown = parseInt(localStorage.getItem("q26:lastNotif") || "0", 10);
+      if (latest.ts > lastShown + 2000) {
+        // avoid duplicates
+        localStorage.setItem("q26:lastNotif", String(latest.ts));
+        new Notification(latest.title || "Quiniela", {
+          body: latest.body || "",
+          icon: "⚽"
+        });
+      }
+    });
     return () => {
       u1();
       u2();
       u3();
       u4();
       u5();
+      u6();
     };
   }, [ready]);
 
@@ -1401,6 +1432,67 @@ function App() {
   };
   const pendingCount = reqs.length;
 
+  // Count unread general messages (newer than lastSeenGeneral)
+  const newMsgCount = generalMessages.filter(m => m.ts > lastSeenGeneral).length;
+  function markGeneralSeen() {
+    const ts = Date.now();
+    setLastSeenGeneral(ts);
+    localStorage.setItem("q26:lastSeenGeneral", String(ts));
+  }
+
+  /* ---- PUSH NOTIFICATIONS ---- */
+  async function requestPushPermission() {
+    if (!pushSupported) {
+      flash("Tu navegador no soporta notificaciones");
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        flash("🔔 Notificaciones activadas");
+        // Register a minimal SW if not already registered
+        if (!navigator.serviceWorker.controller) {
+          const swBlob = new Blob([`
+self.addEventListener('push',e=>{
+  const d=e.data?e.data.json():{title:'Quiniela',body:'Nuevo mensaje'};
+  e.waitUntil(self.registration.showNotification(d.title,{body:d.body,icon:d.icon||'/favicon.ico',badge:d.icon||'/favicon.ico',data:d}));
+});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow('/'));});
+          `], {
+            type: "application/javascript"
+          });
+          const swUrl = URL.createObjectURL(swBlob);
+          const reg = await navigator.serviceWorker.register(swUrl);
+          await navigator.serviceWorker.ready;
+          URL.revokeObjectURL(swUrl);
+        }
+      } else {
+        flash("Notificaciones bloqueadas en este dispositivo");
+      }
+    } catch (e) {
+      flash("No se pudo activar: " + e.message);
+    }
+  }
+  async function sendPushToAll(title, body) {
+    // Store notification in Firebase so all subscribed clients pick it up
+    const notif = {
+      id: uid(),
+      title,
+      body,
+      ts: Date.now(),
+      icon: "⚽"
+    };
+    await getDb().ref("notifications").push(notif);
+    // Also show locally immediately
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body,
+        icon: "https://yunque26.github.io/quiniela-mundial-2026/favicon.ico"
+      });
+    }
+    flash("Notificación enviada");
+  }
+
   /* ---- MESSAGES ---- */
   async function sendMessage(text, emoji, board) {
     if (!text || !text.trim()) return;
@@ -1479,6 +1571,11 @@ function App() {
     generalMessages,
     sendMessage,
     deleteMessage,
+    newMsgCount,
+    markGeneralSeen,
+    pushSupported,
+    requestPushPermission,
+    sendPushToAll,
     approveRequest,
     rejectRequest,
     clearRequests,
@@ -1515,7 +1612,9 @@ function App() {
     view: view,
     setView: setView,
     isMaster: isMaster,
-    pending: isMaster ? pendingCount : 0
+    pending: isMaster ? pendingCount : 0,
+    newMsgCount: newMsgCount,
+    onHome: markGeneralSeen
   }), toast && /*#__PURE__*/React.createElement("div", {
     className: "toast"
   }, toast), modal === "masterSetup" && /*#__PURE__*/React.createElement(MasterSetupModal, {
@@ -1611,15 +1710,21 @@ function Nav({
   view,
   setView,
   isMaster,
-  pending
+  pending,
+  newMsgCount,
+  onHome
 }) {
   const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Pronosticar"], ["calendar", "📅", "Calendario"], ["table", "🏆", "Tabla"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
+  function handleTab(k) {
+    if (k === "home" && onHome) onHome();
+    setView(k);
+  }
   return /*#__PURE__*/React.createElement("nav", {
     className: "tabs"
   }, items.map(([k, i, l]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     className: "tab" + (view === k ? " active" : ""),
-    onClick: () => setView(k)
+    onClick: () => handleTab(k)
   }, /*#__PURE__*/React.createElement("span", {
     className: "ti",
     style: {
@@ -1627,7 +1732,12 @@ function Nav({
     }
   }, i, k === "manage" && pending > 0 && /*#__PURE__*/React.createElement("span", {
     className: "navbadge"
-  }, pending)), /*#__PURE__*/React.createElement("span", null, l))));
+  }, pending), k === "home" && newMsgCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "navbadge",
+    style: {
+      background: "var(--sky)"
+    }
+  }, newMsgCount)), /*#__PURE__*/React.createElement("span", null, l))));
 }
 
 /* =========================================================
@@ -2804,7 +2914,9 @@ function CuentaView({
   selectPool,
   saveMe,
   setModal,
-  isMember
+  isMember,
+  pushSupported,
+  requestPushPermission
 }) {
   const [nm, setNm] = useState(me);
   useEffect(() => setNm(me), [me]);
@@ -2829,6 +2941,13 @@ function CuentaView({
     className: "btn primary",
     onClick: () => saveMe(nm)
   }, "Guardar"))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "\uD83D\uDD14 Notificaciones"), /*#__PURE__*/React.createElement(NotifActivator, {
+    pushSupported: pushSupported,
+    requestPushPermission: requestPushPermission
+  })), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
@@ -2894,6 +3013,145 @@ function CuentaView({
 }
 
 /* ---- SCORING HELPERS ---- */
+function PushComposer({
+  pushSupported,
+  requestPushPermission,
+  sendPushToAll
+}) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [sent, setSent] = useState(false);
+  const QUICK = [{
+    t: "⚽ ¡Arranca el partido!",
+    b: "Cierra tu pronóstico ahora — el pitazo es inminente."
+  }, {
+    t: "🏆 Hay nuevo líder",
+    b: "La tabla ha cambiado. ¡Entra a ver quién manda!"
+  }, {
+    t: "📢 Mensaje del admin",
+    b: "Hay un nuevo anuncio en el tablón. Entra a verlo."
+  }, {
+    t: "🔔 Recuerda pronosticar",
+    b: "Quedan partidos sin pronóstico. ¡No te quedes sin puntos!"
+  }];
+  const hasPermission = typeof Notification !== "undefined" && Notification.permission === "granted";
+  if (!pushSupported) return /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, "Tu navegador no soporta notificaciones push.");
+  if (!hasPermission) return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginBottom: 8
+    }
+  }, "Primero activa las notificaciones en ", /*#__PURE__*/React.createElement("b", null, "tu"), " dispositivo para poder enviarlas."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary sm",
+    onClick: requestPushPermission
+  }, "\uD83D\uDD14 Activar notificaciones"));
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginBottom: 8
+    }
+  }, "Mensajes r\xE1pidos:"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gap: 5,
+      marginBottom: 10
+    }
+  }, QUICK.map((q, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    className: "btn ghost sm",
+    style: {
+      justifyContent: "flex-start",
+      textAlign: "left"
+    },
+    onClick: () => {
+      setTitle(q.t);
+      setBody(q.b);
+    }
+  }, q.t))), /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "T\xEDtulo"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: title,
+    placeholder: "Ej: \u26BD \xA1Arranca el partido!",
+    onChange: e => setTitle(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Mensaje"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: body,
+    placeholder: "Texto breve\u2026",
+    onChange: e => setBody(e.target.value)
+  })), sent && /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginTop: 8,
+      background: "rgba(21,168,90,.08)",
+      borderColor: "rgba(21,168,90,.3)"
+    }
+  }, "\u2705 Notificaci\xF3n enviada a todos los dispositivos activos."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 10,
+      width: "100%"
+    },
+    disabled: !title.trim(),
+    onClick: async () => {
+      await sendPushToAll(title, body);
+      setSent(true);
+      setTitle("");
+      setBody("");
+      setTimeout(() => setSent(false), 4000);
+    }
+  }, "\uD83D\uDD14 Enviar notificaci\xF3n"));
+}
+
+/* Notification activator for family members (shown in CuentaView) */
+function NotifActivator({
+  pushSupported,
+  requestPushPermission
+}) {
+  if (!pushSupported) return null;
+  const hasPermission = typeof Notification !== "undefined" && Notification.permission === "granted";
+  const denied = typeof Notification !== "undefined" && Notification.permission === "denied";
+  if (denied) return /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      fontSize: 11
+    }
+  }, "\uD83D\uDD15 Notificaciones bloqueadas en este dispositivo. Act\xEDvalas en Ajustes del navegador.");
+  if (hasPermission) return /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      background: "rgba(21,168,90,.08)",
+      borderColor: "rgba(21,168,90,.3)",
+      fontSize: 11
+    }
+  }, "\uD83D\uDD14 Notificaciones activadas en este dispositivo.");
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 28,
+      marginBottom: 6
+    }
+  }, "\uD83D\uDD14"), /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginBottom: 10
+    }
+  }, "Activa las notificaciones para recibir avisos aunque la app est\xE9 cerrada."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    onClick: requestPushPermission
+  }, "Activar notificaciones"));
+}
 function ScoringRows({
   sc
 }) {
@@ -3070,7 +3328,10 @@ function PanelView({
   deletePool,
   selectPool,
   sc,
-  poolCmd
+  poolCmd,
+  pushSupported,
+  requestPushPermission,
+  sendPushToAll
 }) {
   const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");
@@ -3366,6 +3627,22 @@ function PanelView({
       setEditCmd(false);
     },
     onCancel: () => setEditCmd(false)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "\uD83D\uDD14 Notificaciones"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginTop: 0,
+      marginBottom: 10
+    }
+  }, "Env\xEDa una alerta a todos los que tengan notificaciones activadas \u2014 aunque la app est\xE9 cerrada (Android) o en segundo plano (iPhone con acceso directo)."), /*#__PURE__*/React.createElement(PushComposer, {
+    pushSupported: pushSupported,
+    requestPushPermission: requestPushPermission,
+    sendPushToAll: sendPushToAll
   }))), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {

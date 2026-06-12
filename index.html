@@ -1,0 +1,3480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0E1B33"/>
+<title>Quiniela Mundial 2026</title>
+
+<!-- Firebase SDK -->
+
+<style>
+/* ===== TOKENS ===== */
+:root{
+  --navy:#0E1B33; --navy2:#16284A; --ink:#1D2530; --ink2:#222E3E;
+  --panel:#1A2840; --panel2:#1E2E44; --line:rgba(39,57,92,.6); --line2:rgba(90,120,170,.3);
+  --text:#D8E4F0; --muted:#7A90AB; --muted2:#4A5E76;
+  --pitch:#15A85A; --pitchl:#E4F7EC;
+  --gold:#F6C544; --goldl:#FCF1D6;
+  --coral:#FF5C79; --corall:#FCE4E8;
+  --sky:#5AA9FF; --skyl:#E5EEF8;
+  --disp:'Barlow Condensed',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Mono',monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html{background:var(--navy);color:var(--text);font-family:var(--body);font-size:16px}
+body{min-height:100dvh;overscroll-behavior:none}
+
+/* ===== LAYOUT ===== */
+#root{
+  max-width:600px; margin:0 auto;
+  padding:0 12px calc(80px + env(safe-area-inset-bottom)) 12px;
+  padding-top:0;
+}
+@media(min-width:640px){#root{padding-bottom:40px;padding-left:20px;padding-right:20px}}
+
+/* ===== FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700;800&display=swap');
+
+/* ===== HEADER ===== */
+header.app{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,var(--navy) 85%,transparent);
+  padding:10px 0 6px;
+}
+.brandrow{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow:hidden}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ball{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 10%,var(--pitch) 45%,#0a5e30);
+  box-shadow:0 2px 8px rgba(21,168,90,.5);flex-shrink:0}
+.ttl{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:.5px;text-transform:uppercase;line-height:1}
+.ttl small{display:block;font-size:9px;letter-spacing:2px;color:var(--pitch);font-weight:700}
+.hdrbtns{display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0}
+.pillbtn{
+  display:flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.06);border:1px solid var(--line2);
+  color:var(--text);border-radius:999px;padding:6px 9px;font-size:12px;font-weight:600;
+  white-space:nowrap;cursor:pointer;font-family:var(--body);
+  max-width:36vw;overflow:hidden;
+}
+.pillbtn .ico{font-size:13px;flex-shrink:0}
+.pillbtn .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pillbtn:active{background:rgba(255,255,255,.12)}
+
+/* ===== NAV ===== */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  display:flex;gap:0;
+  background:var(--ink);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:transparent;color:var(--muted);border:none;
+  padding:10px 4px;font-size:10px;font-weight:600;cursor:pointer;
+  font-family:var(--body);position:relative;
+}
+.tab .ti{font-size:20px;line-height:1}
+.tab.active{color:var(--pitch)}
+.tab.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--pitch);border-radius:0 0 2px 2px}
+.navbadge{
+  position:absolute;top:6px;right:calc(50% - 18px);
+  min-width:16px;height:16px;padding:0 4px;border-radius:9px;
+  background:var(--coral);color:#fff;font-size:9px;font-weight:800;
+  line-height:16px;text-align:center;pointer-events:none;
+}
+@media(min-width:640px){
+  nav.tabs{position:static;border-top:none;border-radius:14px;margin-top:10px;
+    background:var(--panel);border:1px solid var(--line);padding:4px;gap:4px}
+  .tab{border-radius:10px;padding:8px 12px;flex-direction:row;gap:6px;font-size:12px}
+  .tab.active::after{display:none}
+  .tab.active{background:var(--pitch);color:#fff}
+  .navbadge{top:2px;right:2px}
+}
+
+/* ===== SECTIONS ===== */
+.section{margin-top:16px}
+.section h2{
+  font-family:var(--disp);font-size:17px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.section h2 .bar{width:3px;height:16px;background:var(--pitch);border-radius:2px;display:inline-block;flex-shrink:0}
+
+/* ===== CARDS ===== */
+.card{
+  background:linear-gradient(180deg,var(--panel),var(--ink2));
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  margin-bottom:10px;
+}
+.card.pad{padding:13px}
+.sep{height:1px;background:var(--line);margin:10px 0}
+
+/* ===== CHIPS ===== */
+.chip{font-size:10px;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:999px;text-transform:uppercase}
+.chip.green{background:rgba(21,168,90,.15);color:var(--pitch);border:1px solid rgba(21,168,90,.3)}
+.chip.coral{background:rgba(255,92,121,.15);color:var(--coral);border:1px solid rgba(255,92,121,.3)}
+.chip.gold{background:rgba(246,197,68,.15);color:var(--gold);border:1px solid rgba(246,197,68,.3)}
+.chip.ghost{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--line)}
+
+/* ===== MATCH CARD ===== */
+.match .top{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px 3px;font-size:10px;color:var(--muted2);
+  border-bottom:1px solid rgba(39,57,92,.4);
+}
+.match .top .grp{font-family:var(--disp);font-weight:800;font-size:11px;color:var(--gold);text-transform:uppercase}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;padding:8px 10px 10px}
+.team{display:flex;align-items:center;gap:6px;min-width:0}
+.team.home{justify-content:flex-start}
+.team.away{justify-content:flex-end;flex-direction:row-reverse}
+.flag{font-size:24px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));flex-shrink:0}
+.tname{
+  font-family:var(--disp);font-weight:700;font-size:14px;text-transform:uppercase;
+  letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--text);
+}
+@media(min-width:420px){.tname{font-size:16px}.flag{font-size:28px}}
+.center{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;flex-shrink:0}
+.ktime{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--text)}
+.kday{font-size:9px;color:var(--muted2)}
+.vs{font-family:var(--disp);font-weight:800;color:var(--muted2);font-size:12px}
+.actual{font-family:var(--mono);font-weight:800;font-size:16px;color:var(--gold)}
+.midscore{font-family:var(--mono);font-weight:800;font-size:28px;letter-spacing:1px}
+.ko{display:flex;align-items:center;gap:12px;padding:12px}
+/* Stepper */
+.stepper{display:flex;flex-direction:column;align-items:center;gap:0}
+.stepper .num{font-family:var(--mono);font-weight:800;font-size:24px;min-width:28px;text-align:center;color:var(--text);line-height:1.1}
+.stepper .sbtn{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--line2);
+  background:rgba(255,255,255,.04);color:var(--text);font-weight:800;font-size:16px;
+  line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.stepper .sbtn:active{background:var(--pitch);border-color:var(--pitch)}
+.stepper .sbtn:disabled{opacity:.3;cursor:not-allowed}
+/* Score result line */
+.savedline{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 12px 10px;border-top:1px dashed var(--line);font-size:11px;color:var(--muted);
+}
+.ptsbadge{font-family:var(--mono);font-weight:800;font-size:11px;padding:3px 7px;border-radius:8px}
+.ptsbadge.p0{background:rgba(255,92,121,.1);color:#ff9fb0}
+.ptsbadge.p1{background:rgba(21,168,90,.12);color:#6dffb2}
+.ptsbadge.p2{background:rgba(246,197,68,.12);color:#ffd96b}
+.ptsbadge.p3{background:rgba(90,169,255,.14);color:#a9cfff}
+
+/* ===== DAYHDR ===== */
+.dayhdr{
+  position:sticky;top:90px;z-index:20;
+  display:flex;align-items:baseline;gap:8px;
+  background:linear-gradient(180deg,var(--navy) 70%,transparent);
+  padding:8px 0 6px;margin-bottom:6px;
+}
+@media(min-width:640px){.dayhdr{top:100px}}
+.dayhdr .dnum{font-family:var(--disp);font-weight:800;font-size:22px;color:var(--gold)}
+.dayhdr .dtxt{font-family:var(--disp);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.dayhdr .dmeta{margin-left:auto;font-size:10px;color:var(--muted2)}
+.daybar{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--gold);padding:8px 2px 4px;border-bottom:1px solid var(--line);margin-bottom:8px}
+
+/* ===== BUTTONS ===== */
+button{cursor:pointer;font-family:var(--body)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--text);
+  border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;
+  font-family:var(--body);width:auto;transition:background .15s;
+}
+.btn:active{background:rgba(255,255,255,.12)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.btn.primary:active{background:#11904c}
+.btn.ghost{background:transparent;border-color:var(--line2);color:var(--muted)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#3a2c00}
+.btn.sm{padding:7px 10px;font-size:11.5px;border-radius:8px}
+.btn.danger{color:var(--coral);border-color:rgba(255,92,121,.3)}
+.row{display:flex;align-items:center}
+.row.between{justify-content:space-between}
+
+/* ===== FILTERS ===== */
+.filterbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.fb{
+  padding:6px 12px;border-radius:999px;border:1px solid var(--line2);
+  background:transparent;color:var(--muted);font-size:12px;font-weight:600;
+  font-family:var(--body);cursor:pointer;
+}
+.fb.active{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.fb:disabled{opacity:.5;cursor:not-allowed}
+
+/* ===== FIELDS / INPUTS ===== */
+.field{display:flex;flex-direction:column;gap:5px;margin-top:12px}
+.field label{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted2);font-weight:700}
+.bare{
+  background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--text);
+  border-radius:10px;padding:9px 11px;font-size:14px;font-family:var(--body);width:100%;
+}
+.bare:focus{outline:none;border-color:var(--sky)}
+select.bare{-webkit-appearance:none;appearance:none}
+
+/* ===== TABLE ===== */
+.standings{width:100%;border-collapse:collapse;font-size:13px}
+.standings th{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);
+  padding:6px 8px;text-align:center;border-bottom:1px solid var(--line)}
+.standings th:first-child{text-align:left}
+.standings td{padding:8px;text-align:center;border-bottom:1px solid rgba(39,57,92,.3)}
+.standings td:first-child{text-align:left}
+.standings tr.me td{background:rgba(21,168,90,.07)}
+
+/* ===== MISC ===== */
+.hint{
+  background:rgba(90,169,255,.06);border:1px solid rgba(90,169,255,.25);
+  border-radius:10px;padding:10px;font-size:12px;line-height:1.5;color:var(--muted);
+}
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:8px}
+.toast{
+  position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;
+  transform:translateX(-50%);
+  background:var(--pitch);color:#fff;padding:9px 18px;border-radius:999px;
+  font-size:13px;font-weight:600;z-index:999;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  animation:toastin .2s ease;
+}
+@keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(min-width:640px){.toast{bottom:60px}}
+.mono{font-family:var(--mono);font-weight:800}
+.muted{color:var(--muted)}
+.muted2{color:var(--muted2)}
+.small{font-size:11.5px}
+.disp{font-family:var(--disp)}
+.kvs{display:flex;gap:14px;flex-wrap:wrap}
+.kv{display:flex;flex-direction:column}
+.kv .k{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted2)}
+.kv .v{font-family:var(--mono);font-weight:800;font-size:18px}
+.emojigrid{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.emojigrid button{font-size:20px;background:rgba(255,255,255,.04);border:1px solid var(--line2);
+  border-radius:8px;padding:6px 8px;cursor:pointer}
+.emojigrid button.sel{border-color:var(--gold);background:rgba(246,197,68,.1)}
+
+/* ===== ACCESS / JOIN ===== */
+.joincard{text-align:center;padding:24px 16px}
+.joincard .ji{font-size:36px;margin-bottom:8px}
+.joincard h3{font-family:var(--disp);font-size:20px;font-weight:800;text-transform:uppercase;margin-bottom:8px}
+.userrow{padding:10px 0;border-bottom:1px solid rgba(39,57,92,.4)}
+.userrow:last-child{border-bottom:none}
+
+/* ===== COMODINES ===== */
+.cmdbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 12px;border-top:1px dashed var(--line)}
+.cmd{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);
+  background:rgba(255,255,255,.03);color:var(--muted);border-radius:999px;
+  padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.cmd .ci{font-size:13px}
+.cmd .cn{font-size:9px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.cmd:active:not([disabled]){border-color:var(--gold);color:var(--text)}
+.cmd[disabled]{opacity:.4;cursor:not-allowed}
+.cmd.on{background:var(--gold);border-color:var(--gold);color:#3a2c00}
+.cmd.on.shield{background:var(--sky);border-color:var(--sky);color:#04243f}
+.cmd.on.spy{background:#b98cff;border-color:#b98cff;color:#240a45}
+.spy{flex-basis:100%;margin-top:4px;background:rgba(185,140,255,.08);
+  border:1px solid rgba(185,140,255,.3);border-radius:10px;padding:8px 10px}
+.spyrow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.cmdtag{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.4px;
+  padding:2px 6px;border-radius:7px;text-transform:uppercase;margin-left:5px}
+.cmdtag.dbl{background:rgba(246,197,68,.18);color:#ffd96b;border:1px solid rgba(246,197,68,.4)}
+.cmdtag.shd{background:rgba(90,169,255,.16);color:#a9cfff;border:1px solid rgba(90,169,255,.35)}
+.cmdtag.hlf{background:rgba(255,92,121,.14);color:#ff9fb0;border:1px solid rgba(255,92,121,.3)}
+.cmdcards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+@media(max-width:480px){.cmdcards{grid-template-columns:1fr}}
+.cmdcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.cmdcard .ch{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;font-size:14px;text-transform:uppercase}
+.cmdcard .cleft{margin-left:auto;font-family:var(--mono);font-weight:800;font-size:14px;color:var(--gold)}
+.cmdcard p{margin:5px 0 0;font-size:11px;color:var(--muted)}
+
+/* ===== HALFTIME ===== */
+.htpanel{margin:0 10px 10px;background:rgba(246,197,68,.07);border:1px solid rgba(246,197,68,.3);
+  border-radius:10px;padding:10px 10px 4px}
+.htdot{width:7px;height:7px;border-radius:50%;background:var(--coral);
+  box-shadow:0 0 0 0 rgba(255,92,121,.6);animation:pulse 1.6s infinite;display:inline-block}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,92,121,.5)}70%{box-shadow:0 0 0 7px rgba(255,92,121,0)}100%{box-shadow:0 0 0 0 rgba(255,92,121,0)}}
+
+/* ===== MODALS ===== */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+@media(min-width:500px){.overlay{align-items:center}}
+.modal{
+  background:var(--navy2);border:1px solid var(--line);
+  border-radius:20px 20px 0 0;padding:20px 16px;
+  width:100%;max-width:460px;max-height:90dvh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+@media(min-width:500px){.modal{border-radius:20px}}
+.modal-title{font-family:var(--disp);font-weight:800;font-size:20px;text-transform:uppercase;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.4}
+.modal-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.08);
+  border:none;color:var(--muted);border-radius:50%;width:28px;height:28px;
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ===== LOADING ===== */
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100dvh;gap:16px;color:var(--muted)}
+.spinner{width:36px;height:36px;border:3px solid var(--line);
+  border-top-color:var(--pitch);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React -->
+
+<!-- Load order: Firebase → React → App (all synchronous, guaranteed order) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback
+} = React;
+
+/* =========================================================
+   FIREBASE CONFIG — reemplaza este bloque con el tuyo
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDoDYduRO4t7RjZ7Pvh6p_HPXxgAyUjOTo",
+  authDomain: "quiniela-mundial-2026-58f4f.firebaseapp.com",
+  databaseURL: "https://quiniela-mundial-2026-58f4f-default-rtdb.firebaseio.com",
+  projectId: "quiniela-mundial-2026-58f4f",
+  storageBucket: "quiniela-mundial-2026-58f4f.firebasestorage.app",
+  messagingSenderId: "570562995577",
+  appId: "1:570562995577:web:ece0c3f3b968baf6d7fba8"
+};
+
+/* =========================================================
+   DATA
+   ========================================================= */
+const TEAMS = {
+  MEX: ["México", "🇲🇽"],
+  RSA: ["Sudáfrica", "🇿🇦"],
+  KOR: ["Corea del Sur", "🇰🇷"],
+  CZE: ["Chequia", "🇨🇿"],
+  CAN: ["Canadá", "🇨🇦"],
+  BIH: ["Bosnia y H.", "🇧🇦"],
+  QAT: ["Catar", "🇶🇦"],
+  SUI: ["Suiza", "🇨🇭"],
+  BRA: ["Brasil", "🇧🇷"],
+  MAR: ["Marruecos", "🇲🇦"],
+  HAI: ["Haití", "🇭🇹"],
+  SCO: ["Escocia", "🏴󠁧󠁢󠁳󠁣󠁴󠁿"],
+  USA: ["Estados Unidos", "🇺🇸"],
+  PAR: ["Paraguay", "🇵🇾"],
+  AUS: ["Australia", "🇦🇺"],
+  TUR: ["Turquía", "🇹🇷"],
+  GER: ["Alemania", "🇩🇪"],
+  CUW: ["Curazao", "🇨🇼"],
+  CIV: ["Costa de Marfil", "🇨🇮"],
+  ECU: ["Ecuador", "🇪🇨"],
+  NED: ["Países Bajos", "🇳🇱"],
+  JPN: ["Japón", "🇯🇵"],
+  SWE: ["Suecia", "🇸🇪"],
+  TUN: ["Túnez", "🇹🇳"],
+  BEL: ["Bélgica", "🇧🇪"],
+  EGY: ["Egipto", "🇪🇬"],
+  IRN: ["Irán", "🇮🇷"],
+  NZL: ["Nueva Zelanda", "🇳🇿"],
+  ESP: ["España", "🇪🇸"],
+  CPV: ["Cabo Verde", "🇨🇻"],
+  KSA: ["Arabia Saudita", "🇸🇦"],
+  URU: ["Uruguay", "🇺🇾"],
+  FRA: ["Francia", "🇫🇷"],
+  SEN: ["Senegal", "🇸🇳"],
+  IRQ: ["Irak", "🇮🇶"],
+  NOR: ["Noruega", "🇳🇴"],
+  ARG: ["Argentina", "🇦🇷"],
+  ALG: ["Argelia", "🇩🇿"],
+  AUT: ["Austria", "🇦🇹"],
+  JOR: ["Jordania", "🇯🇴"],
+  POR: ["Portugal", "🇵🇹"],
+  COD: ["RD Congo", "🇨🇩"],
+  UZB: ["Uzbekistán", "🇺🇿"],
+  COL: ["Colombia", "🇨🇴"],
+  ENG: ["Inglaterra", "🏴󠁧󠁢󠁥󠁮󠁧󠁿"],
+  CRO: ["Croacia", "🇭🇷"],
+  GHA: ["Ghana", "🇬🇭"],
+  PAN: ["Panamá", "🇵🇦"]
+};
+const tName = c => TEAMS[c] ? TEAMS[c][0] : c;
+const tFlag = c => TEAMS[c] ? TEAMS[c][1] : "🏳️";
+const GROUP_RAW = [["A", "MEX", "RSA", "2026-06-11T15:00", "Estadio Azteca, Ciudad de México"], ["A", "KOR", "CZE", "2026-06-11T22:00", "Estadio Akron, Guadalajara"], ["B", "CAN", "BIH", "2026-06-12T15:00", "BMO Field, Toronto"], ["D", "USA", "PAR", "2026-06-12T21:00", "SoFi Stadium, Los Ángeles"], ["B", "QAT", "SUI", "2026-06-13T15:00", "Levi's Stadium, San Francisco"], ["C", "BRA", "MAR", "2026-06-13T18:00", "MetLife Stadium, Nueva York/NJ"], ["C", "HAI", "SCO", "2026-06-13T21:00", "Gillette Stadium, Boston"], ["D", "AUS", "TUR", "2026-06-14T00:00", "BC Place, Vancouver"], ["E", "GER", "CUW", "2026-06-14T13:00", "NRG Stadium, Houston"], ["F", "NED", "JPN", "2026-06-14T16:00", "AT&T Stadium, Dallas"], ["E", "CIV", "ECU", "2026-06-14T19:00", "Lincoln Financial Field, Filadelfia"], ["F", "SWE", "TUN", "2026-06-14T22:00", "Estadio BBVA, Monterrey"], ["H", "ESP", "CPV", "2026-06-15T12:00", "Mercedes-Benz Stadium, Atlanta"], ["G", "BEL", "EGY", "2026-06-15T15:00", "Lumen Field, Seattle"], ["H", "KSA", "URU", "2026-06-15T18:00", "Hard Rock Stadium, Miami"], ["G", "IRN", "NZL", "2026-06-15T21:00", "SoFi Stadium, Los Ángeles"], ["I", "FRA", "SEN", "2026-06-16T15:00", "MetLife Stadium, Nueva York/NJ"], ["I", "IRQ", "NOR", "2026-06-16T18:00", "Gillette Stadium, Boston"], ["J", "ARG", "ALG", "2026-06-16T21:00", "Arrowhead Stadium, Kansas City"], ["J", "AUT", "JOR", "2026-06-17T00:00", "Levi's Stadium, San Francisco"], ["K", "POR", "COD", "2026-06-17T13:00", "NRG Stadium, Houston"], ["L", "ENG", "CRO", "2026-06-17T16:00", "AT&T Stadium, Dallas"], ["L", "GHA", "PAN", "2026-06-17T19:00", "BMO Field, Toronto"], ["K", "UZB", "COL", "2026-06-17T22:00", "Estadio Azteca, Ciudad de México"], ["A", "CZE", "RSA", "2026-06-18T12:00", "Mercedes-Benz Stadium, Atlanta"], ["B", "SUI", "BIH", "2026-06-18T15:00", "SoFi Stadium, Los Ángeles"], ["B", "CAN", "QAT", "2026-06-18T18:00", "BC Place, Vancouver"], ["A", "MEX", "KOR", "2026-06-18T21:00", "Estadio Akron, Guadalajara"], ["D", "USA", "AUS", "2026-06-19T15:00", "Lumen Field, Seattle"], ["C", "SCO", "MAR", "2026-06-19T18:00", "Gillette Stadium, Boston"], ["C", "BRA", "HAI", "2026-06-19T20:30", "Lincoln Financial Field, Filadelfia"], ["D", "TUR", "PAR", "2026-06-19T23:00", "Levi's Stadium, San Francisco"], ["F", "NED", "SWE", "2026-06-20T13:00", "NRG Stadium, Houston"], ["E", "GER", "CIV", "2026-06-20T16:00", "BMO Field, Toronto"], ["E", "ECU", "CUW", "2026-06-20T20:00", "Arrowhead Stadium, Kansas City"], ["F", "TUN", "JPN", "2026-06-21T00:00", "Estadio BBVA, Monterrey"], ["H", "ESP", "KSA", "2026-06-21T12:00", "Mercedes-Benz Stadium, Atlanta"], ["G", "BEL", "IRN", "2026-06-21T15:00", "SoFi Stadium, Los Ángeles"], ["H", "URU", "CPV", "2026-06-21T18:00", "Hard Rock Stadium, Miami"], ["G", "NZL", "EGY", "2026-06-21T21:00", "BC Place, Vancouver"], ["J", "ARG", "AUT", "2026-06-22T13:00", "AT&T Stadium, Dallas"], ["I", "FRA", "IRQ", "2026-06-22T17:00", "Lincoln Financial Field, Filadelfia"], ["I", "NOR", "SEN", "2026-06-22T20:00", "MetLife Stadium, Nueva York/NJ"], ["J", "JOR", "ALG", "2026-06-22T23:00", "Levi's Stadium, San Francisco"], ["K", "POR", "UZB", "2026-06-23T13:00", "NRG Stadium, Houston"], ["L", "ENG", "GHA", "2026-06-23T16:00", "Gillette Stadium, Boston"], ["L", "PAN", "CRO", "2026-06-23T19:00", "BMO Field, Toronto"], ["K", "COL", "COD", "2026-06-23T22:00", "Estadio Akron, Guadalajara"], ["B", "SUI", "CAN", "2026-06-24T15:00", "BC Place, Vancouver"], ["B", "BIH", "QAT", "2026-06-24T15:00", "Lumen Field, Seattle"], ["C", "SCO", "BRA", "2026-06-24T18:00", "Hard Rock Stadium, Miami"], ["C", "MAR", "HAI", "2026-06-24T18:00", "Mercedes-Benz Stadium, Atlanta"], ["A", "CZE", "MEX", "2026-06-24T21:00", "Estadio Azteca, Ciudad de México"], ["A", "RSA", "KOR", "2026-06-24T21:00", "Estadio BBVA, Monterrey"], ["E", "CUW", "CIV", "2026-06-25T16:00", "Lincoln Financial Field, Filadelfia"], ["E", "ECU", "GER", "2026-06-25T16:00", "MetLife Stadium, Nueva York/NJ"], ["F", "JPN", "SWE", "2026-06-25T19:00", "AT&T Stadium, Dallas"], ["F", "TUN", "NED", "2026-06-25T19:00", "Arrowhead Stadium, Kansas City"], ["D", "TUR", "USA", "2026-06-25T22:00", "SoFi Stadium, Los Ángeles"], ["D", "PAR", "AUS", "2026-06-25T22:00", "Levi's Stadium, San Francisco"], ["I", "NOR", "FRA", "2026-06-26T15:00", "Gillette Stadium, Boston"], ["I", "SEN", "IRQ", "2026-06-26T15:00", "BMO Field, Toronto"], ["H", "CPV", "KSA", "2026-06-26T20:00", "NRG Stadium, Houston"], ["H", "URU", "ESP", "2026-06-26T20:00", "Estadio Akron, Guadalajara"], ["G", "EGY", "IRN", "2026-06-26T23:00", "Lumen Field, Seattle"], ["G", "NZL", "BEL", "2026-06-26T23:00", "BC Place, Vancouver"], ["L", "PAN", "ENG", "2026-06-27T17:00", "MetLife Stadium, Nueva York/NJ"], ["L", "CRO", "GHA", "2026-06-27T17:00", "Lincoln Financial Field, Filadelfia"], ["K", "COL", "POR", "2026-06-27T19:30", "Hard Rock Stadium, Miami"], ["K", "COD", "UZB", "2026-06-27T19:30", "Mercedes-Benz Stadium, Atlanta"], ["J", "ALG", "AUT", "2026-06-27T22:00", "Arrowhead Stadium, Kansas City"], ["J", "JOR", "ARG", "2026-06-27T22:00", "AT&T Stadium, Dallas"]];
+const KO_RAW = [["32avos", "2º A vs 2º B", "2026-06-28T15:00", "SoFi Stadium, Los Ángeles", 73], ["32avos", "1º C vs 2º F", "2026-06-29T13:00", "NRG Stadium, Houston", 76], ["32avos", "1º E vs Mejor 3º", "2026-06-29T16:30", "Gillette Stadium, Boston", 74], ["32avos", "1º F vs 2º C", "2026-06-29T21:00", "Estadio BBVA, Monterrey", 75], ["32avos", "2º E vs 2º I", "2026-06-30T13:00", "AT&T Stadium, Dallas", 78], ["32avos", "1º I vs Mejor 3º", "2026-06-30T17:00", "MetLife Stadium, Nueva York/NJ", 77], ["32avos", "1º A vs Mejor 3º", "2026-06-30T21:00", "Estadio Azteca, Ciudad de México", 79], ["32avos", "1º L vs Mejor 3º", "2026-07-01T12:00", "Mercedes-Benz Stadium, Atlanta", 80], ["32avos", "1º G vs Mejor 3º", "2026-07-01T16:00", "Lumen Field, Seattle", 82], ["32avos", "1º D vs Mejor 3º", "2026-07-01T20:00", "Levi's Stadium, San Francisco", 81], ["32avos", "1º H vs 2º J", "2026-07-02T15:00", "SoFi Stadium, Los Ángeles", 84], ["32avos", "2º K vs 2º L", "2026-07-02T19:00", "BMO Field, Toronto", 83], ["32avos", "1º B vs Mejor 3º", "2026-07-02T23:00", "BC Place, Vancouver", 85], ["32avos", "2º D vs 2º G", "2026-07-03T14:00", "AT&T Stadium, Dallas", 88], ["32avos", "1º J vs 2º H", "2026-07-03T18:00", "Hard Rock Stadium, Miami", 86], ["32avos", "1º K vs Mejor 3º", "2026-07-03T21:30", "Arrowhead Stadium, Kansas City", 87], ["Octavos", "Gan.73 vs Gan.75", "2026-07-04T13:00", "NRG Stadium, Houston", 90], ["Octavos", "Gan.74 vs Gan.77", "2026-07-04T17:00", "Lincoln Financial Field, Filadelfia", 89], ["Octavos", "Gan.76 vs Gan.78", "2026-07-05T16:00", "MetLife Stadium, Nueva York/NJ", 91], ["Octavos", "Gan.79 vs Gan.80", "2026-07-05T20:00", "Estadio Azteca, Ciudad de México", 92], ["Octavos", "Gan.83 vs Gan.84", "2026-07-06T15:00", "AT&T Stadium, Dallas", 93], ["Octavos", "Gan.81 vs Gan.82", "2026-07-06T20:00", "Lumen Field, Seattle", 94], ["Octavos", "Gan.86 vs Gan.88", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95], ["Octavos", "Gan.85 vs Gan.87", "2026-07-07T16:00", "BC Place, Vancouver", 96], ["Cuartos", "Gan.89 vs Gan.90", "2026-07-09T16:00", "Gillette Stadium, Boston", 97], ["Cuartos", "Gan.93 vs Gan.94", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98], ["Cuartos", "Gan.91 vs Gan.92", "2026-07-11T17:00", "Hard Rock Stadium, Miami", 99], ["Cuartos", "Gan.95 vs Gan.96", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100], ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101], ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102], ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T17:00", "Hard Rock Stadium, Miami", 103], ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]];
+const ET = "-04:00";
+const GROUPS = GROUP_RAW.map((r, i) => ({
+  id: "g" + (i + 1),
+  stage: "Fase de grupos",
+  group: r[0],
+  home: r[1],
+  away: r[2],
+  kickoff: new Date(r[3] + ET),
+  venue: r[4],
+  playable: true
+}));
+const KOS = KO_RAW.map(r => ({
+  id: "k" + r[4],
+  stage: r[0],
+  group: null,
+  label: r[1],
+  kickoff: new Date(r[2] + ET),
+  venue: r[3],
+  no: r[4],
+  playable: false
+}));
+const ALL = [...GROUPS, ...KOS].sort((a, b) => a.kickoff - b.kickoff);
+const FIRST_KICKOFF = GROUPS[0].kickoff;
+const TZS = [["America/Santiago", "🇨🇱 Chile (Santiago)"], ["America/Caracas", "🇻🇪 Venezuela (Caracas)"], ["America/Bogota", "🇨🇴 Colombia (Bogotá)"], ["America/Mexico_City", "🇲🇽 México (CDMX)"], ["America/New_York", "🇺🇸 Este (NY/Miami)"], ["America/Chicago", "🇺🇸 Centro (Dallas)"], ["America/Los_Angeles", "🇺🇸 Pacífico (LA)"], ["Europe/Madrid", "🇪🇸 España (Madrid)"]];
+const POOL_EMOJIS = ["🏆", "⚽", "👨‍👩‍👧‍👦", "🏢", "🎉", "🔥", "🥇", "🦁", "🐉", "🌎", "🍻", "🎯"];
+const DEFAULT_SCORING = {
+  win: 1,
+  gd: 2,
+  exact: 3,
+  champion: 5,
+  useGd: true
+};
+const DEFAULT_COMODINES = {
+  enabled: true,
+  doble: 2,
+  escudo: 2,
+  espia: 1
+};
+const CMD_META = {
+  doble: {
+    icon: "✖️2",
+    name: "Doblar",
+    cls: "",
+    desc: "Duplica los puntos que ganes en ese partido."
+  },
+  escudo: {
+    icon: "🛡️",
+    name: "Escudo",
+    cls: "shield",
+    desc: "Anti-cero: te asegura mínimo 1 punto aunque falles."
+  },
+  espia: {
+    icon: "🔍",
+    name: "Espiar",
+    cls: "spy",
+    desc: "Revela los pronósticos de tus rivales en ese partido."
+  }
+};
+
+/* =========================================================
+   FIREBASE INIT + DB HELPERS
+   (inicialización se hace dentro del componente App
+    para que ocurra solo una vez y en el browser)
+   ========================================================= */
+let _db = null;
+function getDb() {
+  if (!_db) {
+    try {
+      const app = firebase.initializeApp(firebaseConfig);
+      _db = firebase.database(app);
+    } catch (e) {
+      // ya estaba inicializado
+      _db = firebase.database();
+    }
+  }
+  return _db;
+}
+// Helpers de lectura/escritura sobre Firebase
+async function fbGet(path) {
+  try {
+    const snap = await getDb().ref(path).get();
+    return snap.exists() ? snap.val() : null;
+  } catch (e) {
+    console.error("fbGet", path, e);
+    return null;
+  }
+}
+async function fbSet(path, value) {
+  try {
+    await getDb().ref(path).set(value);
+  } catch (e) {
+    console.error("fbSet", path, e);
+  }
+}
+async function fbUpdate(path, value) {
+  try {
+    await getDb().ref(path).update(value);
+  } catch (e) {
+    console.error("fbUpdate", path, e);
+  }
+}
+// Suscripción realtime; devuelve función de cleanup
+function fbListen(path, cb) {
+  const ref = getDb().ref(path);
+  ref.on("value", snap => cb(snap.exists() ? snap.val() : null));
+  return () => ref.off("value");
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const DOW = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const MON = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function parts(date, tz) {
+  const f = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    weekday: "short"
+  });
+  const o = {};
+  f.formatToParts(date).forEach(p => o[p.type] = p.value);
+  return o;
+}
+function dayKey(date, tz) {
+  const p = parts(date, tz);
+  return p.year + "-" + p.month + "-" + p.day;
+}
+function fmtTime(date, tz) {
+  const p = parts(date, tz);
+  return p.hour + ":" + p.minute;
+}
+function dayLabel(date, tz) {
+  const p = parts(date, tz);
+  const d = new Date(p.year + "-" + p.month + "-" + p.day + "T12:00:00Z");
+  const dow = DOW[d.getUTCDay()];
+  return {
+    dow,
+    dnum: String(+p.day),
+    mon: MON[+p.month - 1]
+  };
+}
+function isLocked(m) {
+  return Date.now() >= m.kickoff.getTime();
+}
+function clamp(n) {
+  return Math.max(0, Math.min(19, n));
+}
+const uid = () => Math.random().toString(36).slice(2, 9);
+const genCode = () => {
+  const C = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for (let i = 0; i < 6; i++) s += C[Math.floor(Math.random() * C.length)];
+  return s;
+};
+const hashStr = s => {
+  let h = 5381;
+  s = String(s);
+  for (let i = 0; i < s.length; i++) {
+    h = (h << 5) + h + s.charCodeAt(i) | 0;
+  }
+  return "h" + (h >>> 0).toString(36);
+};
+function normPool(p) {
+  const {
+    requests,
+    ...rest
+  } = p;
+  return {
+    gate: true,
+    members: [],
+    scoring: {
+      ...DEFAULT_SCORING
+    },
+    comodines: {
+      ...DEFAULT_COMODINES
+    },
+    mode: "dynamic",
+    ...rest,
+    invite: p.invite || genCode(),
+    mode: p.mode === "classic" ? "classic" : "dynamic"
+  };
+}
+
+/* =========================================================
+   SCORING ENGINE
+   ========================================================= */
+function scoreOne(pred, actual, sc) {
+  if (!actual || actual.h == null || actual.a == null) return null;
+  if (!pred || pred.h == null || pred.a == null) return {
+    pts: 0,
+    exact: false,
+    outcome: false
+  };
+  const po = Math.sign(pred.h - pred.a),
+    ao = Math.sign(actual.h - actual.a);
+  const outcome = po === ao,
+    exact = pred.h === actual.h && pred.a === actual.a,
+    gd = pred.h - pred.a === actual.h - actual.a;
+  let pts = 0;
+  if (exact) pts = sc.exact;else if (outcome && gd && sc.useGd) pts = sc.gd;else if (outcome) pts = sc.win;
+  return {
+    pts,
+    exact,
+    outcome
+  };
+}
+function scoreFull(pred, actual, sc, opt) {
+  const base = scoreOne(pred, actual, sc);
+  if (!base) return null;
+  let pts = base.pts,
+    halved = false,
+    doubled = false,
+    shielded = false;
+  if (pred && pred.ht && pts > 0) {
+    pts = Math.round(pts / 2);
+    halved = true;
+  }
+  if (opt && opt.doble) {
+    pts = pts * 2;
+    if (base.pts > 0) doubled = true;
+  }
+  if (opt && opt.escudo && pts < sc.win) {
+    pts = sc.win;
+    shielded = true;
+  }
+  return {
+    pts,
+    exact: base.exact,
+    outcome: base.outcome,
+    base: base.pts,
+    halved,
+    doubled,
+    shielded
+  };
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+function App() {
+  // Preferencias locales (localStorage — solo este dispositivo)
+  const [me, setMe] = useState(() => localStorage.getItem("q26:me") || "");
+  const [tz, setTz] = useState(() => localStorage.getItem("q26:tz") || "America/Santiago");
+  const [poolId, setPoolId] = useState(() => localStorage.getItem("q26:pool") || "");
+  const [isMasterDev, setIsMasterDev] = useState(() => localStorage.getItem("q26:master") === "1");
+
+  // Estado compartido (Firebase)
+  const [pools, setPools] = useState([]);
+  const [results, setResults] = useState({
+    champion: null,
+    matches: {},
+    ht: {}
+  });
+  const [masterHash, setMasterHash] = useState(null);
+  const [reqs, setReqs] = useState([]);
+  const [preds, setPreds] = useState({});
+
+  // UI
+  const [view, setView] = useState("predict");
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState("");
+  const [ready, setReady] = useState(false);
+  const [now, setNow] = useState(Date.now());
+  const [created, setCreated] = useState(null);
+  const toastRef = useRef(null);
+  const unsubRef = useRef({});
+  function flash(msg) {
+    setToast(msg);
+    clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToast(""), 2600);
+  }
+
+  /* ---- HELPERS locales ---- */
+  function saveMe(n) {
+    const v = n.trim();
+    setMe(v);
+    localStorage.setItem("q26:me", v);
+  }
+  function saveTz(z) {
+    setTz(z);
+    localStorage.setItem("q26:tz", z);
+  }
+  function savePoolId(pid) {
+    setPoolId(pid);
+    localStorage.setItem("q26:pool", pid || "");
+  }
+
+  /* ---- INICIALIZACIÓN ---- */
+  useEffect(() => {
+    // 1. Cargar datos globales compartidos una vez
+    Promise.all([fbGet("pools"), fbGet("results"), fbGet("master")]).then(([rawPools, rawResults, rawMaster]) => {
+      const norm = (Array.isArray(rawPools) ? rawPools : rawPools ? Object.values(rawPools) : []).map(normPool);
+      setPools(norm);
+      if (rawResults) {
+        if (!rawResults.ht) rawResults.ht = {};
+        setResults(rawResults);
+      }
+      if (rawMaster) setMasterHash(rawMaster);
+      setReady(true);
+      // Onboard
+      const pid = localStorage.getItem("q26:pool") || "";
+      const myMe = localStorage.getItem("q26:me") || "";
+      if (!rawMaster) setModal("masterSetup");else if (!myMe) setModal("identity");
+    });
+
+    // ticker
+    const t = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  /* ---- LISTENERS REALTIME ---- */
+  useEffect(() => {
+    if (!ready) return;
+    // pools listener
+    const u1 = fbListen("pools", v => {
+      const arr = (Array.isArray(v) ? v : v ? Object.values(v) : []).map(normPool);
+      setPools(arr);
+    });
+    // results listener
+    const u2 = fbListen("results", v => {
+      if (v) {
+        if (!v.ht) v.ht = {};
+        setResults(v);
+      }
+    });
+    // master listener
+    const u3 = fbListen("master", v => {
+      if (v) setMasterHash(v);
+    });
+    return () => {
+      u1();
+      u2();
+      u3();
+    };
+  }, [ready]);
+
+  /* ---- LISTENER POR POOL (requests + preds) ---- */
+  useEffect(() => {
+    // cleanup anterior
+    if (unsubRef.current.reqs) unsubRef.current.reqs();
+    if (unsubRef.current.preds) unsubRef.current.preds();
+    if (!poolId) return;
+    const u1 = fbListen("reqs/" + poolId, v => setReqs(Array.isArray(v) ? v : v ? Object.values(v) : []));
+    const u2 = fbListen("preds/" + poolId, v => setPreds(v || {}));
+    unsubRef.current = {
+      reqs: u1,
+      preds: u2
+    };
+    return () => {
+      u1();
+      u2();
+    };
+  }, [poolId]);
+
+  /* ---- DERIVADOS ---- */
+  const pool = pools.find(p => p.id === poolId) || null;
+  const sc = pool ? {
+    ...DEFAULT_SCORING,
+    ...pool.scoring
+  } : DEFAULT_SCORING;
+  const gateOn = !!(pool && pool.gate !== false);
+  const isMaster = isMasterDev;
+  const isAdmin = isMaster;
+  const isMember = !!(pool && me && Array.isArray(pool.members) && pool.members.includes(me));
+  const canPlay = !gateOn || isMember || isAdmin;
+  const classicMode = !!(pool && pool.mode === "classic");
+  const tournamentStarted = now >= FIRST_KICKOFF.getTime();
+  function lk(m) {
+    return classicMode ? tournamentStarted : now >= m.kickoff.getTime();
+  }
+
+  /* ---- MASTER ---- */
+  async function setMasterPin(pin) {
+    const h = hashStr(String(pin).trim());
+    setMasterHash(h);
+    await fbSet("master", h);
+    setIsMasterDev(true);
+    localStorage.setItem("q26:master", "1");
+    flash("Eres el administrador");
+  }
+  async function unlockMaster(pinTry) {
+    if (masterHash && hashStr(String(pinTry).trim()) === masterHash) {
+      setIsMasterDev(true);
+      localStorage.setItem("q26:master", "1");
+      flash("Modo administrador activado");
+      return true;
+    }
+    flash("PIN incorrecto");
+    return false;
+  }
+  async function changeMaster(newPin) {
+    const h = hashStr(String(newPin).trim());
+    setMasterHash(h);
+    await fbSet("master", h);
+    flash("PIN maestro actualizado");
+  }
+
+  /* ---- POOLS ---- */
+  async function savePools(next) {
+    setPools(next);
+    const obj = {};
+    next.forEach((p, i) => obj[p.id] = p);
+    await fbSet("pools", obj);
+  }
+  async function createPool(name, emoji, force, mode) {
+    if (!isMaster && !force) {
+      flash("Solo el administrador puede crear quinielas");
+      return;
+    }
+    const p = {
+      id: uid(),
+      name: (name || "").trim() || "Quiniela",
+      emoji: emoji || "🏆",
+      members: me ? [me] : [],
+      scoring: {
+        ...DEFAULT_SCORING
+      },
+      comodines: {
+        ...DEFAULT_COMODINES
+      },
+      invite: genCode(),
+      gate: true,
+      mode: mode === "classic" ? "classic" : "dynamic"
+    };
+    const next = [...pools, p];
+    await savePools(next);
+    await fbSet("reqs/" + p.id, []);
+    if (me) await fbSet("preds/" + p.id + "/" + me.replace(/[.#$/[\]]/g, "_"), {
+      matches: {},
+      champion: null
+    });
+    savePoolId(p.id);
+    setCreated(p);
+    setModal("created");
+  }
+  async function deletePool(pid) {
+    const next = pools.filter(p => p.id !== pid);
+    await savePools(next);
+    if (poolId === pid) {
+      const np = next[0] ? next[0].id : "";
+      savePoolId(np);
+    }
+    flash("Quiniela eliminada");
+  }
+  async function selectPool(pid) {
+    savePoolId(pid);
+  }
+  async function updateScoring(next) {
+    const np = pools.map(p => p.id === poolId ? {
+      ...p,
+      scoring: next
+    } : p);
+    await savePools(np);
+  }
+  async function updateComodines(next) {
+    const np = pools.map(p => p.id === poolId ? {
+      ...p,
+      comodines: next
+    } : p);
+    await savePools(np);
+  }
+  async function updateAccess(patch) {
+    const np = pools.map(p => p.id === poolId ? {
+      ...p,
+      ...patch
+    } : p);
+    await savePools(np);
+  }
+
+  /* ---- MEMBERS / REQUESTS ---- */
+  const safeKey = s => s.replace(/[.#$/[\]]/g, "_");
+  async function ensureMemberSelf() {
+    if (!pool || !me) return;
+    if (!pool.members.includes(me)) {
+      const np = pools.map(p => p.id === pool.id ? {
+        ...p,
+        members: [...p.members, me]
+      } : p);
+      await savePools(np);
+    }
+  }
+  function requireMember() {
+    if (!pool) {
+      setModal("pool");
+      return false;
+    }
+    if (!me) {
+      setModal("identity");
+      return false;
+    }
+    if (canPlay) {
+      ensureMemberSelf();
+      return true;
+    }
+    setModal("join");
+    return false;
+  }
+  async function requestJoin(name, code) {
+    if (!pool) return {
+      ok: false,
+      msg: "Sin quiniela"
+    };
+    const nm = (name || "").trim();
+    if (!nm) return {
+      ok: false,
+      msg: "Pon tu nombre"
+    };
+    if (gateOn && String(code || "").trim().toUpperCase() !== String(pool.invite).toUpperCase()) return {
+      ok: false,
+      msg: "Código de invitación incorrecto"
+    };
+    saveMe(nm);
+    if (pool.members.includes(nm)) return {
+      ok: true,
+      already: true
+    };
+    // read-modify-write para no pisar otras solicitudes
+    const cur = (await fbGet("reqs/" + pool.id)) || [];
+    const arr = Array.isArray(cur) ? cur : Object.values(cur);
+    if (!arr.some(r => r.name === nm)) {
+      await fbSet("reqs/" + pool.id, [...arr, {
+        name: nm,
+        ts: Date.now()
+      }]);
+    }
+    return {
+      ok: true
+    };
+  }
+  async function approveRequest(name) {
+    if (!pool) return;
+    const cur = (await fbGet("reqs/" + pool.id)) || [];
+    const arr = (Array.isArray(cur) ? cur : Object.values(cur)).filter(r => r.name !== name);
+    await fbSet("reqs/" + pool.id, arr);
+    if (!pool.members.includes(name)) {
+      const np = pools.map(p => p.id === pool.id ? {
+        ...p,
+        members: [...p.members, name]
+      } : p);
+      await savePools(np);
+    }
+    flash(name + " aprobado");
+  }
+  async function rejectRequest(name) {
+    if (!pool) return;
+    const cur = (await fbGet("reqs/" + pool.id)) || [];
+    const arr = (Array.isArray(cur) ? cur : Object.values(cur)).filter(r => r.name !== name);
+    await fbSet("reqs/" + pool.id, arr);
+    flash(name + " rechazado");
+  }
+  async function clearRequests() {
+    await fbSet("reqs/" + pool.id, []);
+    flash("Solicitudes limpiadas");
+  }
+  async function removeMember(name) {
+    if (!pool) return;
+    const np = pools.map(p => p.id === pool.id ? {
+      ...p,
+      members: pool.members.filter(x => x !== name)
+    } : p);
+    await savePools(np);
+    flash(name + " retirado");
+  }
+
+  /* ---- PREDICTIONS ---- */
+  async function setPrediction(matchId, side, val, htMode) {
+    if (!requireMember()) return;
+    const key = safeKey(me);
+    const cur = preds[key] || {
+      matches: {},
+      champion: null
+    };
+    const curM = cur.matches[matchId] || {
+      h: null,
+      a: null
+    };
+    const nm = {
+      ...curM,
+      [side]: clamp(val)
+    };
+    if (htMode) nm.ht = true;
+    const nextMine = {
+      ...cur,
+      matches: {
+        ...cur.matches,
+        [matchId]: nm
+      }
+    };
+    setPreds(pr => ({
+      ...pr,
+      [key]: nextMine
+    }));
+    await fbSet("preds/" + poolId + "/" + key, nextMine);
+    if (htMode) flash("Cambio de entretiempo guardado (½ pts)");
+  }
+  async function clearPrediction(matchId) {
+    if (!me) return;
+    const key = safeKey(me);
+    const cur = preds[key] || {
+      matches: {},
+      champion: null
+    };
+    const nm = {
+      ...cur.matches
+    };
+    delete nm[matchId];
+    const nextMine = {
+      ...cur,
+      matches: nm
+    };
+    setPreds(pr => ({
+      ...pr,
+      [key]: nextMine
+    }));
+    await fbSet("preds/" + poolId + "/" + key, nextMine);
+  }
+  async function setChampion(teamId) {
+    if (!requireMember()) return;
+    const key = safeKey(me);
+    const cur = preds[key] || {
+      matches: {},
+      champion: null
+    };
+    const nextMine = {
+      ...cur,
+      champion: teamId || null
+    };
+    setPreds(pr => ({
+      ...pr,
+      [key]: nextMine
+    }));
+    await fbSet("preds/" + poolId + "/" + key, nextMine);
+    flash("Campeón guardado");
+  }
+  async function toggleComodin(type, matchId) {
+    if (!requireMember()) return;
+    const m = GROUPS.find(g => g.id === matchId);
+    if (!m || lk(m)) {
+      flash("Ese partido ya está cerrado");
+      return;
+    }
+    const key = safeKey(me);
+    const mine = preds[key] || {
+      matches: {},
+      champion: null
+    };
+    const cm = {
+      doble: [],
+      escudo: [],
+      espia: [],
+      ...(mine.comodines || {})
+    };
+    const arr = cm[type] || [];
+    const has = arr.includes(matchId);
+    const pc = {
+      ...DEFAULT_COMODINES,
+      ...(pool.comodines || {})
+    };
+    if (!has) {
+      if (arr.length >= pc[type]) {
+        flash("No te quedan comodines de ese tipo");
+        return;
+      }
+      if (type === "doble" && (cm.escudo || []).includes(matchId)) {
+        flash("Ya tienes Escudo en ese partido");
+        return;
+      }
+      if (type === "escudo" && (cm.doble || []).includes(matchId)) {
+        flash("Ya tienes Doblar en ese partido");
+        return;
+      }
+    }
+    const nextArr = has ? arr.filter(x => x !== matchId) : [...arr, matchId];
+    const nextMine = {
+      ...mine,
+      comodines: {
+        ...cm,
+        [type]: nextArr
+      }
+    };
+    setPreds(pr => ({
+      ...pr,
+      [key]: nextMine
+    }));
+    await fbSet("preds/" + poolId + "/" + key, nextMine);
+    if (!has) flash(type === "espia" ? "👀 Pronósticos rivales revelados" : "Comodín " + CMD_META[type].name + " activado");
+  }
+
+  /* ---- RESULTS ---- */
+  async function setResult(matchId, side, val) {
+    const n = val === "" || val == null ? null : Math.max(0, parseInt(val, 10));
+    setResults(r => {
+      const nm = {
+        ...r.matches,
+        [matchId]: {
+          ...(r.matches[matchId] || {}),
+          [side]: n
+        }
+      };
+      const next = {
+        ...r,
+        matches: nm
+      };
+      fbSet("results", next);
+      return next;
+    });
+  }
+  async function clearResult(matchId) {
+    setResults(r => {
+      const nm = {
+        ...r.matches
+      };
+      delete nm[matchId];
+      const next = {
+        ...r,
+        matches: nm
+      };
+      fbSet("results", next);
+      return next;
+    });
+  }
+  async function setResultChampion(teamId) {
+    setResults(r => {
+      const next = {
+        ...r,
+        champion: teamId || null
+      };
+      fbSet("results", next);
+      return next;
+    });
+  }
+  async function setHTOpen(matchId, open) {
+    setResults(r => {
+      const ht = {
+        ...(r.ht || {})
+      };
+      if (open) ht[matchId] = true;else delete ht[matchId];
+      const next = {
+        ...r,
+        ht
+      };
+      fbSet("results", next);
+      return next;
+    });
+    flash(open ? "Entretiempo abierto" : "Entretiempo cerrado");
+  }
+
+  /* ---- COMODINES TOOLS ---- */
+  function rivalsFor(matchId) {
+    if (!pool) return [];
+    return pool.members.filter(x => x !== me).map(x => {
+      const key = safeKey(x);
+      const p = preds[key] && preds[key].matches[matchId];
+      return {
+        name: x,
+        h: p && p.h,
+        a: p && p.a,
+        has: !!(p && p.h != null && p.a != null)
+      };
+    });
+  }
+  function matchTools(matchId) {
+    const pc = {
+      ...DEFAULT_COMODINES,
+      ...(pool && pool.comodines || {})
+    };
+    const key = safeKey(me);
+    const cm = {
+      doble: [],
+      escudo: [],
+      espia: [],
+      ...((preds[key] || {}).comodines || {})
+    };
+    const used = t => (cm[t] || []).length;
+    return {
+      enabled: pc.enabled !== false,
+      applied: {
+        doble: cm.doble.includes(matchId),
+        escudo: cm.escudo.includes(matchId),
+        espia: cm.espia.includes(matchId)
+      },
+      avail: {
+        doble: pc.doble - used("doble"),
+        escudo: pc.escudo - used("escudo"),
+        espia: pc.espia - used("espia")
+      },
+      htOpen: !!(results.ht && results.ht[matchId]),
+      onToggle: t => toggleComodin(t, matchId),
+      spyData: cm.espia.includes(matchId) ? rivalsFor(matchId) : null
+    };
+  }
+
+  /* ---- STANDINGS ---- */
+  const myKey = safeKey(me);
+  const myPreds = me && preds[myKey] ? preds[myKey] : {
+    matches: {},
+    champion: null
+  };
+  const myMade = GROUPS.filter(g => {
+    const p = myPreds.matches[g.id];
+    return p && p.h != null && p.a != null;
+  }).length;
+  const standings = useMemo(() => {
+    if (!pool) return [];
+    return pool.members.map(mem => {
+      const key = safeKey(mem);
+      const mp = preds[key] || {
+        matches: {},
+        champion: null
+      };
+      const cm = mp.comodines || {};
+      let pts = 0,
+        exact = 0,
+        outcome = 0,
+        played = 0,
+        made = 0;
+      for (const g of GROUPS) {
+        const pr = mp.matches[g.id];
+        if (pr && pr.h != null && pr.a != null) made++;
+        const r = results.matches[g.id];
+        const opt = {
+          doble: (cm.doble || []).includes(g.id),
+          escudo: (cm.escudo || []).includes(g.id)
+        };
+        const s = scoreFull(pr, r, sc, opt);
+        if (s) {
+          played++;
+          pts += s.pts;
+          if (s.exact) exact++;
+          if (s.outcome) outcome++;
+        }
+      }
+      let champOk = false;
+      if (results.champion && mp.champion === results.champion) {
+        champOk = true;
+        pts += sc.champion;
+      }
+      return {
+        name: mem,
+        pts,
+        exact,
+        outcome,
+        played,
+        made,
+        champion: mp.champion,
+        champOk,
+        isMe: mem === me
+      };
+    }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || b.outcome - a.outcome || Number(b.champOk) - Number(a.champOk) || a.name.localeCompare(b.name));
+  }, [pool, preds, results, sc, me, now]);
+
+  /* ---- EXPORT/IMPORT ---- */
+  async function exportBackup() {
+    if (!pool) return;
+    const data = {
+      app: "quiniela-firebase",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      pool,
+      results,
+      preds,
+      reqs
+    };
+    try {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = ("quiniela-" + (pool.name || "respaldo").replace(/[^a-z0-9]+/gi, "-") + ".json").toLowerCase();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      flash("Respaldo descargado");
+    } catch (e) {
+      flash("No se pudo descargar");
+    }
+  }
+  async function importBackup(file) {
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data || !data.pool) {
+        flash("Archivo no válido");
+        return;
+      }
+      const np = normPool(data.pool);
+      const next = pools.some(p => p.id === np.id) ? pools.map(p => p.id === np.id ? np : p) : [...pools, np];
+      await savePools(next);
+      if (data.results) {
+        if (!data.results.ht) data.results.ht = {};
+        await fbSet("results", data.results);
+        setResults(data.results);
+      }
+      if (data.preds) await fbSet("preds/" + np.id, data.preds);
+      if (data.reqs) await fbSet("reqs/" + np.id, data.reqs);
+      savePoolId(np.id);
+      flash("Respaldo restaurado");
+    } catch (e) {
+      flash("No se pudo importar");
+    }
+  }
+  const poolCmd = {
+    ...DEFAULT_COMODINES,
+    ...(pool && pool.comodines || {})
+  };
+  const pendingCount = reqs.length;
+  const ctx = {
+    me,
+    tz,
+    pool,
+    pools,
+    sc,
+    preds,
+    results,
+    now,
+    myPreds,
+    myMade,
+    standings,
+    setPrediction,
+    clearPrediction,
+    setChampion,
+    setResult,
+    clearResult,
+    setResultChampion,
+    selectPool,
+    setView,
+    setModal,
+    flash,
+    getTools: matchTools,
+    setHTOpen,
+    poolCmd,
+    isAdmin,
+    isMember,
+    canPlay,
+    gateOn,
+    isMaster,
+    masterHash,
+    reqs,
+    lk,
+    classicMode,
+    tournamentStarted,
+    approveRequest,
+    rejectRequest,
+    clearRequests,
+    removeMember,
+    updateAccess,
+    setMasterPin,
+    unlockMaster,
+    changeMaster,
+    exportBackup,
+    importBackup,
+    safeKey
+  };
+  if (!ready) return /*#__PURE__*/React.createElement("div", {
+    className: "splash"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "spinner"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "var(--disp)",
+      fontSize: 13,
+      letterSpacing: 1
+    }
+  }, "CARGANDO\u2026"));
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, _extends({}, ctx, {
+    view: view
+  })), view === "predict" && /*#__PURE__*/React.createElement(PredictView, ctx), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, ctx), view === "table" && /*#__PURE__*/React.createElement(TableView, ctx), view === "manage" && (isMaster ? /*#__PURE__*/React.createElement(PanelView, _extends({}, ctx, {
+    createPool: createPool,
+    updateScoring: updateScoring,
+    updateComodines: updateComodines,
+    deletePool: deletePool
+  })) : /*#__PURE__*/React.createElement(CuentaView, _extends({}, ctx, {
+    saveMe: saveMe
+  }))), /*#__PURE__*/React.createElement(Nav, {
+    view: view,
+    setView: setView,
+    isMaster: isMaster,
+    pending: isMaster ? pendingCount : 0
+  }), toast && /*#__PURE__*/React.createElement("div", {
+    className: "toast"
+  }, toast), modal === "masterSetup" && /*#__PURE__*/React.createElement(MasterSetupModal, {
+    me: me,
+    saveMe: saveMe,
+    tz: tz,
+    saveTz: saveTz,
+    setMasterPin: setMasterPin,
+    createPool: createPool,
+    hasPools: pools.length > 0,
+    close: () => setModal(null)
+  }), modal === "identity" && /*#__PURE__*/React.createElement(IdentityModal, {
+    me: me,
+    saveMe: saveMe,
+    close: () => setModal(null)
+  }), modal === "tz" && /*#__PURE__*/React.createElement(TzModal, {
+    tz: tz,
+    saveTz: saveTz,
+    close: () => setModal(null)
+  }), modal === "pool" && /*#__PURE__*/React.createElement(PoolPicker, {
+    pools: pools,
+    poolId: poolId,
+    selectPool: selectPool,
+    isMaster: isMaster,
+    goCreate: () => setView("manage"),
+    close: () => setModal(null)
+  }), modal === "join" && pool && /*#__PURE__*/React.createElement(JoinModal, {
+    me: me,
+    pool: pool,
+    gateOn: gateOn,
+    requestJoin: requestJoin,
+    close: () => setModal(null)
+  }), modal === "created" && created && /*#__PURE__*/React.createElement(CreatedModal, {
+    pool: created,
+    close: () => {
+      setModal(null);
+      setCreated(null);
+    }
+  }), modal === "pin" && /*#__PURE__*/React.createElement(PinModal, {
+    masterHash: masterHash,
+    setMasterPin: setMasterPin,
+    unlockMaster: unlockMaster,
+    close: () => setModal(null)
+  }));
+}
+
+/* =========================================================
+   HEADER + NAV
+   ========================================================= */
+function Header({
+  me,
+  tz,
+  pool,
+  setModal,
+  view
+}) {
+  const tzlabel = (TZS.find(t => t[0] === tz) || ["", "Zona"])[1];
+  return /*#__PURE__*/React.createElement("header", {
+    className: "app"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "brandrow"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "logo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ball"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ttl"
+  }, "Quiniela", /*#__PURE__*/React.createElement("small", null, "MUNDIAL 2026"))), /*#__PURE__*/React.createElement("div", {
+    className: "hdrbtns"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "pillbtn",
+    onClick: () => setModal("pool"),
+    title: "Quinielas"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ico"
+  }, pool ? pool.emoji : "➕"), /*#__PURE__*/React.createElement("span", {
+    className: "tx"
+  }, pool ? pool.name : "Quinielas")), /*#__PURE__*/React.createElement("button", {
+    className: "pillbtn",
+    onClick: () => setModal("tz"),
+    title: "Zona horaria"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ico"
+  }, "\uD83D\uDD51")), /*#__PURE__*/React.createElement("button", {
+    className: "pillbtn",
+    onClick: () => setModal("identity"),
+    title: "Tu nombre"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ico"
+  }, me ? "🙋" : "👤")))));
+}
+function Nav({
+  view,
+  setView,
+  isMaster,
+  pending
+}) {
+  const items = [["predict", "🎯", "Pronosticar"], ["calendar", "📅", "Calendario"], ["table", "🏆", "Tabla"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
+  return /*#__PURE__*/React.createElement("nav", {
+    className: "tabs"
+  }, items.map(([k, i, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    className: "tab" + (view === k ? " active" : ""),
+    onClick: () => setView(k)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ti",
+    style: {
+      position: "relative"
+    }
+  }, i, k === "manage" && pending > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "navbadge"
+  }, pending)), /*#__PURE__*/React.createElement("span", null, l))));
+}
+
+/* =========================================================
+   SHARED COMPONENTS
+   ========================================================= */
+function Stepper({
+  value,
+  locked,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "stepper"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "sbtn",
+    disabled: locked || value >= 19,
+    onClick: () => onChange((value ?? 0) + 1)
+  }, "+"), /*#__PURE__*/React.createElement("div", {
+    className: "num"
+  }, value == null ? "–" : value), /*#__PURE__*/React.createElement("button", {
+    className: "sbtn",
+    disabled: locked || value <= 0 || value == null,
+    onClick: () => onChange((value ?? 0) - 1)
+  }, "\u2212"));
+}
+function MatchCard({
+  m,
+  tz,
+  pred,
+  actual,
+  sc,
+  onSet,
+  onClear,
+  getTools,
+  lk
+}) {
+  const locked = lk ? lk(m) : isLocked(m);
+  const dl = dayLabel(m.kickoff, tz);
+  const tools = getTools && m.playable ? getTools(m.id) : null;
+  const opt = {
+    doble: tools && tools.applied.doble,
+    escudo: tools && tools.applied.escudo
+  };
+  const sresult = scoreFull(pred, actual, sc, opt);
+  const hasPred = pred && pred.h != null && pred.a != null;
+  const hasActual = actual && actual.h != null && actual.a != null;
+  const htOpen = tools && tools.htOpen;
+  const tags = [];
+  if (tools && tools.applied.doble) tags.push(/*#__PURE__*/React.createElement("span", {
+    key: "d",
+    className: "cmdtag dbl"
+  }, "\u2716\uFE0F2 Doblar"));
+  if (tools && tools.applied.escudo) tags.push(/*#__PURE__*/React.createElement("span", {
+    key: "e",
+    className: "cmdtag shd"
+  }, "\uD83D\uDEE1 Escudo"));
+  if (pred && pred.ht) tags.push(/*#__PURE__*/React.createElement("span", {
+    key: "h",
+    className: "cmdtag hlf"
+  }, "\xBD 2T"));
+  let badgeLab = "",
+    badgeLvl = 0;
+  if (sresult) {
+    badgeLvl = sresult.exact ? 3 : sresult.outcome ? sresult.base >= sc.gd && sc.useGd ? 2 : 1 : 0;
+    badgeLab = sresult.exact ? "Exacto" : sresult.outcome ? sresult.base >= sc.gd && sc.useGd ? "Dif.goles" : "Acierto" : "Fallaste";
+    if (sresult.halved) badgeLab += " ½";
+    if (sresult.doubled) badgeLab += " ✖️2";
+    if (sresult.shielded) badgeLab = "Escudo 🛡";
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card match"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "match top"
+  }, m.group ? /*#__PURE__*/React.createElement("span", {
+    className: "grp"
+  }, "Grupo ", m.group) : /*#__PURE__*/React.createElement("span", {
+    className: "grp"
+  }, m.stage), /*#__PURE__*/React.createElement("span", {
+    className: "muted2",
+    style: {
+      fontSize: 9,
+      marginLeft: 4,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap"
+    }
+  }, "\xB7 ", m.venue.split(",")[0]), /*#__PURE__*/React.createElement("span", {
+    style: {
+      marginLeft: "auto",
+      flexShrink: 0
+    }
+  }, htOpen ? /*#__PURE__*/React.createElement("span", {
+    className: "chip gold",
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "htdot"
+  }), "2T") : locked ? /*#__PURE__*/React.createElement("span", {
+    className: "chip coral"
+  }, "\uD83D\uDD12") : /*#__PURE__*/React.createElement("span", {
+    className: "chip ghost"
+  }, dl.dow, " ", dl.dnum, " ", fmtTime(m.kickoff, tz)))), m.playable ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "scoreboard"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "team home"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flag"
+  }, tFlag(m.home)), /*#__PURE__*/React.createElement("span", {
+    className: "tname"
+  }, tName(m.home))), /*#__PURE__*/React.createElement("div", {
+    className: "center"
+  }, hasActual && /*#__PURE__*/React.createElement("div", {
+    className: "actual"
+  }, actual.h, "\u2013", actual.a), /*#__PURE__*/React.createElement("div", {
+    className: "ktime"
+  }, fmtTime(m.kickoff, tz)), /*#__PURE__*/React.createElement("div", {
+    className: "kday"
+  }, dl.dow, " ", dl.dnum, " ", dl.mon)), /*#__PURE__*/React.createElement("div", {
+    className: "team away"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "tname"
+  }, tName(m.away)), /*#__PURE__*/React.createElement("span", {
+    className: "flag"
+  }, tFlag(m.away)))), tags.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "0 12px 6px",
+      display: "flex",
+      gap: 4,
+      flexWrap: "wrap",
+      justifyContent: "center"
+    }
+  }, tags), !locked && !htOpen && /*#__PURE__*/React.createElement("div", {
+    className: "scoreboard",
+    style: {
+      paddingTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Stepper, {
+    value: pred ? pred.h : null,
+    locked: locked,
+    onChange: v => onSet(m.id, "h", v)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "vs"
+  }, "VS"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Stepper, {
+    value: pred ? pred.a : null,
+    locked: locked,
+    onChange: v => onSet(m.id, "a", v)
+  }))), locked && !htOpen && /*#__PURE__*/React.createElement("div", {
+    className: "scoreboard",
+    style: {
+      paddingTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "midscore",
+    style: {
+      color: hasPred ? "#fff" : "var(--muted2)"
+    }
+  }, hasPred ? pred.h : "–")), /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, "pron\xF3stico"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "midscore",
+    style: {
+      color: hasPred ? "#fff" : "var(--muted2)"
+    }
+  }, hasPred ? pred.a : "–"))), htOpen && /*#__PURE__*/React.createElement("div", {
+    className: "htpanel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "htdot"
+  }), " ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "var(--gold)"
+    }
+  }, "Entretiempo"), " \u2014 ajusta el 2T (valdr\xE1 la mitad)."), /*#__PURE__*/React.createElement("div", {
+    className: "scoreboard",
+    style: {
+      padding: "0 0 6px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Stepper, {
+    value: pred ? pred.h : null,
+    locked: false,
+    onChange: v => onSet(m.id, "h", v, true)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "vs"
+  }, "VS"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Stepper, {
+    value: pred ? pred.a : null,
+    locked: false,
+    onChange: v => onSet(m.id, "a", v, true)
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "savedline"
+  }, /*#__PURE__*/React.createElement("span", null, !locked && hasPred && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    onClick: () => onClear(m.id)
+  }, "Borrar"), !locked && !hasPred && /*#__PURE__*/React.createElement("span", {
+    className: "muted2"
+  }, "Ponle marcador antes del pitazo"), locked && !hasPred && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#ff9fb0"
+    }
+  }, "Sin pron\xF3stico \u2192 0 pts"), locked && hasPred && !hasActual && /*#__PURE__*/React.createElement("span", {
+    className: "muted2"
+  }, "Esperando resultado\u2026")), sresult && /*#__PURE__*/React.createElement("span", {
+    className: "ptsbadge p" + badgeLvl
+  }, badgeLab, " \xB7 ", sresult.pts, "pts")), tools && tools.enabled && !locked && /*#__PURE__*/React.createElement(ComodinBar, {
+    tools: tools
+  })) : /*#__PURE__*/React.createElement("div", {
+    className: "ko"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 18
+    }
+  }, "\uD83D\uDD2E"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "tname",
+    style: {
+      fontSize: 14
+    }
+  }, m.label), /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, dl.dow, " ", dl.dnum, " ", dl.mon, " \xB7 ", fmtTime(m.kickoff, tz)))));
+}
+function ComodinBar({
+  tools
+}) {
+  const {
+    applied,
+    avail,
+    onToggle,
+    spyData
+  } = tools;
+  const cell = t => {
+    const meta = CMD_META[t];
+    const on = applied[t];
+    const left = avail[t];
+    const disabled = !on && left <= 0;
+    return /*#__PURE__*/React.createElement("button", {
+      key: t,
+      className: "cmd" + (on ? " on " + meta.cls : ""),
+      disabled: disabled,
+      onClick: () => onToggle(t)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "ci"
+    }, meta.icon), /*#__PURE__*/React.createElement("span", null, meta.name), /*#__PURE__*/React.createElement("span", {
+      className: "cn"
+    }, on ? "quitar" : left + " disp"));
+  };
+  const seen = spyData ? spyData.filter(r => r.has) : [];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "cmdbar"
+  }, ["doble", "escudo", "espia"].map(cell), spyData && /*#__PURE__*/React.createElement("div", {
+    className: "spy"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginBottom: 4,
+      fontWeight: 700
+    }
+  }, "\uD83D\uDC40 Rivales:"), seen.length === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "muted2 small"
+  }, "Nadie ha pronosticado a\xFAn."), seen.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.name,
+    className: "spyrow"
+  }, /*#__PURE__*/React.createElement("span", null, r.name), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, r.h, "\u2013", r.a)))));
+}
+function ComodinInfo({
+  poolCmd,
+  myPreds
+}) {
+  if (!poolCmd || poolCmd.enabled === false) return null;
+  const cm = {
+    doble: [],
+    escudo: [],
+    espia: [],
+    ...(myPreds.comodines || {})
+  };
+  const left = t => poolCmd[t] - (cm[t] || []).length;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Tus comodines \uD83C\uDCCF"), /*#__PURE__*/React.createElement("div", {
+    className: "cmdcards"
+  }, ["doble", "escudo", "espia"].map(t => {
+    const meta = CMD_META[t];
+    return /*#__PURE__*/React.createElement("div", {
+      key: t,
+      className: "cmdcard"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ch"
+    }, /*#__PURE__*/React.createElement("span", null, meta.icon), /*#__PURE__*/React.createElement("span", null, meta.name), /*#__PURE__*/React.createElement("span", {
+      className: "cleft"
+    }, left(t), "/", poolCmd[t])), /*#__PURE__*/React.createElement("p", null, meta.desc));
+  })));
+}
+
+/* =========================================================
+   VIEWS
+   ========================================================= */
+function NoPool({
+  setModal,
+  isMaster
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "big"
+  }, "\uD83C\uDFDF\uFE0F"), isMaster ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 18,
+      marginBottom: 6
+    }
+  }, "Crea tu primera quiniela"), /*#__PURE__*/React.createElement("p", {
+    className: "muted"
+  }, "En el Panel puedes crear y configurar quinielas."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 12
+    },
+    onClick: () => setModal("pool")
+  }, "Ver quinielas")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 18,
+      marginBottom: 6
+    }
+  }, "A\xFAn no est\xE1s en ninguna quiniela"), /*#__PURE__*/React.createElement("p", {
+    className: "muted"
+  }, "P\xEDdele al administrador el enlace y el c\xF3digo de invitaci\xF3n."), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost",
+    style: {
+      marginTop: 12
+    },
+    onClick: () => setModal("pin")
+  }, "Soy el administrador"))));
+}
+function PredictView({
+  me,
+  tz,
+  pool,
+  sc,
+  myPreds,
+  myMade,
+  setPrediction,
+  clearPrediction,
+  setChampion,
+  results,
+  setModal,
+  getTools,
+  poolCmd,
+  canPlay,
+  isMember,
+  gateOn,
+  isMaster,
+  reqs,
+  lk,
+  classicMode,
+  tournamentStarted
+}) {
+  if (!pool) return /*#__PURE__*/React.createElement(NoPool, {
+    setModal: setModal,
+    isMaster: isMaster
+  });
+  const upcoming = GROUPS.filter(g => !lk(g));
+  const champLocked = tournamentStarted;
+  const pending = !!(me && (reqs || []).some(r => r.name === me) && !isMember);
+  const byGroup = {};
+  if (classicMode) GROUPS.forEach(g => {
+    (byGroup[g.group] = byGroup[g.group] || []).push(g);
+  });
+  const cardOf = m => /*#__PURE__*/React.createElement(MatchCard, {
+    key: m.id,
+    m: m,
+    tz: tz,
+    sc: sc,
+    getTools: getTools,
+    lk: lk,
+    pred: myPreds.matches[m.id],
+    actual: results.matches[m.id],
+    onSet: setPrediction,
+    onClear: clearPrediction
+  });
+  return /*#__PURE__*/React.createElement("div", null, gateOn && !canPlay && /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card joincard"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ji"
+  }, pending ? "⏳" : "🔐"), pending ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, "Solicitud enviada"), /*#__PURE__*/React.createElement("p", {
+    className: "muted small"
+  }, "Tu solicitud para ", /*#__PURE__*/React.createElement("b", null, pool.emoji, " ", pool.name), " est\xE1 pendiente. El administrador te aprobar\xE1 pronto.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, "\xDAnete a ", pool.emoji, " ", pool.name), /*#__PURE__*/React.createElement("p", {
+    className: "muted small"
+  }, "Esta quiniela es privada. Necesitas el ", /*#__PURE__*/React.createElement("b", null, "c\xF3digo de invitaci\xF3n"), "."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 12
+    },
+    onClick: () => setModal("join")
+  }, "Solicitar unirme")))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "kvs",
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "kv"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "k"
+  }, "Pron\xF3sticos"), /*#__PURE__*/React.createElement("span", {
+    className: "v"
+  }, myMade, /*#__PURE__*/React.createElement("span", {
+    className: "muted",
+    style: {
+      fontSize: 12
+    }
+  }, "/72"))), /*#__PURE__*/React.createElement("div", {
+    className: "kv"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "k"
+  }, classicMode ? "Modo" : "Por jugar"), /*#__PURE__*/React.createElement("span", {
+    className: "v",
+    style: {
+      color: "var(--pitch)",
+      fontSize: classicMode ? 14 : 18
+    }
+  }, classicMode ? "Clásica" : upcoming.length)), /*#__PURE__*/React.createElement("div", {
+    className: "kv"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "k"
+  }, "Campe\xF3n"), /*#__PURE__*/React.createElement("span", {
+    className: "v",
+    style: {
+      fontSize: 14
+    }
+  }, myPreds.champion ? tFlag(myPreds.champion) + " " + tName(myPreds.champion) : "—"))), !me && /*#__PURE__*/React.createElement("button", {
+    className: "btn primary sm",
+    onClick: () => setModal("identity")
+  }, "Pon tu nombre"))), /*#__PURE__*/React.createElement(ComodinInfo, {
+    poolCmd: poolCmd,
+    myPreds: myPreds
+  }), classicMode ? /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Modo cl\xE1sico \xB7 todos los partidos"), tournamentStarted ? /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "big"
+  }, "\uD83D\uDD12"), "El torneo ya empez\xF3, los pron\xF3sticos est\xE1n cerrados.") : /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginBottom: 8
+    }
+  }, "Completa ", /*#__PURE__*/React.createElement("b", null, "todos"), " los partidos antes del primer pitazo."), !tournamentStarted && Object.keys(byGroup).sort().map(gl => /*#__PURE__*/React.createElement("div", {
+    key: gl
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "daybar"
+  }, "Grupo ", gl), byGroup[gl].map(cardOf)))) : /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Pr\xF3ximos partidos"), upcoming.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "big"
+  }, "\uD83C\uDFC1"), "No quedan partidos por pronosticar.") : upcoming.slice(0, 8).map(cardOf), upcoming.length > 8 && /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      textAlign: "center",
+      marginTop: 4
+    }
+  }, "+ ", upcoming.length - 8, " m\xE1s en Calendario")), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Tu campe\xF3n \uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginTop: 0,
+      marginBottom: 8
+    }
+  }, champLocked ? /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "#ff9fb0"
+    }
+  }, "Cerrado") : "Se cierra al iniciar el primer partido.", " Vale ", sc.champion, " pts de desempate."), /*#__PURE__*/React.createElement("select", {
+    className: "bare",
+    value: myPreds.champion || "",
+    disabled: champLocked,
+    onChange: e => setChampion(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "\u2014 Elige una selecci\xF3n \u2014"), Object.keys(TEAMS).map(c => /*#__PURE__*/React.createElement("option", {
+    key: c,
+    value: c
+  }, tFlag(c), " ", tName(c)))))));
+}
+function CalendarView({
+  tz,
+  pool,
+  sc,
+  myPreds,
+  setPrediction,
+  clearPrediction,
+  results,
+  setModal,
+  getTools,
+  lk,
+  isMaster
+}) {
+  if (!pool) return /*#__PURE__*/React.createElement(NoPool, {
+    setModal: setModal,
+    isMaster: isMaster
+  });
+  const [stageF, setStageF] = useState("grupos");
+  const [groupF, setGroupF] = useState("all");
+  const matches = stageF === "grupos" ? GROUPS : ALL.filter(m => !m.playable);
+  const filtered = groupF === "all" ? matches : matches.filter(m => m.group === groupF);
+  const byDay = {};
+  filtered.forEach(m => {
+    const k = dayKey(m.kickoff, tz);
+    (byDay[k] = byDay[k] || []).push(m);
+  });
+  const groups = [...new Set(GROUPS.map(m => m.group))].sort();
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "filterbar"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (stageF === "grupos" ? " active" : ""),
+    onClick: () => setStageF("grupos")
+  }, "Grupos"), /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (stageF === "ko" ? " active" : ""),
+    onClick: () => setStageF("ko")
+  }, "Eliminatorias")), stageF === "grupos" && /*#__PURE__*/React.createElement("div", {
+    className: "filterbar",
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (groupF === "all" ? " active" : ""),
+    onClick: () => setGroupF("all")
+  }, "Todos"), groups.map(g => /*#__PURE__*/React.createElement("button", {
+    key: g,
+    className: "fb" + (groupF === g ? " active" : ""),
+    onClick: () => setGroupF(g)
+  }, g)))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, Object.keys(byDay).sort().map(dk => {
+    const dl = dayLabel(new Date(dk + "T12:00:00Z"), tz);
+    return /*#__PURE__*/React.createElement("div", {
+      key: dk
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "dayhdr"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "dnum"
+    }, dl.dnum), /*#__PURE__*/React.createElement("span", {
+      className: "dtxt"
+    }, dl.dow, " ", dl.mon), /*#__PURE__*/React.createElement("span", {
+      className: "dmeta"
+    }, byDay[dk].length, " partidos")), byDay[dk].map(m => /*#__PURE__*/React.createElement(MatchCard, {
+      key: m.id,
+      m: m,
+      tz: tz,
+      sc: sc,
+      getTools: getTools,
+      lk: lk,
+      pred: myPreds.matches[m.id],
+      actual: results.matches[m.id],
+      onSet: setPrediction,
+      onClear: clearPrediction
+    })));
+  })));
+}
+function TableView({
+  pool,
+  standings,
+  sc,
+  results,
+  setModal,
+  isMaster
+}) {
+  if (!pool) return /*#__PURE__*/React.createElement(NoPool, {
+    setModal: setModal,
+    isMaster: isMaster
+  });
+  if (pool.members.length === 0) return /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "big"
+  }, "\uD83D\uDC65"), "No hay participantes aprobados todav\xEDa."));
+  const top3 = standings.slice(0, 3);
+  const medals = ["🥇", "🥈", "🥉"];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      justifyContent: "center",
+      flexWrap: "wrap",
+      margin: "8px 0 16px"
+    }
+  }, top3.map((p, i) => /*#__PURE__*/React.createElement("div", {
+    key: p.name,
+    className: "card pad",
+    style: {
+      textAlign: "center",
+      flex: 1,
+      minWidth: 80,
+      maxWidth: 140
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26
+    }
+  }, medals[i]), /*#__PURE__*/React.createElement("div", {
+    className: "disp",
+    style: {
+      fontWeight: 800,
+      fontSize: 13,
+      textTransform: "uppercase",
+      marginTop: 4
+    }
+  }, p.name), /*#__PURE__*/React.createElement("div", {
+    className: "mono",
+    style: {
+      fontSize: 20,
+      color: "var(--gold)",
+      fontWeight: 800
+    }
+  }, p.pts), /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, "pts")))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      overflow: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "standings"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      textAlign: "left"
+    }
+  }, "Nombre"), /*#__PURE__*/React.createElement("th", null, "Pts"), /*#__PURE__*/React.createElement("th", null, "Exact"), /*#__PURE__*/React.createElement("th", null, "Acier"), /*#__PURE__*/React.createElement("th", null, "Campn"))), /*#__PURE__*/React.createElement("tbody", null, standings.map((p, i) => /*#__PURE__*/React.createElement("tr", {
+    key: p.name,
+    className: p.isMe ? "me" : ""
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "muted2"
+  }, i + 1), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, p.name)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "var(--gold)"
+    }
+  }, p.pts)), /*#__PURE__*/React.createElement("td", null, p.exact), /*#__PURE__*/React.createElement("td", null, p.outcome), /*#__PURE__*/React.createElement("td", null, p.champion ? tFlag(p.champion) : "", p.champOk ? "✅" : "")))))), /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginTop: 8,
+      fontSize: 11
+    }
+  }, "Desempate: 1) m\xE1s exactos \xB7 2) m\xE1s aciertos \xB7 3) acert\xF3 el campe\xF3n")));
+}
+
+/* ---- CUENTA (no-master) ---- */
+function CuentaView({
+  me,
+  pool,
+  pools,
+  selectPool,
+  saveMe,
+  setModal,
+  isMember
+}) {
+  const [nm, setNm] = useState(me);
+  useEffect(() => setNm(me), [me]);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Tu nombre"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad row",
+    style: {
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: nm,
+    placeholder: "Ej: Mariana\u2026",
+    onChange: e => setNm(e.target.value),
+    style: {
+      flex: 1
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    onClick: () => saveMe(nm)
+  }, "Guardar"))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Quinielas"), pools.length === 0 && /*#__PURE__*/React.createElement("p", {
+    className: "muted small"
+  }, "P\xEDdele al administrador el enlace y el c\xF3digo."), pools.map(p => {
+    const active = pool && pool.id === p.id;
+    const member = p.members.includes(me);
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.id,
+      className: "card pad row between",
+      style: {
+        marginBottom: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 8,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 22
+      }
+    }, p.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "disp",
+      style: {
+        fontWeight: 700,
+        fontSize: 15,
+        textTransform: "uppercase"
+      }
+    }, p.name), /*#__PURE__*/React.createElement("div", {
+      className: "muted small"
+    }, member ? "Participante" : "No estás dentro"))), /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 6
+      }
+    }, !active && /*#__PURE__*/React.createElement("button", {
+      className: "btn sm",
+      onClick: () => selectPool(p.id)
+    }, "Abrir"), active && member && /*#__PURE__*/React.createElement("span", {
+      className: "chip green"
+    }, "Activa"), active && !member && /*#__PURE__*/React.createElement("button", {
+      className: "btn primary sm",
+      onClick: () => setModal("join")
+    }, "Solicitar")));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card joincard"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ji"
+  }, "\uD83D\uDEE1\uFE0F"), /*#__PURE__*/React.createElement("h3", null, "\xBFEres el administrador?"), /*#__PURE__*/React.createElement("p", {
+    className: "muted small"
+  }, "Ingresa tu PIN maestro para administrar."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 10
+    },
+    onClick: () => setModal("pin")
+  }, "Ingresar PIN"))));
+}
+
+/* ---- SCORING HELPERS ---- */
+function ScoringRows({
+  sc
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gap: 7
+    }
+  }, [["⚽", "Resultado básico (1/X/2)", sc.win + "pts"], ["🎯", "Diferencia de goles", sc.gd + "pts"], ["✨", "Marcador exacto", sc.exact + "pts"], ["🏆", "Campeón acertado", sc.champion + "pts"], ["📊", "Bonus diferencia", sc.useGd ? "Activo" : "Inactivo"]].map(([i, t, v]) => /*#__PURE__*/React.createElement("div", {
+    key: t,
+    className: "row between",
+    style: {
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "row",
+    style: {
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", null, i), /*#__PURE__*/React.createElement("span", null, t)), /*#__PURE__*/React.createElement("span", {
+    className: "mono",
+    style: {
+      color: "var(--gold)"
+    }
+  }, v))));
+}
+function ScoringEditor({
+  sc,
+  onSave,
+  onCancel
+}) {
+  const [s, setS] = useState({
+    ...sc
+  });
+  const n = (k, v) => setS({
+    ...s,
+    [k]: Math.max(0, parseInt(v || "0", 10))
+  });
+  return /*#__PURE__*/React.createElement("div", null, [["win", "Resultado básico"], ["gd", "Diferencia de goles"], ["exact", "Marcador exacto"], ["champion", "Campeón acertado"]].map(([k, l]) => /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    key: k,
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("label", null, l), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    type: "number",
+    min: "0",
+    max: "20",
+    value: s[k],
+    onChange: e => n(k, e.target.value)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+      textTransform: "none",
+      letterSpacing: 0
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!s.useGd,
+    onChange: e => setS({
+      ...s,
+      useGd: e.target.checked
+    })
+  }), " Activar bonus de diferencia de goles")), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 8,
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    onClick: () => onSave(s)
+  }, "Guardar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost",
+    onClick: onCancel
+  }, "Cancelar")));
+}
+function ComodinesEditor({
+  cmd,
+  onSave,
+  onCancel
+}) {
+  const [s, setS] = useState({
+    ...DEFAULT_COMODINES,
+    ...cmd
+  });
+  const fld = (k, l) => /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    key: k,
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("label", null, l), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    type: "number",
+    min: "0",
+    max: "10",
+    value: s[k],
+    onChange: e => setS({
+      ...s,
+      [k]: Math.max(0, parseInt(e.target.value || "0", 10))
+    })
+  }));
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+      textTransform: "none",
+      letterSpacing: 0
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: s.enabled !== false,
+    onChange: e => setS({
+      ...s,
+      enabled: e.target.checked
+    })
+  }), " Usar comodines en esta quiniela")), s.enabled !== false && /*#__PURE__*/React.createElement(React.Fragment, null, fld("doble", "✖️2 Doblar (duplica puntos)"), fld("escudo", "🛡️ Escudo (mínimo 1pt)"), fld("espia", "🔍 Espiar (ver rivales)")), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 8,
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    onClick: () => onSave(s)
+  }, "Guardar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost",
+    onClick: onCancel
+  }, "Cancelar")));
+}
+
+/* ---- PANEL (master) ---- */
+function PanelView({
+  pool,
+  pools,
+  tz,
+  results,
+  setResult,
+  clearResult,
+  setResultChampion,
+  setModal,
+  setHTOpen,
+  me,
+  reqs,
+  lk,
+  classicMode,
+  tournamentStarted,
+  approveRequest,
+  rejectRequest,
+  clearRequests,
+  removeMember,
+  updateAccess,
+  changeMaster,
+  exportBackup,
+  importBackup,
+  createPool,
+  updateScoring,
+  updateComodines,
+  deletePool,
+  selectPool,
+  sc,
+  poolCmd
+}) {
+  const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
+  const [cname, setCname] = useState("");
+  const [cemoji, setCemoji] = useState("🏆");
+  const [cmode, setCmode] = useState("dynamic");
+  const [editSc, setEditSc] = useState(false);
+  const [editCmd, setEditCmd] = useState(false);
+  useEffect(() => {
+    if (reqs.length > 0) setTab("requests");
+  }, [reqs.length]);
+  const loaded = GROUPS.filter(g => {
+    const r = results.matches[g.id];
+    return r && r.h != null && r.a != null;
+  }).length;
+  const CreateBox = /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Nombre"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: cname,
+    placeholder: "Familia Alfonzo\u2026",
+    onChange: e => setCname(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "\xCDcono"), /*#__PURE__*/React.createElement("div", {
+    className: "emojigrid"
+  }, POOL_EMOJIS.map(e => /*#__PURE__*/React.createElement("button", {
+    key: e,
+    className: cemoji === e ? "sel" : "",
+    onClick: () => setCemoji(e)
+  }, e)))), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Modo"), /*#__PURE__*/React.createElement("div", {
+    className: "filterbar"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (cmode === "dynamic" ? " active" : ""),
+    onClick: () => setCmode("dynamic")
+  }, "Din\xE1mica"), /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (cmode === "classic" ? " active" : ""),
+    onClick: () => setCmode("classic")
+  }, "Cl\xE1sica")), /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      margin: "5px 0 0"
+    }
+  }, cmode === "dynamic" ? "Cada partido cierra en su pitazo." : "Todo cierra en el primer partido del Mundial.")), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 12,
+      width: "100%"
+    },
+    disabled: !cname.trim(),
+    onClick: () => {
+      createPool(cname, cemoji, false, cmode);
+      setCname("");
+    }
+  }, "Crear quiniela"));
+  if (!pool) return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Crear tu primera quiniela"), CreateBox));
+  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"]];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Panel \xB7 ", pool.emoji, " ", pool.name), /*#__PURE__*/React.createElement("div", {
+    className: "filterbar"
+  }, tabs.map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    className: "fb" + (tab === k ? " active" : ""),
+    onClick: () => setTab(k)
+  }, l)))), tab === "requests" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Solicitudes ", reqs.length > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "chip coral",
+    style: {
+      marginLeft: 6
+    }
+  }, reqs.length)), reqs.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "card pad muted small"
+  }, "No hay solicitudes pendientes.") : /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, reqs.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.name,
+    className: "row between userrow"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "row",
+    style: {
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "\uD83D\uDE4B"), /*#__PURE__*/React.createElement("b", null, r.name)), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn primary sm",
+    onClick: () => approveRequest(r.name)
+  }, "Aprobar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm danger",
+    onClick: () => rejectRequest(r.name)
+  }, "\u2715")))), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      marginTop: 8
+    },
+    onClick: () => {
+      if (confirm("¿Borrar todas?")) clearRequests();
+    }
+  }, "Limpiar todas"))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Participantes (", pool.members.length, ")"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, pool.members.length === 0 && /*#__PURE__*/React.createElement("span", {
+    className: "muted small"
+  }, "A\xFAn no hay participantes."), pool.members.map(nm => /*#__PURE__*/React.createElement("div", {
+    key: nm,
+    className: "row between userrow"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "row",
+    style: {
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u2705"), nm, nm === me && /*#__PURE__*/React.createElement("span", {
+    className: "muted small"
+  }, "(t\xFA)")), nm !== me && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm danger",
+    onClick: () => {
+      if (confirm("¿Retirar a " + nm + "?")) removeMember(nm);
+    }
+  }, "Retirar")))))), tab === "config" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "C\xF3digo de invitaci\xF3n"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row between",
+    style: {
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginBottom: 4
+    }
+  }, "Comparte con la familia"), /*#__PURE__*/React.createElement("div", {
+    className: "mono",
+    style: {
+      fontSize: 28,
+      color: "var(--gold)",
+      letterSpacing: "3px"
+    }
+  }, pool.invite)), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 6,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn sm",
+    onClick: () => {
+      try {
+        navigator.clipboard.writeText(pool.invite);
+      } catch (e) {}
+      flash("Copiado");
+    }
+  }, "Copiar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    onClick: () => {
+      if (confirm("¿Generar nuevo código?")) updateAccess({
+        invite: genCode()
+      });
+    }
+  }, "Nuevo"))), /*#__PURE__*/React.createElement("div", {
+    className: "sep"
+  }), /*#__PURE__*/React.createElement("label", {
+    className: "muted small",
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: pool.gate !== false,
+    onChange: e => updateAccess({
+      gate: e.target.checked
+    })
+  }), "Exigir c\xF3digo + aprobaci\xF3n"))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Modo de juego"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "filterbar"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (!classicMode ? " active" : ""),
+    disabled: tournamentStarted,
+    onClick: () => updateAccess({
+      mode: "dynamic"
+    })
+  }, "Din\xE1mica"), /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (classicMode ? " active" : ""),
+    disabled: tournamentStarted,
+    onClick: () => updateAccess({
+      mode: "classic"
+    })
+  }, "Cl\xE1sica")), /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      margin: "8px 0 0"
+    }
+  }, tournamentStarted && /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "#ff9fb0"
+    }
+  }, "El torneo ya empez\xF3, modo fijo. \xB7 "), classicMode ? "Todos llenan el torneo completo antes del primer partido." : "Cada partido se cierra en su pitazo."))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Puntuaci\xF3n"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, !editSc ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ScoringRows, {
+    sc: sc
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      marginTop: 12
+    },
+    onClick: () => setEditSc(true)
+  }, "Ajustar")) : /*#__PURE__*/React.createElement(ScoringEditor, {
+    sc: sc,
+    onSave: n => {
+      updateScoring(n);
+      setEditSc(false);
+    },
+    onCancel: () => setEditSc(false)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Comodines"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, !editCmd ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gap: 6
+    }
+  }, poolCmd && poolCmd.enabled === false ? /*#__PURE__*/React.createElement("div", {
+    className: "muted"
+  }, "Comodines desactivados.") : ["doble", "escudo", "espia"].map(t => /*#__PURE__*/React.createElement("div", {
+    key: t,
+    className: "row between",
+    style: {
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", null, CMD_META[t].icon, " ", CMD_META[t].name, " \u2014 ", CMD_META[t].desc), /*#__PURE__*/React.createElement("span", {
+    className: "mono",
+    style: {
+      color: "var(--gold)"
+    }
+  }, (poolCmd || DEFAULT_COMODINES)[t], "\xD7")))), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      marginTop: 12
+    },
+    onClick: () => setEditCmd(true)
+  }, "Ajustar")) : /*#__PURE__*/React.createElement(ComodinesEditor, {
+    cmd: poolCmd || DEFAULT_COMODINES,
+    onSave: n => {
+      updateComodines(n);
+      setEditCmd(false);
+    },
+    onCancel: () => setEditCmd(false)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Seguridad"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    onClick: () => {
+      const v = prompt("Nuevo PIN maestro (4-8 dígitos):");
+      if (v && /^[0-9]{4,8}$/.test(v.trim())) changeMaster(v.trim());else if (v != null) alert("Usa 4 a 8 dígitos.");
+    }
+  }, "Cambiar PIN maestro"))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Respaldo"), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn sm",
+    onClick: exportBackup
+  }, "\u2B07\uFE0F Exportar"), /*#__PURE__*/React.createElement("label", {
+    className: "btn ghost sm",
+    style: {
+      cursor: "pointer"
+    }
+  }, "\u2B06\uFE0F Importar", /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "application/json",
+    style: {
+      display: "none"
+    },
+    onChange: e => {
+      const f = e.target.files && e.target.files[0];
+      if (f && confirm("¿Restaurar? Sobrescribe los datos.")) importBackup(f);
+      e.target.value = "";
+    }
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Crear otra quiniela"), CreateBox), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm danger",
+    onClick: () => {
+      if (confirm("¿Eliminar " + pool.name + "? Se borran sus pronósticos.")) deletePool(pool.id);
+    }
+  }, "Eliminar \"", pool.name, "\"")))), tab === "results" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Resultados"), /*#__PURE__*/React.createElement("div", {
+    className: "hint"
+  }, "Carga el ", /*#__PURE__*/React.createElement("b", null, "marcador final real"), " (90' + descuento; pr\xF3rroga/penales ", /*#__PURE__*/React.createElement("b", null, "no"), " suman)."), /*#__PURE__*/React.createElement("div", {
+    className: "card pad row between",
+    style: {
+      marginTop: 10,
+      gap: 8,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "kvs"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "kv"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "k"
+  }, "Cargados"), /*#__PURE__*/React.createElement("span", {
+    className: "v"
+  }, loaded, /*#__PURE__*/React.createElement("span", {
+    className: "muted",
+    style: {
+      fontSize: 12
+    }
+  }, "/72")))), /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      margin: 0,
+      flex: 1,
+      minWidth: 160
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Campe\xF3n real"), /*#__PURE__*/React.createElement("select", {
+    className: "bare",
+    value: results.champion || "",
+    onChange: e => setResultChampion(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "\u2014 Sin definir \u2014"), Object.keys(TEAMS).map(c => /*#__PURE__*/React.createElement("option", {
+    key: c,
+    value: c
+  }, tFlag(c), " ", tName(c))))))), /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, GROUPS.map(m => {
+    const r = results.matches[m.id] || {
+      h: null,
+      a: null
+    };
+    const dl = dayLabel(m.kickoff, tz);
+    const played = lk(m);
+    const htOpen = !!(results.ht && results.ht[m.id]);
+    return /*#__PURE__*/React.createElement("div", {
+      key: m.id,
+      className: "card pad",
+      style: {
+        marginBottom: 8,
+        opacity: played ? 1 : .65
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row between",
+      style: {
+        marginBottom: 8,
+        flexWrap: "wrap",
+        gap: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "muted small"
+    }, "Gr.", m.group, " \xB7 ", dl.dow, " ", dl.dnum, " ", fmtTime(m.kickoff, tz)), /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 5
+      }
+    }, played && /*#__PURE__*/React.createElement("button", {
+      className: "btn sm " + (htOpen ? "gold" : "ghost"),
+      onClick: () => setHTOpen(m.id, !htOpen),
+      style: {
+        fontSize: 10
+      }
+    }, htOpen ? "Cerrar 2T" : "Abrir 2T"), (r.h != null || r.a != null) && /*#__PURE__*/React.createElement("button", {
+      className: "btn ghost sm",
+      style: {
+        fontSize: 10
+      },
+      onClick: () => clearResult(m.id)
+    }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 6,
+        justifyContent: "space-between",
+        alignItems: "center"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 6,
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 20
+      }
+    }, tFlag(m.home)), /*#__PURE__*/React.createElement("span", {
+      className: "tname",
+      style: {
+        fontSize: 13
+      }
+    }, tName(m.home))), /*#__PURE__*/React.createElement("input", {
+      className: "bare mono",
+      style: {
+        width: 44,
+        textAlign: "center",
+        fontWeight: 800,
+        padding: "7px 3px",
+        fontSize: 16
+      },
+      type: "number",
+      min: "0",
+      placeholder: "\u2013",
+      value: r.h == null ? "" : r.h,
+      onChange: e => setResult(m.id, "h", e.target.value)
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "muted"
+    }, ":"), /*#__PURE__*/React.createElement("input", {
+      className: "bare mono",
+      style: {
+        width: 44,
+        textAlign: "center",
+        fontWeight: 800,
+        padding: "7px 3px",
+        fontSize: 16
+      },
+      type: "number",
+      min: "0",
+      placeholder: "\u2013",
+      value: r.a == null ? "" : r.a,
+      onChange: e => setResult(m.id, "a", e.target.value)
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        gap: 6,
+        flex: 1,
+        minWidth: 0,
+        justifyContent: "flex-end"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "tname",
+      style: {
+        fontSize: 13,
+        textAlign: "right"
+      }
+    }, tName(m.away)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 20
+      }
+    }, tFlag(m.away)))));
+  }))));
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+function ModalShell({
+  title,
+  sub,
+  children,
+  close
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "overlay",
+    onClick: e => {
+      if (e.target === e.currentTarget) close && close();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "modal",
+    style: {
+      position: "relative"
+    }
+  }, close && /*#__PURE__*/React.createElement("button", {
+    className: "modal-close",
+    onClick: close
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    className: "modal-title"
+  }, title), sub && /*#__PURE__*/React.createElement("div", {
+    className: "modal-sub"
+  }, sub), children));
+}
+function MasterSetupModal({
+  me,
+  saveMe,
+  tz,
+  saveTz,
+  setMasterPin,
+  createPool,
+  hasPools,
+  close
+}) {
+  const [name, setName] = useState(me);
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [pname, setPname] = useState("Familia Alfonzo");
+  const [emoji, setEmoji] = useState("👨‍👩‍👧‍👦");
+  const [cmode, setCmode] = useState("dynamic");
+  const [err, setErr] = useState("");
+  const clean = v => v.replace(/[^0-9]/g, "").slice(0, 8);
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: hasPools ? "Crea tu PIN maestro 🛡️" : "Bienvenido, eres el administrador ⚽",
+    sub: "Solo t\xFA podr\xE1s crear quinielas y administrar.",
+    close: hasPools ? close : null
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Tu zona horaria"), /*#__PURE__*/React.createElement("select", {
+    className: "bare",
+    value: tz,
+    onChange: e => saveTz(e.target.value)
+  }, TZS.map(([v, l]) => /*#__PURE__*/React.createElement("option", {
+    key: v,
+    value: v
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Tu nombre"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: name,
+    placeholder: "Manuel, Pap\xE1\u2026",
+    onChange: e => setName(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "PIN maestro (4-8 d\xEDgitos, privado)"), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "bare mono",
+    style: {
+      textAlign: "center",
+      letterSpacing: "4px",
+      flex: 1
+    },
+    value: pin,
+    inputMode: "numeric",
+    placeholder: "1234",
+    onChange: e => setPin(clean(e.target.value))
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "bare mono",
+    style: {
+      textAlign: "center",
+      letterSpacing: "4px",
+      flex: 1
+    },
+    value: pin2,
+    inputMode: "numeric",
+    placeholder: "Repite",
+    onChange: e => setPin2(clean(e.target.value))
+  }))), !hasPools && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Nombre de tu primera quiniela"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: pname,
+    onChange: e => setPname(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Modo de juego"), /*#__PURE__*/React.createElement("div", {
+    className: "filterbar"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (cmode === "dynamic" ? " active" : ""),
+    onClick: () => setCmode("dynamic")
+  }, "Din\xE1mica"), /*#__PURE__*/React.createElement("button", {
+    className: "fb" + (cmode === "classic" ? " active" : ""),
+    onClick: () => setCmode("classic")
+  }, "Cl\xE1sica")), /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      margin: "4px 0 0"
+    }
+  }, cmode === "dynamic" ? "Cada partido cierra en su pitazo." : "Todo se llena antes del Mundial.")), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "\xCDcono"), /*#__PURE__*/React.createElement("div", {
+    className: "emojigrid"
+  }, POOL_EMOJIS.map(e => /*#__PURE__*/React.createElement("button", {
+    key: e,
+    className: emoji === e ? "sel" : "",
+    onClick: () => setEmoji(e)
+  }, e))))), err && /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginTop: 8,
+      color: "#ff9fb0",
+      background: "rgba(255,92,121,.08)",
+      borderColor: "rgba(255,92,121,.3)"
+    }
+  }, err), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 16,
+      width: "100%"
+    },
+    disabled: !name.trim() || pin.length < 4 || !hasPools && !pname.trim(),
+    onClick: async () => {
+      if (pin !== pin2) {
+        setErr("Los PIN no coinciden");
+        return;
+      }
+      await saveMe(name);
+      await setMasterPin(pin);
+      if (!hasPools) await createPool(pname, emoji, true, cmode);else close && close();
+    }
+  }, hasPools ? "Guardar PIN maestro" : "Crear mi quiniela"));
+}
+function IdentityModal({
+  me,
+  saveMe,
+  close
+}) {
+  const [name, setName] = useState(me);
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "\xBFQui\xE9n eres?",
+    sub: "Tu nombre identifica tus pron\xF3sticos.",
+    close: close
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: name,
+    placeholder: "Ej: Mariana, T\xEDo Luis\u2026",
+    onChange: e => setName(e.target.value),
+    autoFocus: true,
+    style: {
+      marginTop: 8
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 12,
+      width: "100%"
+    },
+    disabled: !name.trim(),
+    onClick: async () => {
+      await saveMe(name);
+      close();
+    }
+  }, "Guardar"));
+}
+function TzModal({
+  tz,
+  saveTz,
+  close
+}) {
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "Zona horaria \uD83D\uDD51",
+    sub: "Ver\xE1s cada partido en tu hora local.",
+    close: close
+  }, /*#__PURE__*/React.createElement("select", {
+    className: "bare",
+    value: tz,
+    onChange: e => {
+      saveTz(e.target.value);
+      close();
+    },
+    style: {
+      marginTop: 8
+    }
+  }, TZS.map(([v, l]) => /*#__PURE__*/React.createElement("option", {
+    key: v,
+    value: v
+  }, l))));
+}
+function PoolPicker({
+  pools,
+  poolId,
+  selectPool,
+  isMaster,
+  goCreate,
+  close
+}) {
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "Quinielas",
+    sub: isMaster ? "Cambia de grupo o crea uno nuevo." : "Elige la quiniela donde juegas.",
+    close: close
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gap: 6,
+      marginTop: 4
+    }
+  }, pools.map(p => /*#__PURE__*/React.createElement("button", {
+    key: p.id,
+    className: "btn" + (p.id === poolId ? " primary" : " ghost"),
+    style: {
+      justifyContent: "flex-start",
+      gap: 10
+    },
+    onClick: () => {
+      selectPool(p.id);
+      close();
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 20
+    }
+  }, p.emoji), /*#__PURE__*/React.createElement("span", {
+    style: {
+      flex: 1,
+      textAlign: "left"
+    }
+  }, p.name), /*#__PURE__*/React.createElement("span", {
+    className: "muted small"
+  }, p.members.length, "\uD83D\uDC64"))), pools.length === 0 && /*#__PURE__*/React.createElement("p", {
+    className: "muted small"
+  }, "No hay quinielas a\xFAn."), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      marginTop: 4
+    },
+    onClick: () => {
+      goCreate();
+      close();
+    }
+  }, "\u2795 Crear nueva")));
+}
+function JoinModal({
+  me,
+  pool,
+  gateOn,
+  requestJoin,
+  close
+}) {
+  const [name, setName] = useState(me || "");
+  const [code, setCode] = useState("");
+  const [err, setErr] = useState("");
+  const [sent, setSent] = useState(false);
+  if (sent) return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "Solicitud enviada \u2705",
+    close: close
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "muted small",
+    style: {
+      marginTop: 8
+    }
+  }, "El administrador te aprobar\xE1 pronto. Cuando lo haga, recarga la app."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 14,
+      width: "100%"
+    },
+    onClick: close
+  }, "Entendido"));
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "Unirme a " + pool.emoji + " " + pool.name,
+    sub: gateOn ? "Necesitas el código de invitación que te dio el administrador." : "",
+    close: close
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Tu nombre"), /*#__PURE__*/React.createElement("input", {
+    className: "bare",
+    value: name,
+    placeholder: "Ej: Mariana\u2026",
+    onChange: e => setName(e.target.value),
+    autoFocus: true
+  })), gateOn && /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "C\xF3digo de invitaci\xF3n"), /*#__PURE__*/React.createElement("input", {
+    className: "bare mono",
+    style: {
+      letterSpacing: "3px",
+      textTransform: "uppercase"
+    },
+    value: code,
+    placeholder: "Ej: ALF7K2",
+    onChange: e => setCode(e.target.value.toUpperCase())
+  })), err && /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginTop: 8,
+      color: "#ff9fb0",
+      background: "rgba(255,92,121,.08)",
+      borderColor: "rgba(255,92,121,.3)"
+    }
+  }, err), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 14,
+      width: "100%"
+    },
+    disabled: !name.trim(),
+    onClick: async () => {
+      const r = await requestJoin(name, code);
+      if (r.ok) {
+        if (r.already) close();else setSent(true);
+      } else setErr(r.msg || "No se pudo enviar");
+    }
+  }, "Solicitar unirme"));
+}
+function CreatedModal({
+  pool,
+  close
+}) {
+  const [copied, setCopied] = useState(false);
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: "\xA1Quiniela creada! \uD83C\uDF89",
+    sub: "Comparte el c\xF3digo con tu familia.",
+    close: close
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      textAlign: "center",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginBottom: 4
+    }
+  }, "C\xD3DIGO DE INVITACI\xD3N"), /*#__PURE__*/React.createElement("div", {
+    className: "mono",
+    style: {
+      fontSize: 34,
+      color: "var(--gold)",
+      letterSpacing: "4px"
+    }
+  }, pool.invite), /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      marginTop: 8
+    },
+    onClick: () => {
+      try {
+        navigator.clipboard.writeText(pool.invite);
+      } catch (e) {}
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, copied ? "Copiado ✓" : "Copiar código")), /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      fontSize: 11
+    }
+  }, "Publica esta app, manda el ", /*#__PURE__*/React.createElement("b", null, "enlace"), " a la familia junto con este ", /*#__PURE__*/React.createElement("b", null, "c\xF3digo"), ". Cada quien pide unirse y t\xFA los apruebas en ", /*#__PURE__*/React.createElement("b", null, "Panel \u2192 Solicitudes"), "."), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 14,
+      width: "100%"
+    },
+    onClick: close
+  }, "Entendido"));
+}
+function PinModal({
+  masterHash,
+  setMasterPin,
+  unlockMaster,
+  close
+}) {
+  const setup = !masterHash;
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [err, setErr] = useState("");
+  const clean = v => v.replace(/[^0-9]/g, "").slice(0, 8);
+  return /*#__PURE__*/React.createElement(ModalShell, {
+    title: setup ? "Crea tu PIN maestro 🛡️" : "PIN maestro 🛡️",
+    sub: setup ? "Protege tu app con un PIN privado." : "Ingresa tu PIN para administrar.",
+    close: close
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("label", null, setup ? "PIN nuevo (4-8 dígitos)" : "PIN"), /*#__PURE__*/React.createElement("input", {
+    className: "bare mono",
+    style: {
+      fontSize: 22,
+      letterSpacing: "6px",
+      textAlign: "center"
+    },
+    value: pin,
+    inputMode: "numeric",
+    placeholder: "\u2022\u2022\u2022\u2022",
+    onChange: e => setPin(clean(e.target.value)),
+    autoFocus: true
+  })), setup && /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Repite el PIN"), /*#__PURE__*/React.createElement("input", {
+    className: "bare mono",
+    style: {
+      fontSize: 22,
+      letterSpacing: "6px",
+      textAlign: "center"
+    },
+    value: pin2,
+    inputMode: "numeric",
+    placeholder: "\u2022\u2022\u2022\u2022",
+    onChange: e => setPin2(clean(e.target.value))
+  })), err && /*#__PURE__*/React.createElement("div", {
+    className: "hint",
+    style: {
+      marginTop: 8,
+      color: "#ff9fb0",
+      background: "rgba(255,92,121,.08)",
+      borderColor: "rgba(255,92,121,.3)"
+    }
+  }, err), /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      marginTop: 14,
+      width: "100%"
+    },
+    disabled: pin.length < 4,
+    onClick: async () => {
+      if (setup) {
+        if (pin !== pin2) {
+          setErr("Los PIN no coinciden");
+          return;
+        }
+        await setMasterPin(pin);
+        close();
+      } else {
+        const ok = await unlockMaster(pin);
+        if (ok) close();else setErr("PIN incorrecto.");
+      }
+    }
+  }, setup ? "Guardar PIN" : "Desbloquear"));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
+</script>
+
+</body>
+</html>

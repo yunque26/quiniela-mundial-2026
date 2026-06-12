@@ -318,6 +318,56 @@ select.bare{-webkit-appearance:none;appearance:none}
   font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
 /* ===== LOADING ===== */
+/* 5-tab nav: slightly smaller labels */
+@media(max-width:440px){.tab{font-size:9px;padding:8px 2px}.tab .ti{font-size:18px}}
+
+/* ===== HOME VIEW ===== */
+.msg-pin{
+  background:linear-gradient(135deg,var(--navy2),var(--panel2));
+  border:1px solid var(--line2);border-radius:16px;
+  padding:14px 14px 12px;margin-bottom:10px;position:relative;overflow:hidden;
+}
+.msg-pin::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pitch),var(--gold))}
+.msg-emoji{font-size:28px;margin-bottom:6px}
+.msg-text{font-size:15px;font-weight:500;line-height:1.45;color:var(--text);margin-bottom:8px}
+.msg-meta{font-size:11px;color:var(--muted2)}
+.msg-history-item{padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
+.msg-history-item:last-child{border-bottom:none}
+.msg-hist-emoji{font-size:18px;flex-shrink:0;margin-top:1px}
+.msg-hist-body{flex:1;min-width:0}
+.msg-hist-text{font-size:13px;color:var(--text);line-height:1.4}
+.msg-hist-meta{font-size:10px;color:var(--muted2);margin-top:2px}
+
+/* Stat cards row */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-card{background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);
+  border-radius:12px;padding:10px 8px;text-align:center}
+.stat-card .si{font-size:20px;margin-bottom:2px}
+.stat-card .sl{font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted2);font-weight:700}
+.stat-card .sv{font-family:var(--disp);font-weight:800;font-size:14px;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.stat-card .sp{font-family:var(--mono);font-weight:800;font-size:11px;color:var(--gold)}
+
+/* Next match card */
+.next-match{background:linear-gradient(135deg,rgba(21,168,90,.08),rgba(21,168,90,.03));
+  border:1px solid rgba(21,168,90,.25);border-radius:14px;padding:12px;margin-bottom:10px}
+.nm-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--pitch);font-weight:700;margin-bottom:8px}
+.nm-teams{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px}
+.nm-flag{font-size:28px}
+.nm-vs{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--muted2)}
+.nm-tname{font-family:var(--disp);font-weight:700;font-size:14px;text-transform:uppercase;
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm-tname.home{text-align:right}
+.nm-tname.away{text-align:left}
+.nm-time{text-align:center;font-size:12px;color:var(--muted)}
+
+/* Compose box */
+.compose{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.compose-emojis{display:flex;gap:6px;flex-wrap:wrap}
+.compose-emojis button{font-size:18px;background:rgba(255,255,255,.04);border:1px solid var(--line2);
+  border-radius:8px;padding:4px 7px;cursor:pointer}
+.compose-emojis button.sel{border-color:var(--gold);background:rgba(246,197,68,.1)}
+
 .splash{display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:100dvh;gap:16px;color:var(--muted)}
 .spinner{width:36px;height:36px;border:3px solid var(--line);
@@ -330,7 +380,7 @@ select.bare{-webkit-appearance:none;appearance:none}
 
 <!-- React -->
 
-<!-- Load order: Firebase → React → App (all synchronous, guaranteed order) -->
+<!-- Scripts: Firebase → React → App -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -678,12 +728,13 @@ function App() {
   const [preds, setPreds] = useState({});
 
   // UI
-  const [view, setView] = useState("predict");
+  const [view, setView] = useState("home");
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [created, setCreated] = useState(null);
+  const [messages, setMessages] = useState([]);
   const toastRef = useRef(null);
   const unsubRef = useRef({});
   function flash(msg) {
@@ -749,10 +800,20 @@ function App() {
     const u3 = fbListen("master", v => {
       if (v) setMasterHash(v);
     });
+    // messages listener
+    const u4 = fbListen("messages", v => {
+      if (!v) {
+        setMessages([]);
+        return;
+      }
+      const arr = Array.isArray(v) ? v : Object.values(v);
+      setMessages(arr.sort((a, b) => b.ts - a.ts));
+    });
     return () => {
       u1();
       u2();
       u3();
+      u4();
     };
   }, [ready]);
 
@@ -1328,6 +1389,27 @@ function App() {
     ...(pool && pool.comodines || {})
   };
   const pendingCount = reqs.length;
+
+  /* ---- MESSAGES ---- */
+  async function sendMessage(text, emoji) {
+    if (!text || !text.trim()) return;
+    const msg = {
+      id: uid(),
+      text: text.trim(),
+      emoji: emoji || "📢",
+      author: me || "Admin",
+      ts: Date.now()
+    };
+    const cur = (await fbGet("messages")) || [];
+    const arr = Array.isArray(cur) ? cur : Object.values(cur);
+    await fbSet("messages", [...arr, msg]);
+    flash("Mensaje publicado");
+  }
+  async function deleteMessage(msgId) {
+    const cur = (await fbGet("messages")) || [];
+    const arr = (Array.isArray(cur) ? cur : Object.values(cur)).filter(m => m.id !== msgId);
+    await fbSet("messages", arr);
+  }
   const ctx = {
     me,
     tz,
@@ -1363,6 +1445,9 @@ function App() {
     lk,
     classicMode,
     tournamentStarted,
+    messages,
+    sendMessage,
+    deleteMessage,
     approveRequest,
     rejectRequest,
     clearRequests,
@@ -1388,7 +1473,7 @@ function App() {
   }, "CARGANDO\u2026"));
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, _extends({}, ctx, {
     view: view
-  })), view === "predict" && /*#__PURE__*/React.createElement(PredictView, ctx), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, ctx), view === "table" && /*#__PURE__*/React.createElement(TableView, ctx), view === "manage" && (isMaster ? /*#__PURE__*/React.createElement(PanelView, _extends({}, ctx, {
+  })), view === "home" && /*#__PURE__*/React.createElement(HomeView, ctx), view === "predict" && /*#__PURE__*/React.createElement(PredictView, ctx), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, ctx), view === "table" && /*#__PURE__*/React.createElement(TableView, ctx), view === "manage" && (isMaster ? /*#__PURE__*/React.createElement(PanelView, _extends({}, ctx, {
     createPool: createPool,
     updateScoring: updateScoring,
     updateComodines: updateComodines,
@@ -1497,7 +1582,7 @@ function Nav({
   isMaster,
   pending
 }) {
-  const items = [["predict", "🎯", "Pronosticar"], ["calendar", "📅", "Calendario"], ["table", "🏆", "Tabla"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
+  const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Pronosticar"], ["calendar", "📅", "Calendario"], ["table", "🏆", "Tabla"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
   return /*#__PURE__*/React.createElement("nav", {
     className: "tabs"
   }, items.map(([k, i, l]) => /*#__PURE__*/React.createElement("button", {
@@ -1844,6 +1929,343 @@ function ComodinInfo({
 /* =========================================================
    VIEWS
    ========================================================= */
+/* =========================================================
+   HOME VIEW
+   ========================================================= */
+const MSG_EMOJIS = ["📢", "⚽", "🏆", "🎉", "🔥", "👀", "💬", "🥳", "😬", "🎯", "🛡️", "⏰"];
+function fmtRelTime(ts) {
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "ahora";
+  if (m < 60) return m + "min";
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + "h";
+  return Math.floor(h / 24) + "d";
+}
+function HomeView({
+  pool,
+  standings,
+  results,
+  messages,
+  sendMessage,
+  deleteMessage,
+  isMaster,
+  tz,
+  me,
+  setView,
+  reqs,
+  lk,
+  preds,
+  safeKey
+}) {
+  const [composing, setComposing] = useState(false);
+  const [msgText, setMsgText] = useState("");
+  const [msgEmoji, setMsgEmoji] = useState("📢");
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Pinned = most recent message
+  const pinned = messages[0] || null;
+  const history = messages.slice(1);
+
+  // Stats
+  const leader = standings[0] || null;
+  const last = standings.length > 1 ? standings[standings.length - 1] : null;
+  const myPos = me ? standings.findIndex(s => s.name === me) + 1 : 0;
+
+  // Next match
+  const nextMatch = GROUPS.find(g => !lk(g));
+  async function handleSend() {
+    if (!msgText.trim()) return;
+    await sendMessage(msgText, msgEmoji);
+    setMsgText("");
+    setComposing(false);
+  }
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row between",
+    style: {
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: 0
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "Tabl\xF3n"), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "btn primary sm",
+    onClick: () => setComposing(v => !v)
+  }, composing ? "Cancelar" : "+ Mensaje")), isMaster && composing && /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "compose-emojis"
+  }, MSG_EMOJIS.map(e => /*#__PURE__*/React.createElement("button", {
+    key: e,
+    className: msgEmoji === e ? "sel" : "",
+    onClick: () => setMsgEmoji(e)
+  }, e))), /*#__PURE__*/React.createElement("textarea", {
+    className: "bare",
+    rows: 3,
+    style: {
+      marginTop: 8,
+      resize: "none",
+      lineHeight: 1.4
+    },
+    placeholder: "Escribe tu mensaje aqu\xED\u2026",
+    value: msgText,
+    onChange: e => setMsgText(e.target.value)
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "row",
+    style: {
+      gap: 8,
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn primary",
+    style: {
+      flex: 1
+    },
+    disabled: !msgText.trim(),
+    onClick: handleSend
+  }, "Publicar"))), !pinned && /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      textAlign: "center",
+      padding: "24px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32,
+      marginBottom: 6
+    }
+  }, "\uD83D\uDCED"), /*#__PURE__*/React.createElement("div", {
+    className: "muted small"
+  }, "A\xFAn no hay mensajes.", isMaster ? " Publica el primero arriba." : "")), pinned && /*#__PURE__*/React.createElement("div", {
+    className: "msg-pin"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "msg-emoji"
+  }, pinned.emoji), /*#__PURE__*/React.createElement("div", {
+    className: "msg-text"
+  }, pinned.text), /*#__PURE__*/React.createElement("div", {
+    className: "row between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "msg-meta"
+  }, pinned.author, " \xB7 ", fmtRelTime(pinned.ts)), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      fontSize: 10,
+      padding: "3px 7px"
+    },
+    onClick: () => deleteMessage(pinned.id)
+  }, "\u2715 Borrar"))), history.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginTop: 0
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      width: "100%",
+      marginBottom: showHistory ? 10 : 0
+    },
+    onClick: () => setShowHistory(v => !v)
+  }, showHistory ? "Ocultar" : "Ver", " historial (", history.length, ")"), showHistory && history.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    className: "msg-history-item"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "msg-hist-emoji"
+  }, m.emoji), /*#__PURE__*/React.createElement("div", {
+    className: "msg-hist-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "msg-hist-text"
+  }, m.text), /*#__PURE__*/React.createElement("div", {
+    className: "row between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "msg-hist-meta"
+  }, m.author, " \xB7 ", fmtRelTime(m.ts)), isMaster && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {
+      fontSize: 10,
+      padding: "2px 6px"
+    },
+    onClick: () => deleteMessage(m.id)
+  }, "\u2715"))))))), standings.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
+    className: "bar"
+  }), "En vivo"), /*#__PURE__*/React.createElement("div", {
+    className: "stat-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-card",
+    style: {
+      borderColor: "rgba(246,197,68,.3)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "si"
+  }, "\uD83E\uDD47"), /*#__PURE__*/React.createElement("div", {
+    className: "sl"
+  }, "L\xEDder"), /*#__PURE__*/React.createElement("div", {
+    className: "sv"
+  }, leader?.name || "—"), /*#__PURE__*/React.createElement("div", {
+    className: "sp"
+  }, leader?.pts ?? 0, "pts")), myPos > 0 && me !== leader?.name ? /*#__PURE__*/React.createElement("div", {
+    className: "stat-card",
+    style: {
+      borderColor: "rgba(21,168,90,.3)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "si"
+  }, "\uD83D\uDE4B"), /*#__PURE__*/React.createElement("div", {
+    className: "sl"
+  }, "T\xFA"), /*#__PURE__*/React.createElement("div", {
+    className: "sv"
+  }, "#", myPos), /*#__PURE__*/React.createElement("div", {
+    className: "sp"
+  }, standings[myPos - 1]?.pts ?? 0, "pts")) : /*#__PURE__*/React.createElement("div", {
+    className: "stat-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "si"
+  }, "\uD83D\uDC65"), /*#__PURE__*/React.createElement("div", {
+    className: "sl"
+  }, "Jugadores"), /*#__PURE__*/React.createElement("div", {
+    className: "sv"
+  }, standings.length), /*#__PURE__*/React.createElement("div", {
+    className: "sp"
+  }, "\xA0")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-card",
+    style: {
+      borderColor: "rgba(255,92,121,.2)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "si"
+  }, "\uD83D\uDE2C"), /*#__PURE__*/React.createElement("div", {
+    className: "sl"
+  }, "\xDAltimo"), /*#__PURE__*/React.createElement("div", {
+    className: "sv"
+  }, last?.name || "—"), /*#__PURE__*/React.createElement("div", {
+    className: "sp"
+  }, last?.pts ?? 0, "pts")))), nextMatch && /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "next-match"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "nm-label"
+  }, "\u26BD Pr\xF3ximo partido"), /*#__PURE__*/React.createElement("div", {
+    className: "nm-teams"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "nm-tname home"
+  }, tName(nextMatch.home)), /*#__PURE__*/React.createElement("span", {
+    className: "nm-flag"
+  }, tFlag(nextMatch.home)), /*#__PURE__*/React.createElement("span", {
+    className: "nm-vs"
+  }, "VS"), /*#__PURE__*/React.createElement("span", {
+    className: "nm-flag"
+  }, tFlag(nextMatch.away)), /*#__PURE__*/React.createElement("span", {
+    className: "nm-tname away"
+  }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
+    className: "nm-time"
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), !nextMatch && /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      textAlign: "center",
+      padding: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32
+    }
+  }, "\uD83C\uDFC1"), /*#__PURE__*/React.createElement("div", {
+    className: "muted small",
+    style: {
+      marginTop: 6
+    }
+  }, "Fase de grupos finalizada"))), /*#__PURE__*/React.createElement("div", {
+    className: "section",
+    style: {
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      padding: "14px",
+      flexDirection: "column",
+      gap: 4,
+      height: "auto"
+    },
+    onClick: () => setView("predict")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 22
+    }
+  }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12
+    }
+  }, "Pronosticar")), /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      padding: "14px",
+      flexDirection: "column",
+      gap: 4,
+      height: "auto"
+    },
+    onClick: () => setView("table")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 22
+    }
+  }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12
+    }
+  }, "Ver tabla")), /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      padding: "14px",
+      flexDirection: "column",
+      gap: 4,
+      height: "auto"
+    },
+    onClick: () => setView("calendar")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 22
+    }
+  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12
+    }
+  }, "Calendario")), /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      padding: "14px",
+      flexDirection: "column",
+      gap: 4,
+      height: "auto"
+    },
+    onClick: () => setView("manage")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 22
+    }
+  }, "\uD83D\uDC64"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12
+    }
+  }, "Mi cuenta")))));
+}
 function NoPool({
   setModal,
   isMaster
@@ -1910,7 +2332,7 @@ function PredictView({
     isMaster: isMaster
   });
   const upcoming = GROUPS.filter(g => !lk(g));
-  const champLocked = tournamentStarted;
+  const champLocked = !!results.champion;
   const pending = !!(me && (reqs || []).some(r => r.name === me) && !isMember);
   const byGroup = {};
   if (classicMode) GROUPS.forEach(g => {
@@ -3475,6 +3897,5 @@ function PinModal({
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 </script>
-
 </body>
 </html>

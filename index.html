@@ -1837,7 +1837,7 @@ function Nav({
   newMsgCount,
   onHome
 }) {
-  const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Predict"], ["flash", "⚡", "Flash"], ["stats", "📊", "Stats"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
+  const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Pronos"], ["flash", "⚡", "Flash"], ["stats", "📊", "Stats"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
   function handleTab(k) {
     if (k === "home" && onHome) onHome();
     setView(k);
@@ -2591,7 +2591,7 @@ function HomeView({
       gap: 4,
       height: "auto"
     },
-    onClick: () => setView("predict")
+    onClick: () => { setView("predict"); window.scrollTo(0,0); }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 22
@@ -2608,7 +2608,7 @@ function HomeView({
       gap: 4,
       height: "auto"
     },
-    onClick: () => setView("table")
+    onClick: () => { setView("table"); window.scrollTo(0,0); }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 22
@@ -2625,7 +2625,7 @@ function HomeView({
       gap: 4,
       height: "auto"
     },
-    onClick: () => setView("calendar")
+    onClick: () => { setView("calendar"); window.scrollTo(0,0); }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 22
@@ -2642,7 +2642,7 @@ function HomeView({
       gap: 4,
       height: "auto"
     },
-    onClick: () => setView("manage")
+    onClick: () => { setView("manage"); window.scrollTo(0,0); }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 22

@@ -1841,6 +1841,7 @@ function Nav({
   function handleTab(k) {
     if (k === "home" && onHome) onHome();
     setView(k);
+    window.scrollTo(0, 0);
   }
   return /*#__PURE__*/React.createElement("nav", {
     className: "tabs"

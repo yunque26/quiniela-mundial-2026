@@ -321,7 +321,14 @@ select.bare{-webkit-appearance:none;appearance:none}
 /* 6-tab nav: smaller labels */
 @media(max-width:440px){.tab{font-size:8.5px;padding:7px 1px}.tab .ti{font-size:16px}}
 
-/* ===== FLASH BETS ===== */
+/* ===== MURO DE LA VERGÜENZA ===== */
+.muro-card{background:linear-gradient(135deg,rgba(255,92,121,.1),rgba(255,92,121,.03));border:1px solid rgba(255,92,121,.4);border-radius:16px;padding:16px;margin-bottom:10px;text-align:center;position:relative;overflow:hidden}
+.muro-title{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--coral);margin-bottom:10px}
+.muro-trophy{font-size:52px;margin-bottom:6px;display:block;animation:wobble 2s infinite}
+.muro-name{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;margin-bottom:4px}
+.muro-pts{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.muro-msg{font-size:11px;color:var(--coral);margin-top:8px;font-style:italic}
+@keyframes wobble{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .flash-card{background:linear-gradient(135deg,rgba(255,92,121,.07),rgba(255,92,121,.02));border:1px solid rgba(255,92,121,.3);border-radius:14px;padding:14px;margin-bottom:10px;position:relative}
 .flash-card.open{border-color:rgba(246,197,68,.4);background:linear-gradient(135deg,rgba(246,197,68,.08),rgba(246,197,68,.02))}
 .flash-card.resolved{border-color:rgba(21,168,90,.3);background:linear-gradient(135deg,rgba(21,168,90,.07),rgba(21,168,90,.02))}
@@ -2451,7 +2458,17 @@ function HomeView({
     className: "nm-tname away"
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), /*#__PURE__*/React.createElement("div", {
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
+    /*#__PURE__*/React.createElement("div", {className:"muro-card"},
+      /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro de la Vergüenza"),
+      /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
+      /*#__PURE__*/React.createElement("div", {className:"muro-name"}, last.name+(last.name===me?" (tú 😬)":"")),
+      /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, last.pts," pts · Puesto #"+standings.length+" de "+standings.length),
+      /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, last.name===me
+        ? "😬 ¡Animate! Todavía hay tiempo para remontar..."
+        : "😂 ¡"+last.name+" necesita un milagro futbolero!")
+    )
+  ), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "row between",
@@ -3028,7 +3045,13 @@ function TableView({
       marginTop: 8,
       fontSize: 11
     }
-  }, "Desempate: 1) m\xE1s exactos \xB7 2) m\xE1s aciertos \xB7 3) acert\xF3 el campe\xF3n")));
+  }, "Desempate: 1) m\xE1s exactos \xB7 2) m\xE1s aciertos \xB7 3) acert\xF3 el campe\xF3n"), standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"muro-card",style:{marginTop:12}},
+    /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro de la Vergüenza"),
+    /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
+    /*#__PURE__*/React.createElement("div", {className:"muro-name"}, standings[standings.length-1].name),
+    /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, standings[standings.length-1].pts," pts · Último lugar 😬"),
+    /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, "¡"+standings[standings.length-1].name+" necesita un milagro futbolero! 😂")
+  )));
 }
 
 /* ---- CUENTA (no-master) ---- */

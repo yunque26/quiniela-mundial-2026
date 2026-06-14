@@ -394,6 +394,15 @@ select.bare{-webkit-appearance:none;appearance:none}
 .mvp-detail{font-size:11px;color:var(--muted);margin-top:3px}
 .mvp-pts{font-family:var(--mono);font-weight:800;font-size:28px;color:var(--gold)}
 
+/* ===== CARTA DEL DÍA ===== */
+.carta-card{background:linear-gradient(135deg,rgba(99,179,237,.1),rgba(99,179,237,.02));border:1px solid rgba(99,179,237,.35);border-radius:16px;padding:14px;margin-bottom:10px}
+.carta-title{font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#63b3ed;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.carta-emoji{font-size:30px;flex-shrink:0}
+.carta-row{display:flex;gap:10px;align-items:flex-start}
+.carta-text{font-size:13px;line-height:1.5;color:var(--text)}
+.carta-date{font-size:9px;color:var(--muted2);margin-top:6px;text-align:right}
+.carta-preview{background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:12px;padding:12px;margin:10px 0;display:flex;gap:10px;align-items:flex-start}
+
 /* ===== HOME VIEW ===== */
 .msg-pin{
   background:linear-gradient(135deg,var(--navy2),var(--panel2));
@@ -561,6 +570,106 @@ const KOS = KO_RAW.map(r => ({
 }));
 const ALL = [...GROUPS, ...KOS].sort((a, b) => a.kickoff - b.kickoff);
 const FIRST_KICKOFF = GROUPS[0].kickoff;
+const FINAL_KICKOFF = ALL[ALL.length - 1].kickoff;
+
+/* =========================================================
+   CARTA DEL DÍA — datos curiosos generator
+   ========================================================= */
+const CARTA_STATIC = [
+  {emoji:"🌎", text:"El primer Mundial se jugó en 1930, en Uruguay, con solo 13 selecciones participantes."},
+  {emoji:"🇧🇷", text:"Brasil es la única selección que ha disputado todas las ediciones del Mundial."},
+  {emoji:"🏟️", text:"El Mundial 2026 es el primero con 48 selecciones y 104 partidos en total — el más extenso de la historia."},
+  {emoji:"🇲🇽", text:"El Estadio Azteca se convierte en el primer estadio en albergar partidos de tres Mundiales distintos: 1970, 1986 y 2026."},
+  {emoji:"⚡", text:"El gol más rápido en la historia de los Mundiales se marcó a los 11 segundos (Corea del Sur vs Turquía, 2002)."},
+  {emoji:"👑", text:"Pelé es el único futbolista en levantar 3 Copas del Mundo: 1958, 1962 y 1970."},
+  {emoji:"🐙", text:"Alemania, Brasil, Italia, Argentina, Uruguay y Francia son las únicas selecciones campeonas múltiples del Mundial."},
+  {emoji:"🥅", text:"Just Fontaine sigue siendo el máximo goleador de un solo Mundial, con 13 goles en Suecia 1958."},
+  {emoji:"🎥", text:"México 1970 fue el primer Mundial transmitido en color a nivel mundial."},
+  {emoji:"🇭🇷", text:"Croacia jugó su primera final de Mundial en 2018, cayendo ante Francia."},
+  {emoji:"🤝", text:"La tanda de penales se usó por primera vez para definir un partido de Mundial en España 1982."},
+  {emoji:"🌍", text:"Qatar 2022 fue el primer Mundial jugado en noviembre-diciembre debido al clima del Medio Oriente."},
+  {emoji:"🇦🇷", text:"Argentina es la selección que más finales de Mundial ha disputado en este siglo: 2014 y 2022."},
+  {emoji:"🦵", text:"La 'Mano de Dios' de Maradona ocurrió en cuartos de final del Mundial de México 1986."},
+  {emoji:"🏆", text:"El Mundial 2026 se juega por primera vez en tres países anfitriones: Canadá, México y Estados Unidos."},
+];
+
+function getCartaCandidate(results, now) {
+  const dynamic = [];
+
+  // Goals so far + comparison to 2022
+  const played = GROUPS.filter(g => {
+    const r = results.matches?.[g.id];
+    return r && r.h != null && r.a != null;
+  });
+  if (played.length > 0) {
+    let totalGoals = 0;
+    played.forEach(g => { const r = results.matches[g.id]; totalGoals += (r.h||0)+(r.a||0); });
+    const avg = (totalGoals / played.length);
+    const avg2022 = 2.69;
+    const diff = avg - avg2022;
+    const pct = Math.abs(Math.round((diff/avg2022)*100));
+    dynamic.push({emoji:"⚽", text:
+      `Van ${totalGoals} goles en ${played.length} partido${played.length!==1?"s":""} del Mundial 2026 — promedio de ${avg.toFixed(2)} por partido. `
+      + (diff >= 0
+        ? `Eso es ${pct}% más goleador que el promedio de Qatar 2022 (2.69 por partido).`
+        : `Eso es ${pct}% menos goleador que el promedio de Qatar 2022 (2.69 por partido).`)
+    });
+
+    // Highest scoring match so far
+    let best = null;
+    played.forEach(g => {
+      const r = results.matches[g.id];
+      const total = (r.h||0)+(r.a||0);
+      if (!best || total > best.total) best = {g, r, total};
+    });
+    if (best && best.total >= 3) {
+      dynamic.push({emoji:"🔥", text:
+        `El partido más goleador hasta ahora: ${tName(best.g.home)} ${best.r.h}-${best.r.a} ${tName(best.g.away)}, con ${best.total} goles.`
+      });
+    }
+
+    // Clean sheets count
+    const cleanSheets = played.filter(g => { const r=results.matches[g.id]; return r.h===0||r.a===0; }).length;
+    if (cleanSheets > 0) {
+      dynamic.push({emoji:"🧱", text:
+        `${cleanSheets} de ${played.length} partidos jugados terminaron con al menos un equipo en cero.`
+      });
+    }
+  }
+
+  // Days since tournament started
+  const daysSinceStart = Math.floor((now - FIRST_KICKOFF.getTime()) / 86400000);
+  if (daysSinceStart >= 0) {
+    dynamic.push({emoji:"📅", text:
+      `Llevamos ${daysSinceStart} día${daysSinceStart!==1?"s":""} desde el pitazo inicial del Mundial 2026.`
+    });
+  } else {
+    const daysToStart = Math.abs(daysSinceStart);
+    dynamic.push({emoji:"⏳", text:
+      `Faltan ${daysToStart} día${daysToStart!==1?"s":""} para el pitazo inicial del Mundial 2026.`
+    });
+  }
+
+  // Days until final
+  const daysToFinal = Math.ceil((FINAL_KICKOFF.getTime() - now) / 86400000);
+  if (daysToFinal > 0) {
+    dynamic.push({emoji:"🏁", text:
+      `Faltan ${daysToFinal} día${daysToFinal!==1?"s":""} para la gran final del Mundial 2026 en Nueva York/NJ.`
+    });
+  }
+
+  // Days since the very first World Cup ever (13 July 1930)
+  const firstEverWC = new Date("1930-07-13T00:00:00Z");
+  const yearsSinceFirst = ((now - firstEverWC.getTime()) / (365.25*86400000)).toFixed(0);
+  dynamic.push({emoji:"🕰️", text:
+    `Han pasado ${yearsSinceFirst} años desde el primer partido de la historia de los Mundiales (Uruguay 1930).`
+  });
+
+  const pool = [...CARTA_STATIC, ...dynamic];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+
 const TZS = [["America/Santiago", "🇨🇱 Chile (Santiago)"], ["America/Caracas", "🇻🇪 Venezuela (Caracas)"], ["America/Bogota", "🇨🇴 Colombia (Bogotá)"], ["America/Mexico_City", "🇲🇽 México (CDMX)"], ["America/New_York", "🇺🇸 Este (NY/Miami)"], ["America/Chicago", "🇺🇸 Centro (Dallas)"], ["America/Los_Angeles", "🇺🇸 Pacífico (LA)"], ["Europe/Madrid", "🇪🇸 España (Madrid)"]];
 const POOL_EMOJIS = ["🏆", "⚽", "👨‍👩‍👧‍👦", "🏢", "🎉", "🔥", "🥇", "🦁", "🐉", "🌎", "🍻", "🎯"];
 const DEFAULT_SCORING = {
@@ -811,6 +920,7 @@ function App() {
   const [generalMessages, setGeneralMessages] = useState([]);
   const [flashBets, setFlashBets] = useState([]);
   const [flashVotes, setFlashVotes] = useState({});
+  const [carta, setCarta] = useState(null);
   // Track last-seen timestamp for general messages (per device)
   const [lastSeenGeneral, setLastSeenGeneral] = useState(() => parseInt(localStorage.getItem("q26:lastSeenGeneral") || "0", 10));
   // Push notification subscription state
@@ -913,6 +1023,8 @@ function App() {
     });
     // flash votes listener
     const u7flash = fbListen("flashvotes", v => setFlashVotes(v || {}));
+    // carta del día listener
+    const u8carta = fbListen("carta", v => setCarta(v || null));
     // notifications listener — shows push to any open tab that has permission
     const u6 = fbListen("notifications", v => {
       if (!v || Notification.permission !== "granted") return;
@@ -930,7 +1042,7 @@ function App() {
       }
     });
     return () => {
-      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash();
+      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta();
     };
   }, [ready]);
 
@@ -1458,7 +1570,18 @@ function App() {
     // every device including this one, to avoid duplicate notifications.
   }
 
-  // Detect new leader in standings and notify everyone
+  /* ---- CARTA DEL DÍA ---- */
+  async function publishCarta(text, emoji) {
+    const c = {text, emoji, ts: Date.now()};
+    await fbSet("carta", c);
+    notifyAll("📰 Carta del día", emoji+" "+text, "📰");
+    flash("📰 Carta publicada");
+  }
+  async function clearCarta() {
+    await getDb().ref("carta").remove();
+  }
+
+
   useEffect(() => {
     if (!pool || standings.length === 0 || standings[0].pts === 0) return;
     const leaderKey = "meta/leader_" + pool.id;
@@ -1761,7 +1884,10 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     resolveFlash,
     deleteFlash,
     voteFlash,
-    notifyAll
+    notifyAll,
+    carta,
+    publishCarta,
+    clearCarta
   };
   if (!ready) return /*#__PURE__*/React.createElement("div", {
     className: "splash"
@@ -2273,7 +2399,8 @@ function HomeView({
   me,
   setView,
   lk,
-  goleadores
+  goleadores,
+  carta
 }) {
   // Admin board state
   const [aCompose, setACompose] = useState(false);
@@ -2504,7 +2631,18 @@ function HomeView({
     className: "nm-tname away"
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), carta && /*#__PURE__*/React.createElement("div", {className:"section"},
+    /*#__PURE__*/React.createElement("div", {className:"carta-card"},
+      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "📰 Carta del día"),
+      /*#__PURE__*/React.createElement("div", {className:"carta-row"},
+        /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
+        /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
+      ),
+      carta.ts && /*#__PURE__*/React.createElement("div",{className:"carta-date"},
+        new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+      )
+    )
+  ), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
     /*#__PURE__*/React.createElement("div", {className:"home-split"},
       /*#__PURE__*/React.createElement("div", {className:"muro-card"},
         /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro vergüenza"),
@@ -3563,7 +3701,11 @@ function PanelView({
   pushSupported,
   requestPushPermission,
   sendPushToAll,
-  notifyAll
+  notifyAll,
+  carta,
+  publishCarta,
+  clearCarta,
+  now
 }) {
   const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");
@@ -3576,6 +3718,7 @@ function PanelView({
   }, [reqs.length]);
   const [syncLog, setSyncLog] = useState([]);
   const [syncing, setSyncing] = useState(false);
+  const [cartaPreview, setCartaPreview] = useState(null);
 
   // Map API team names/codes to our codes
   const API_TEAM_MAP = {
@@ -3696,7 +3839,7 @@ function PanelView({
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
   }), "Crear tu primera quiniela"), CreateBox));
-  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"]];
+  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"]];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -4154,7 +4297,53 @@ function PanelView({
         fontSize: 20
       }
     }, tFlag(m.away)))));
-  }))));
+  }))), tab === "carta" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  },
+    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "📰 Carta del día"),
+    /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
+      "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio."
+    ),
+    /*#__PURE__*/React.createElement("button", {
+      className: "sync-btn",
+      onClick: () => setCartaPreview(getCartaCandidate(results, now))
+    }, "🔄 Generar dato curioso"),
+
+    cartaPreview && /*#__PURE__*/React.createElement("div", {className:"carta-preview"},
+      /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, cartaPreview.emoji),
+      /*#__PURE__*/React.createElement("div",{style:{flex:1}},
+        /*#__PURE__*/React.createElement("div",{className:"carta-text"}, cartaPreview.text),
+        /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:8,marginTop:10}},
+          /*#__PURE__*/React.createElement("button",{
+            className:"btn primary sm",
+            onClick: () => { publishCarta(cartaPreview.text, cartaPreview.emoji); setCartaPreview(null); }
+          }, "📢 Publicar a todos"),
+          /*#__PURE__*/React.createElement("button",{
+            className:"btn ghost sm",
+            onClick: () => setCartaPreview(getCartaCandidate(results, now))
+          }, "🔄 Otro")
+        )
+      )
+    ),
+
+    /*#__PURE__*/React.createElement("div",{style:{marginTop:16}},
+      /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:8}}, "Publicada actualmente:"),
+      carta
+        ? /*#__PURE__*/React.createElement("div", {className:"carta-card"},
+            /*#__PURE__*/React.createElement("div", {className:"carta-row"},
+              /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
+              /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
+            ),
+            /*#__PURE__*/React.createElement("div",{className:"row between",style:{marginTop:10}},
+              /*#__PURE__*/React.createElement("span",{className:"carta-date"},
+                carta.ts ? new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : ""
+              ),
+              /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",onClick:clearCarta}, "🗑️ Quitar")
+            )
+          )
+        : /*#__PURE__*/React.createElement("div",{className:"card pad muted small"}, "No hay carta publicada en este momento.")
+    )
+  )));
 }
 
 /* =========================================================

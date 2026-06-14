@@ -1435,10 +1435,53 @@ function App() {
   }, [pool, preds, results, sc, me, now]);
 
   /* ---- FLASH BETS ---- */
+  /* ---- AUTO NOTIFICATIONS ---- */
+  async function notifyAll(title, body, icon="⚽") {
+    const notif = {id: uid(), title, body, ts: Date.now(), icon};
+    await getDb().ref("notifications").push(notif);
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification(title, {
+        body,
+        icon: "https://yunque26.github.io/quiniela-mundial-2026/favicon.ico"
+      });
+    }
+  }
+
+  // Detect new leader in standings and notify everyone
+  useEffect(() => {
+    if (!pool || standings.length === 0 || standings[0].pts === 0) return;
+    const leaderKey = "meta/leader_" + pool.id;
+    const current = standings[0];
+    (async () => {
+      try {
+        const stored = await fbGet(leaderKey);
+        if (stored == null) {
+          // first time tracking — just record, no notification
+          await fbSet(leaderKey, current.name);
+          return;
+        }
+        if (stored !== current.name) {
+          await fbSet(leaderKey, current.name);
+          notifyAll(
+            "🏆 ¡Nuevo líder!",
+            current.name + " toma la cima con " + current.pts + " pts",
+            "🏆"
+          );
+        }
+      } catch (e) { /* ignore */ }
+    })();
+  }, [pool?.id, standings[0]?.name, standings[0]?.pts]);
+
+
   async function createFlash(q, opts, goles, tipo="flash") {
     const bet = {id: uid(), q: q.trim(), opts, goles: parseInt(goles)||0, ts: Date.now(), status:"open", correct:null, tipo};
     await getDb().ref("flash").push(bet);
-    flash("⚡ Apuesta creada");
+    flash(tipo==="loca" ? "🤪 Predicción creada" : "⚡ Apuesta creada");
+    notifyAll(
+      tipo==="loca" ? "🤪 Nueva predicción loca" : "⚡ Nueva apuesta flash",
+      bet.q,
+      tipo==="loca" ? "🤪" : "⚡"
+    );
   }
   async function closeFlash(betId) {
     const snap = await getDb().ref("flash").get();
@@ -1465,6 +1508,11 @@ function App() {
       await fbSet("goles/"+sk, cur + (bet.goles||1));
     }
     flash("✅ Resuelta · "+winners.length+" ganador(es)");
+    notifyAll(
+      "✅ Apuesta resuelta",
+      bet.q+" → "+correctOpt+(winners.length>0 ? " · "+winners.length+" ganador(es)" : ""),
+      "✅"
+    );
   }
   async function deleteFlash(betId) {
     const snap = await getDb().ref("flash").get();
@@ -1594,22 +1642,7 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     }
   }
   async function sendPushToAll(title, body) {
-    // Store notification in Firebase so all subscribed clients pick it up
-    const notif = {
-      id: uid(),
-      title,
-      body,
-      ts: Date.now(),
-      icon: "⚽"
-    };
-    await getDb().ref("notifications").push(notif);
-    // Also show locally immediately
-    if (Notification.permission === "granted") {
-      new Notification(title, {
-        body,
-        icon: "https://yunque26.github.io/quiniela-mundial-2026/favicon.ico"
-      });
-    }
+    await notifyAll(title, body);
     flash("Notificación enviada");
   }
 
@@ -1716,7 +1749,8 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     closeFlash,
     resolveFlash,
     deleteFlash,
-    voteFlash
+    voteFlash,
+    notifyAll
   };
   if (!ready) return /*#__PURE__*/React.createElement("div", {
     className: "splash"
@@ -3263,7 +3297,26 @@ function NotifActivator({
   pushSupported,
   requestPushPermission
 }) {
-  if (!pushSupported) return null;
+  if (!pushSupported) {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+    const isStandalone = typeof navigator !== "undefined" && (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+    if (isIOS && !isStandalone) {
+      return /*#__PURE__*/React.createElement("div", {className:"card pad", style:{textAlign:"center"}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:28,marginBottom:6}},"📲"),
+        /*#__PURE__*/React.createElement("p",{className:"muted small",style:{marginBottom:10}},
+          "En iPhone, las notificaciones solo funcionan si instalas la app en tu pantalla de inicio."),
+        /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:11,textAlign:"left"}},
+          /*#__PURE__*/React.createElement("b",null,"Cómo instalarla:"),
+          /*#__PURE__*/React.createElement("br"),"1. Toca el botón compartir 📤 en Safari",
+          /*#__PURE__*/React.createElement("br"),"2. Elige \"Agregar a pantalla de inicio\"",
+          /*#__PURE__*/React.createElement("br"),"3. Abre la app desde ese ícono y vuelve aquí"
+        )
+      );
+    }
+    return /*#__PURE__*/React.createElement("div", {className:"hint", style:{fontSize:11}},
+      "🔕 Este navegador no soporta notificaciones push.");
+  }
   const hasPermission = typeof Notification !== "undefined" && Notification.permission === "granted";
   const denied = typeof Notification !== "undefined" && Notification.permission === "denied";
   if (denied) return /*#__PURE__*/React.createElement("div", {
@@ -3480,7 +3533,8 @@ function PanelView({
   poolCmd,
   pushSupported,
   requestPushPermission,
-  sendPushToAll
+  sendPushToAll,
+  notifyAll
 }) {
   const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");
@@ -3512,7 +3566,7 @@ function PanelView({
 
       setSyncLog(prev => [...prev, `📦 ${games.length} partidos recibidos. Procesando...`]);
 
-      let updated = 0, skipped = 0;
+      let updated = 0, skipped = 0, brandNew = 0;
       const newMatches = {...results.matches};
 
       for (const g of games) {
@@ -3528,6 +3582,10 @@ function PanelView({
         const match = GROUPS.find(m => m.home === hCode && m.away === aCode);
         if (!match) { skipped++; continue; }
 
+        const prev = results.matches[match.id];
+        const wasEmpty = !prev || prev.h == null || prev.a == null;
+        if (wasEmpty) brandNew++;
+
         newMatches[match.id] = {h: hScore, a: aScore};
         updated++;
       }
@@ -3540,6 +3598,13 @@ function PanelView({
           `✅ ${updated} resultado(s) cargados en Firebase.`,
           skipped > 0 ? `⏳ ${skipped} partidos aún sin resultado.` : "🏆 ¡Todo sincronizado!"
         ]);
+        if (brandNew > 0) {
+          notifyAll(
+            "⚽ Resultados actualizados",
+            brandNew === 1 ? "Hay un nuevo resultado disponible. ¡Revisa tu pronóstico!" : `Hay ${brandNew} nuevos resultados disponibles. ¡Revisa tus pronósticos!`,
+            "⚽"
+          );
+        }
       } else {
         setSyncLog(prev => [...prev, `ℹ️ Sin resultados nuevos. ${skipped} partidos aún por jugarse.`]);
       }

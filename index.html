@@ -323,6 +323,21 @@ select.bare{-webkit-appearance:none;appearance:none}
 
 /* ===== MURO DE LA VERGÜENZA ===== */
 .muro-card{background:linear-gradient(135deg,rgba(255,92,121,.1),rgba(255,92,121,.03));border:1px solid rgba(255,92,121,.4);border-radius:16px;padding:16px;margin-bottom:10px;text-align:center;position:relative;overflow:hidden}
+.home-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.home-split .muro-card{margin-bottom:0;padding:12px 8px}
+.home-split .muro-trophy{font-size:34px;margin-bottom:2px}
+.home-split .muro-name{font-size:14px}
+.home-split .muro-title{font-size:8.5px}
+.home-split .muro-pts{font-size:10px}
+.home-split .muro-msg{font-size:9.5px}
+.gol-card{background:linear-gradient(135deg,rgba(246,197,68,.1),rgba(246,197,68,.03));border:1px solid rgba(246,197,68,.4);border-radius:16px;padding:12px 8px;text-align:center;position:relative;overflow:hidden}
+.gol-title{font-size:8.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.gol-list{display:grid;gap:5px;text-align:left}
+.gol-row{display:flex;align-items:center;gap:6px;font-size:11px}
+.gol-row .gp{font-family:var(--mono);font-weight:800;color:var(--muted2);width:14px;flex-shrink:0}
+.gol-row .gn{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gol-row .gv{font-family:var(--mono);font-weight:800;color:var(--gold);flex-shrink:0}
+.gol-empty{font-size:24px;margin-bottom:4px}
 .muro-title{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--coral);margin-bottom:10px}
 .muro-trophy{font-size:52px;margin-bottom:6px;display:block;animation:wobble 2s infinite}
 .muro-name{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;margin-bottom:4px}
@@ -910,7 +925,7 @@ function App() {
         localStorage.setItem("q26:lastNotif", String(latest.ts));
         new Notification(latest.title || "Quiniela", {
           body: latest.body || "",
-          icon: "⚽"
+          icon: "https://yunque26.github.io/quiniela-mundial-2026/favicon.ico"
         });
       }
     });
@@ -1439,12 +1454,8 @@ function App() {
   async function notifyAll(title, body, icon="⚽") {
     const notif = {id: uid(), title, body, ts: Date.now(), icon};
     await getDb().ref("notifications").push(notif);
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      new Notification(title, {
-        body,
-        icon: "https://yunque26.github.io/quiniela-mundial-2026/favicon.ico"
-      });
-    }
+    // Don't show locally here — the Firebase listener (u6) shows it for
+    // every device including this one, to avoid duplicate notifications.
   }
 
   // Detect new leader in standings and notify everyone
@@ -2261,7 +2272,8 @@ function HomeView({
   tz,
   me,
   setView,
-  lk
+  lk,
+  goleadores
 }) {
   // Admin board state
   const [aCompose, setACompose] = useState(false);
@@ -2493,14 +2505,31 @@ function HomeView({
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
   }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
-    /*#__PURE__*/React.createElement("div", {className:"muro-card"},
-      /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro de la Vergüenza"),
-      /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
-      /*#__PURE__*/React.createElement("div", {className:"muro-name"}, last.name+(last.name===me?" (tú 😬)":"")),
-      /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, last.pts," pts · Puesto #"+standings.length+" de "+standings.length),
-      /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, last.name===me
-        ? "😬 ¡Animate! Todavía hay tiempo para remontar..."
-        : "😂 ¡"+last.name+" necesita un milagro futbolero!")
+    /*#__PURE__*/React.createElement("div", {className:"home-split"},
+      /*#__PURE__*/React.createElement("div", {className:"muro-card"},
+        /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro vergüenza"),
+        /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
+        /*#__PURE__*/React.createElement("div", {className:"muro-name"}, last.name+(last.name===me?" (tú 😬)":"")),
+        /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, last.pts," pts"),
+        /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, last.name===me
+          ? "😬 ¡Animate!"
+          : "😂 ¡Milagro ya!")
+      ),
+      /*#__PURE__*/React.createElement("div", {className:"gol-card"},
+        /*#__PURE__*/React.createElement("div", {className:"gol-title"}, "👟 Top Goleadores"),
+        (!goleadores || goleadores.length===0 || goleadores.every(g=>g.goles===0))
+          ? /*#__PURE__*/React.createElement("div", {style:{padding:"6px 0"}},
+              /*#__PURE__*/React.createElement("div",{className:"gol-empty"},"⚽"),
+              /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10}},"Sin goles aún")
+            )
+          : /*#__PURE__*/React.createElement("div", {className:"gol-list"},
+              goleadores.slice(0,3).map((g,i)=>/*#__PURE__*/React.createElement("div",{key:g.name,className:"gol-row"},
+                /*#__PURE__*/React.createElement("span",{className:"gp"}, i===0?"🥇":i===1?"🥈":"🥉"),
+                /*#__PURE__*/React.createElement("span",{className:"gn"}, g.name+(g.isMe?" (tú)":"")),
+                /*#__PURE__*/React.createElement("span",{className:"gv"}, g.goles," ⚽")
+              ))
+            )
+      )
     )
   ), /*#__PURE__*/React.createElement("div", {
     className: "section"

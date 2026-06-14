@@ -443,6 +443,22 @@ select.bare{-webkit-appearance:none;appearance:none}
 .nm-tname.away{text-align:left}
 .nm-time{text-align:center;font-size:12px;color:var(--muted)}
 
+/* compact versions for two-column home split */
+.home-split2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;align-items:stretch}
+.home-split2 .next-match{margin-bottom:0;padding:10px 8px;display:flex;flex-direction:column;justify-content:center;height:100%}
+.home-split2 .nm-label{font-size:8.5px;margin-bottom:6px}
+.home-split2 .nm-flag{font-size:20px}
+.home-split2 .nm-tname{font-size:10px}
+.home-split2 .nm-vs{font-size:10px}
+.home-split2 .nm-time{font-size:9.5px}
+.home-split2 .carta-card{margin-bottom:0;padding:10px 8px;height:100%;display:flex;flex-direction:column;justify-content:center}
+.home-split2 .carta-title{font-size:8.5px;margin-bottom:6px}
+.home-split2 .carta-emoji{font-size:22px}
+.home-split2 .carta-text{font-size:10.5px;line-height:1.35}
+.home-split2 .carta-date{font-size:8px}
+.sabias-empty{text-align:center;padding:4px 0}
+.sabias-empty .se-icon{font-size:22px;margin-bottom:2px}
+
 /* Compose box */
 .compose{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .compose-emojis{display:flex;gap:6px;flex-wrap:wrap}
@@ -1574,7 +1590,7 @@ function App() {
   async function publishCarta(text, emoji) {
     const c = {text, emoji, ts: Date.now()};
     await fbSet("carta", c);
-    notifyAll("📰 Carta del día", emoji+" "+text, "📰");
+    notifyAll("💡 ¿Sabías que...?", emoji+" "+text, "💡");
     flash("📰 Carta publicada");
   }
   async function clearCarta() {
@@ -2614,6 +2630,8 @@ function HomeView({
   }, last?.pts ?? 0, "pts")))), nextMatch && /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "home-split2"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "next-match"
   }, /*#__PURE__*/React.createElement("div", {
     className: "nm-label"
@@ -2631,9 +2649,27 @@ function HomeView({
     className: "nm-tname away"
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))), carta && /*#__PURE__*/React.createElement("div", {className:"section"},
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group)),
     /*#__PURE__*/React.createElement("div", {className:"carta-card"},
-      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "📰 Carta del día"),
+      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
+      carta
+        ? /*#__PURE__*/React.createElement(React.Fragment, null,
+            /*#__PURE__*/React.createElement("div", {className:"carta-row"},
+              /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
+              /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
+            ),
+            carta.ts && /*#__PURE__*/React.createElement("div",{className:"carta-date"},
+              new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+            )
+          )
+        : /*#__PURE__*/React.createElement("div",{className:"sabias-empty"},
+            /*#__PURE__*/React.createElement("div",{className:"se-icon"},"💡"),
+            /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10}},"Próximamente...")
+          )
+    )
+  )), !nextMatch && carta && /*#__PURE__*/React.createElement("div", {className:"section"},
+    /*#__PURE__*/React.createElement("div", {className:"carta-card"},
+      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
       /*#__PURE__*/React.createElement("div", {className:"carta-row"},
         /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
         /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
@@ -4300,7 +4336,7 @@ function PanelView({
   }))), tab === "carta" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "section"
   },
-    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "📰 Carta del día"),
+    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "💡 ¿Sabías que...?"),
     /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
       "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio."
     ),

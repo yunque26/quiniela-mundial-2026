@@ -367,6 +367,9 @@ select.bare{-webkit-appearance:none;appearance:none}
 .goleador-pos{font-family:var(--mono);font-weight:800;font-size:14px;color:var(--muted2);width:20px;flex-shrink:0}
 .goleador-name{font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .goleador-goles{font-family:var(--mono);font-weight:800;font-size:16px;color:var(--gold);display:flex;align-items:center;gap:4px}
+.poll-opt-main{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}
+.poll-opt-desc{font-size:10.5px;font-weight:400;color:var(--muted2);margin-top:4px;line-height:1.35}
+.poll-card .flash-opt{flex-direction:column;align-items:stretch}
 
 /* ===== ENCUESTA / POLL ===== */
 .poll-card{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.35);border-radius:14px;padding:14px;margin-bottom:10px;position:relative}
@@ -4550,6 +4553,13 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
     "🔥 Reacciones rápidas en Flash",
     "📈 Gráfico de evolución"
   ];
+  const FEATURE_DESCRIPTIONS = {
+    "🏆 El Adivino (predicciones del torneo)": "Al inicio del Mundial, cada uno predice campeón, goleador y la selección sorpresa. Se resuelve al final del torneo.",
+    "⚽ Partido de la jornada (vale doble)": "El admin elige un partido especial cada jornada que otorga el doble de puntos en la quiniela.",
+    "🎽 Draft de equipos": "Cada participante 'adopta' una selección y suma puntos extra según cómo le vaya en el Mundial.",
+    "🔥 Reacciones rápidas en Flash": "Reaccionar con 🔥😂😱 a las apuestas y predicciones, sin necesidad de votar formalmente.",
+    "📈 Gráfico de evolución": "Un gráfico que muestra cómo ha cambiado tu posición en la tabla partido a partido."
+  };
   const [pollQ, setPollQ] = useState("¿Qué función te gustaría que agreguemos después? 🚀");
   const [pollOpts, setPollOpts] = useState([...FEATURE_PROPOSALS]);
   const [pollAllowOther, setPollAllowOther] = useState(true);
@@ -4795,6 +4805,7 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
               const pct = totalVotes>0 ? Math.round(count/totalVotes*100) : 0;
               const isMyVote = myVote && myVote.opt===opt;
               const isOtro = opt === "Otro";
+              const desc = FEATURE_DESCRIPTIONS[opt];
               return /*#__PURE__*/React.createElement(React.Fragment, {key:i},
                 /*#__PURE__*/React.createElement("button",{
                   className:"flash-opt"+(isMyVote?" voted":""),
@@ -4806,9 +4817,14 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
                     votePoll(latest.id, opt);
                   }
                 },
-                  isMyVote && /*#__PURE__*/React.createElement("span",null,"✓ "),
-                  isOtro ? "✏️ Otro (especificar)" : opt,
-                  /*#__PURE__*/React.createElement("span",{className:"fo-pct"}, (isClosed||myVote) ? pct+"%" : "")
+                  /*#__PURE__*/React.createElement("div",{className:"poll-opt-main"},
+                    /*#__PURE__*/React.createElement("span",null,
+                      isMyVote && "✓ ",
+                      isOtro ? "✏️ Otro (especificar)" : opt
+                    ),
+                    /*#__PURE__*/React.createElement("span",{className:"fo-pct"}, (isClosed||myVote) ? pct+"%" : "")
+                  ),
+                  desc && /*#__PURE__*/React.createElement("div",{className:"poll-opt-desc"}, desc)
                 ),
                 isOtro && (showOtherInput || (isMyVote && myVote.other)) && !isClosed && /*#__PURE__*/React.createElement("div",{className:"poll-other-input"},
                   /*#__PURE__*/React.createElement("input",{

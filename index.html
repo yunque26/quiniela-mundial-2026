@@ -367,6 +367,29 @@ select.bare{-webkit-appearance:none;appearance:none}
 .goleador-pos{font-family:var(--mono);font-weight:800;font-size:14px;color:var(--muted2);width:20px;flex-shrink:0}
 .goleador-name{font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .goleador-goles{font-family:var(--mono);font-weight:800;font-size:16px;color:var(--gold);display:flex;align-items:center;gap:4px}
+
+/* ===== ENCUESTA / POLL ===== */
+.poll-card{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.35);border-radius:14px;padding:14px;margin-bottom:10px;position:relative}
+.poll-card.closed{border-color:rgba(148,163,184,.35);background:linear-gradient(135deg,rgba(148,163,184,.08),rgba(148,163,184,.02))}
+.poll-badge{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:999px;display:inline-block;margin-bottom:8px;background:rgba(56,189,248,.18);color:#38bdf8}
+.poll-badge.closed{background:rgba(148,163,184,.18);color:var(--muted2)}
+.poll-q{font-family:var(--disp);font-weight:800;font-size:16px;text-transform:uppercase;margin-bottom:10px;line-height:1.2}
+.poll-other-input{display:flex;gap:6px;margin-top:6px}
+.poll-other-input input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:13px;font-family:var(--body)}
+.poll-meta{font-size:11px;color:var(--muted2);margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.poll-countdown{font-family:var(--mono);font-weight:800;font-size:11px;color:#38bdf8}
+.poll-countdown.urgent{color:var(--coral)}
+.poll-suggestions{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.poll-suggestion-row{display:flex;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(39,57,92,.25)}
+.poll-suggestion-row:last-child{border-bottom:none}
+.poll-suggestion-row .psname{font-weight:700;flex-shrink:0;color:var(--gold)}
+/* mini banner on Home */
+.poll-banner{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(56,189,248,.02));border:1px solid rgba(56,189,248,.35);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.poll-banner-icon{font-size:24px;flex-shrink:0}
+.poll-banner-text{flex:1;min-width:0}
+.poll-banner-title{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#38bdf8;margin-bottom:2px}
+.poll-banner-q{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.poll-banner-sub{font-size:10px;color:var(--muted2);margin-top:2px}
 .zapato{font-size:20px}
 .podium-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .podium-card{background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;position:relative;overflow:hidden}
@@ -393,6 +416,29 @@ select.bare{-webkit-appearance:none;appearance:none}
 .mvp-name{font-family:var(--disp);font-weight:800;font-size:18px;text-transform:uppercase}
 .mvp-detail{font-size:11px;color:var(--muted);margin-top:3px}
 .mvp-pts{font-family:var(--mono);font-weight:800;font-size:28px;color:var(--gold)}
+
+/* ===== ENCUESTAS ===== */
+.poll-card{background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(168,85,247,.02));border:1px solid rgba(168,85,247,.35);border-radius:14px;padding:14px;margin-bottom:10px}
+.poll-card.closed{border-color:rgba(255,92,121,.3);background:linear-gradient(135deg,rgba(255,92,121,.06),rgba(255,92,121,.02))}
+.poll-status{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:999px;display:inline-block;margin-bottom:8px}
+.poll-status.open{background:rgba(168,85,247,.18);color:#c084fc}
+.poll-status.closed{background:rgba(255,92,121,.15);color:var(--coral)}
+.poll-q{font-family:var(--disp);font-weight:800;font-size:15px;text-transform:uppercase;margin-bottom:10px;line-height:1.25}
+.poll-opts{display:grid;gap:6px}
+.poll-opt{position:relative;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;text-align:left;font-family:var(--body);color:var(--text);overflow:hidden}
+.poll-opt.voted{border-color:#c084fc}
+.poll-opt-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(168,85,247,.14);z-index:0;transition:width .3s}
+.poll-opt-label{position:relative;z-index:1;flex:1}
+.poll-opt-pct{position:relative;z-index:1;font-family:var(--mono);font-weight:800;font-size:11px;color:var(--muted2)}
+.poll-other-input{margin-top:6px;display:flex;gap:6px}
+.poll-suggestions{margin-top:10px;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 10px}
+.poll-suggestions-title{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);font-weight:700;margin-bottom:6px}
+.poll-suggestion{font-size:12px;padding:4px 0;border-top:1px solid rgba(39,57,92,.3)}
+.poll-suggestion:first-child{border-top:none}
+.poll-meta{font-size:11px;color:var(--muted2);margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.poll-deadline{font-family:var(--mono);font-weight:700;font-size:10.5px}
+.poll-deadline.urgent{color:var(--coral)}
+
 
 /* ===== CARTA DEL DÍA ===== */
 .carta-card{background:linear-gradient(135deg,rgba(99,179,237,.1),rgba(99,179,237,.02));border:1px solid rgba(99,179,237,.35);border-radius:16px;padding:14px;margin-bottom:10px}
@@ -939,6 +985,8 @@ function App() {
   const [flashBets, setFlashBets] = useState([]);
   const [flashVotes, setFlashVotes] = useState({});
   const [carta, setCarta] = useState(null);
+  const [polls, setPolls] = useState([]);
+  const [pollVotes, setPollVotes] = useState({});
   // Track last-seen timestamp for general messages (per device)
   const [lastSeenGeneral, setLastSeenGeneral] = useState(() => parseInt(localStorage.getItem("q26:lastSeenGeneral") || "0", 10));
   // Push notification subscription state
@@ -1043,6 +1091,13 @@ function App() {
     const u7flash = fbListen("flashvotes", v => setFlashVotes(v || {}));
     // carta del día listener
     const u8carta = fbListen("carta", v => setCarta(v || null));
+    // polls listeners
+    const u9polls = fbListen("polls", v => {
+      if (!v) { setPolls([]); return; }
+      const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
+      setPolls(arr.filter(Boolean).sort((a,b) => b.ts - a.ts));
+    });
+    const u10pollvotes = fbListen("pollvotes", v => setPollVotes(v || {}));
     // notifications listener — shows push to any open tab that has permission
     const u6 = fbListen("notifications", v => {
       if (!v || Notification.permission !== "granted") return;
@@ -1060,7 +1115,7 @@ function App() {
       }
     });
     return () => {
-      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta();
+      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u9polls(); u10pollvotes();
     };
   }, [ready]);
 
@@ -1599,6 +1654,38 @@ function App() {
     await getDb().ref("carta").remove();
   }
 
+  /* ---- ENCUESTAS ---- */
+  async function createPoll(q, opts, allowOther, deadline) {
+    const poll = {id: uid(), q: q.trim(), opts, allowOther: !!allowOther, deadline: deadline||null, ts: Date.now(), status:"open"};
+    await getDb().ref("polls").push(poll);
+    notifyAll("🗳️ Nueva encuesta", poll.q, "🗳️");
+    flash("🗳️ Encuesta creada");
+  }
+  async function votePoll(pollId, opt, other) {
+    if (!me) { setModal("identity"); return; }
+    if (!canPlay) { setModal("join"); return; }
+    const sk = me.replace(/[.#$/[\]]/g, "_");
+    const vote = {opt};
+    if (other) vote.other = other.trim();
+    await fbSet("pollvotes/"+pollId+"/"+sk, vote);
+    setPollVotes(prev => ({...prev, [pollId]:{...(prev[pollId]||{}), [sk]:vote}}));
+    flash("🗳️ Voto registrado");
+  }
+  async function closePoll(pollId) {
+    const snap = await getDb().ref("polls").get();
+    if (!snap.exists()) return;
+    const data = snap.val();
+    const key = Object.keys(data).find(k => data[k].id === pollId);
+    if (key) await getDb().ref("polls/"+key+"/status").set("closed");
+  }
+  async function deletePoll(pollId) {
+    const snap = await getDb().ref("polls").get();
+    if (!snap.exists()) return;
+    const data = snap.val();
+    const key = Object.keys(data).find(k => data[k].id === pollId);
+    if (key) await getDb().ref("polls/"+key).remove();
+  }
+
 
   useEffect(() => {
     if (!pool || standings.length === 0 || standings[0].pts === 0) return;
@@ -1905,7 +1992,13 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     notifyAll,
     carta,
     publishCarta,
-    clearCarta
+    clearCarta,
+    polls,
+    pollVotes,
+    createPoll,
+    votePoll,
+    closePoll,
+    deletePoll
   };
   if (!ready) return /*#__PURE__*/React.createElement("div", {
     className: "splash"
@@ -2418,7 +2511,11 @@ function HomeView({
   setView,
   lk,
   goleadores,
-  carta
+  carta,
+  polls,
+  pollVotes,
+  now,
+  safeKey
 }) {
   // Admin board state
   const [aCompose, setACompose] = useState(false);
@@ -2459,7 +2556,40 @@ function HomeView({
     setGTxt("");
     setGCompose(false);
   }
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, (() => {
+    const latestPoll = polls && polls.length>0 ? polls[0] : null;
+    const pollExpired = latestPoll?.deadline && now > latestPoll.deadline;
+    const pollClosed = latestPoll && (latestPoll.status === "closed" || pollExpired);
+    if (!latestPoll || pollClosed) return null;
+    const pVotes = pollVotes[latestPoll.id] || {};
+    const myK = me ? safeKey(me) : "";
+    const voted = !!pVotes[myK];
+    let sub = "Toca para votar";
+    if (voted) sub = "✓ Ya votaste";
+    if (latestPoll.deadline) {
+      const diff = latestPoll.deadline - now;
+      const days = Math.floor(diff/86400000);
+      const hours = Math.floor((diff%86400000)/3600000);
+      if (days > 0) sub += " · ⏳ " + days + " día"+(days!==1?"s":"");
+      else if (hours > 0) sub += " · ⏳ " + hours + "h";
+      else sub += " · ⏳ ¡última hora!";
+    }
+    return /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("div", {
+        className:"poll-banner",
+        style:{cursor:"pointer"},
+        onClick: () => { setView("flash"); window.scrollTo(0,0); }
+      },
+        /*#__PURE__*/React.createElement("span",{className:"poll-banner-icon"},"🗳️"),
+        /*#__PURE__*/React.createElement("div",{className:"poll-banner-text"},
+          /*#__PURE__*/React.createElement("div",{className:"poll-banner-title"},"Encuesta activa"),
+          /*#__PURE__*/React.createElement("div",{className:"poll-banner-q"}, latestPoll.q),
+          /*#__PURE__*/React.createElement("div",{className:"poll-banner-sub"}, sub)
+        ),
+        /*#__PURE__*/React.createElement("span",{className:"muted",style:{fontSize:18}},"›")
+      )
+    );
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "row between",
@@ -4388,7 +4518,8 @@ function PanelView({
    FLASH VIEW
    ========================================================= */
 function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, flashVotes, goleadores,
-  createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash}) {
+  createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash, now,
+  polls, pollVotes, createPoll, votePoll, closePoll, deletePoll, safeKey}) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
 
   const LOCAS_PRESET = [
@@ -4410,6 +4541,35 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
   const [newGoles, setNewGoles] = useState(1);
   const [creating, setCreating] = useState(false);
   const [presetIdx, setPresetIdx] = useState(null);
+
+  // Encuesta (poll) local state
+  const FEATURE_PROPOSALS = [
+    "🏆 El Adivino (predicciones del torneo)",
+    "⚽ Partido de la jornada (vale doble)",
+    "🎽 Draft de equipos",
+    "🔥 Reacciones rápidas en Flash",
+    "📈 Gráfico de evolución"
+  ];
+  const [pollQ, setPollQ] = useState("¿Qué función te gustaría que agreguemos después? 🚀");
+  const [pollOpts, setPollOpts] = useState([...FEATURE_PROPOSALS]);
+  const [pollAllowOther, setPollAllowOther] = useState(true);
+  const [pollDeadlineDays, setPollDeadlineDays] = useState(5);
+  const [creatingPoll, setCreatingPoll] = useState(false);
+  const [otherText, setOtherText] = useState("");
+  const [showOtherInput, setShowOtherInput] = useState(false);
+
+  function addPollOpt() { if (pollOpts.length < 6) setPollOpts([...pollOpts, ""]); }
+  function removePollOpt(i) { if (pollOpts.length > 2) setPollOpts(pollOpts.filter((_,j)=>j!==i)); }
+  function setPollOpt(i,v) { const a=[...pollOpts]; a[i]=v; setPollOpts(a); }
+
+  async function handleCreatePoll() {
+    const opts = pollOpts.map(o=>o.trim()).filter(Boolean);
+    if (!pollQ.trim() || opts.length < 2) return;
+    setCreatingPoll(true);
+    const deadline = pollDeadlineDays > 0 ? Date.now() + pollDeadlineDays*86400000 : null;
+    await createPoll(pollQ, opts, pollAllowOther, deadline);
+    setCreatingPoll(false);
+  }
 
   function addOpt() { if (newOpts.length < 4) setNewOpts([...newOpts,""]); }
   function removeOpt(i) { if (newOpts.length > 2) setNewOpts(newOpts.filter((_,j)=>j!==i)); }
@@ -4488,6 +4648,7 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="bets"?" active":""),onClick:()=>setTab("bets")},"⚡ Apuestas"),
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="locas"?" active":""),onClick:()=>setTab("locas")},"🤪 Locas"),
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="goals"?" active":""),onClick:()=>setTab("goals")},"👟 Goleadores"),
+        /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="encuesta"?" active":""),onClick:()=>setTab("encuesta")},"🗳️ Encuesta"),
         isMaster && /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="create"?" active":""),onClick:()=>setTab("create")},"➕ Crear")
       )
     ),
@@ -4586,7 +4747,144 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
               /*#__PURE__*/React.createElement("div",{className:"goleador-goles"},g.goles," ⚽")
             ))
           )
-    )
+    ),
+
+    // ENCUESTA TAB
+    tab==="encuesta" && /*#__PURE__*/React.createElement("div", {className:"section"}, (() => {
+      const latest = polls && polls.length>0 ? polls[0] : null;
+      const myKeyP = me ? safeKey(me) : "";
+      const votes = latest ? (pollVotes[latest.id] || {}) : {};
+      const myVote = votes[myKeyP] || null;
+      const totalVotes = Object.keys(votes).length;
+      const isExpired = latest && latest.deadline && now > latest.deadline;
+      const isClosed = latest && (latest.status === "closed" || isExpired);
+      const isOpenPoll = latest && !isClosed;
+
+      const optionsAll = latest ? [...(latest.opts||[]), ...(latest.allowOther ? ["Otro"] : [])] : [];
+
+      const suggestions = latest ? Object.entries(votes)
+        .filter(([,v]) => v.opt === "Otro" && v.other)
+        .map(([k,v]) => ({name: pool.members.find(m=>safeKey(m)===k) || k, text: v.other}))
+        : [];
+
+      function fmtCountdown() {
+        if (!latest?.deadline) return null;
+        const diff = latest.deadline - now;
+        if (diff <= 0) return "⏰ Cerrada";
+        const days = Math.floor(diff/86400000);
+        const hours = Math.floor((diff%86400000)/3600000);
+        if (days > 0) return `⏳ Quedan ${days} día${days!==1?"s":""}`;
+        if (hours > 0) return `⏳ Quedan ${hours}h`;
+        return "⏳ ¡Última hora!";
+      }
+      const countdown = fmtCountdown();
+      const urgent = latest?.deadline && (latest.deadline - now) < 86400000 && (latest.deadline - now) > 0;
+
+      return /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("h2",null,/*#__PURE__*/React.createElement("span",{className:"bar"}),"🗳️ Encuesta de funciones"),
+
+        // existing poll
+        latest && /*#__PURE__*/React.createElement("div", {className:"poll-card"+(isClosed?" closed":"")},
+          /*#__PURE__*/React.createElement("div",{className:"poll-badge"+(isClosed?" closed":"")},
+            isClosed ? "🔒 CERRADA" : "🟢 ABIERTA"
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"poll-q"}, latest.q),
+          /*#__PURE__*/React.createElement("div",{className:"flash-opts"},
+            optionsAll.map((opt,i)=>{
+              const count = Object.values(votes).filter(v=>v.opt===opt).length;
+              const pct = totalVotes>0 ? Math.round(count/totalVotes*100) : 0;
+              const isMyVote = myVote && myVote.opt===opt;
+              const isOtro = opt === "Otro";
+              return /*#__PURE__*/React.createElement(React.Fragment, {key:i},
+                /*#__PURE__*/React.createElement("button",{
+                  className:"flash-opt"+(isMyVote?" voted":""),
+                  disabled:isClosed,
+                  onClick:()=>{
+                    if (isClosed) return;
+                    if (isOtro) { setShowOtherInput(true); return; }
+                    setShowOtherInput(false);
+                    votePoll(latest.id, opt);
+                  }
+                },
+                  isMyVote && /*#__PURE__*/React.createElement("span",null,"✓ "),
+                  isOtro ? "✏️ Otro (especificar)" : opt,
+                  /*#__PURE__*/React.createElement("span",{className:"fo-pct"}, (isClosed||myVote) ? pct+"%" : "")
+                ),
+                isOtro && (showOtherInput || (isMyVote && myVote.other)) && !isClosed && /*#__PURE__*/React.createElement("div",{className:"poll-other-input"},
+                  /*#__PURE__*/React.createElement("input",{
+                    placeholder:"Escribe tu idea…",
+                    defaultValue: (isMyVote && myVote.other) || otherText,
+                    onChange:e=>setOtherText(e.target.value)
+                  }),
+                  /*#__PURE__*/React.createElement("button",{
+                    className:"btn primary sm",
+                    onClick:()=>{
+                      if (!otherText.trim()) return;
+                      votePoll(latest.id, "Otro", otherText);
+                      setShowOtherInput(false);
+                    }
+                  }, "OK")
+                ),
+                isOtro && isClosed && isMyVote && myVote.other && /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:11,marginTop:4}}, "Tu idea: "+myVote.other)
+              );
+            })
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"poll-meta"},
+            /*#__PURE__*/React.createElement("span",null,totalVotes," voto"+(totalVotes!==1?"s":"")),
+            countdown && /*#__PURE__*/React.createElement("span",{className:"poll-countdown"+(urgent?" urgent":"")}, countdown),
+            isMaster && isOpenPoll && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",style:{marginLeft:"auto",fontSize:10},onClick:()=>closePoll(latest.id)},"Cerrar ahora"),
+            isMaster && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",style:{fontSize:10,marginLeft:isMaster&&!isOpenPoll?"auto":"4px"},onClick:()=>{if(confirm("¿Eliminar esta encuesta?"))deletePoll(latest.id)}},"✕")
+          ),
+          suggestions.length>0 && /*#__PURE__*/React.createElement("div",{className:"poll-suggestions"},
+            /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:6}}, "💡 Ideas libres:"),
+            suggestions.map((s,i)=>/*#__PURE__*/React.createElement("div",{key:i,className:"poll-suggestion-row"},
+              /*#__PURE__*/React.createElement("span",{className:"psname"}, s.name+":"),
+              /*#__PURE__*/React.createElement("span",null, s.text)
+            ))
+          )
+        ),
+
+        !latest && !isMaster && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center",padding:"32px 16px"}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:36,marginBottom:8}},"🗳️"),
+          /*#__PURE__*/React.createElement("div",{className:"muted"},"No hay encuestas activas por el momento.")
+        ),
+
+        // admin: create new poll form (shown if no poll OR latest is closed)
+        isMaster && (!latest || isClosed) && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{marginTop:12}},
+          /*#__PURE__*/React.createElement("div",{style:{fontFamily:"var(--disp)",fontWeight:800,fontSize:13,textTransform:"uppercase",marginBottom:10}}, latest ? "🗳️ Nueva encuesta" : "🗳️ Crear encuesta"),
+          /*#__PURE__*/React.createElement("div",{className:"field",style:{marginTop:0}},
+            /*#__PURE__*/React.createElement("label",null,"Pregunta"),
+            /*#__PURE__*/React.createElement("input",{className:"bare",value:pollQ,onChange:e=>setPollQ(e.target.value)})
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"field"},
+            /*#__PURE__*/React.createElement("label",null,"Opciones"),
+            pollOpts.map((o,i)=>/*#__PURE__*/React.createElement("div",{key:i,className:"row",style:{gap:6,marginBottom:6}},
+              /*#__PURE__*/React.createElement("input",{className:"bare",value:o,placeholder:"Opción "+(i+1)+"…",onChange:e=>setPollOpt(i,e.target.value),style:{flex:1}}),
+              pollOpts.length>2 && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",onClick:()=>removePollOpt(i)},"✕")
+            )),
+            pollOpts.length<6 && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",style:{marginTop:4},onClick:addPollOpt},"+ Opción")
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"field"},
+            /*#__PURE__*/React.createElement("label",{className:"row",style:{gap:6,alignItems:"center",cursor:"pointer"}},
+              /*#__PURE__*/React.createElement("input",{type:"checkbox",checked:pollAllowOther,onChange:e=>setPollAllowOther(e.target.checked)}),
+              "Permitir respuesta libre (\"Otro\")"
+            )
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"field"},
+            /*#__PURE__*/React.createElement("label",null,"⏳ Plazo para votar"),
+            /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:8,alignItems:"center"}},
+              /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",onClick:()=>setPollDeadlineDays(Math.max(0,pollDeadlineDays-1))},"-"),
+              /*#__PURE__*/React.createElement("span",{className:"mono",style:{fontSize:18,color:"var(--gold)",minWidth:90,textAlign:"center"}}, pollDeadlineDays===0 ? "Sin plazo" : pollDeadlineDays+" día"+(pollDeadlineDays!==1?"s":"")),
+              /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",onClick:()=>setPollDeadlineDays(pollDeadlineDays+1)},"+")
+            )
+          ),
+          /*#__PURE__*/React.createElement("button",{className:"btn primary",style:{marginTop:14,width:"100%"},
+            disabled:creatingPoll || !pollQ.trim() || pollOpts.map(o=>o.trim()).filter(Boolean).length<2,
+            onClick:handleCreatePoll
+          }, "🗳️ Lanzar encuesta")
+        )
+      );
+    })())
   );
 }
 

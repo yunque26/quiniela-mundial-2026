@@ -4874,9 +4874,12 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
           ),
           /*#__PURE__*/React.createElement("div",{className:"field"},
             /*#__PURE__*/React.createElement("label",null,"Opciones"),
-            pollOpts.map((o,i)=>/*#__PURE__*/React.createElement("div",{key:i,className:"row",style:{gap:6,marginBottom:6}},
-              /*#__PURE__*/React.createElement("input",{className:"bare",value:o,placeholder:"Opción "+(i+1)+"…",onChange:e=>setPollOpt(i,e.target.value),style:{flex:1}}),
-              pollOpts.length>2 && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",onClick:()=>removePollOpt(i)},"✕")
+            pollOpts.map((o,i)=>/*#__PURE__*/React.createElement("div",{key:i,style:{marginBottom:6}},
+              /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6}},
+                /*#__PURE__*/React.createElement("input",{className:"bare",value:o,placeholder:"Opción "+(i+1)+"…",onChange:e=>setPollOpt(i,e.target.value),style:{flex:1}}),
+                pollOpts.length>2 && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",onClick:()=>removePollOpt(i)},"✕")
+              ),
+              FEATURE_DESCRIPTIONS[o] && /*#__PURE__*/React.createElement("div",{className:"poll-opt-desc",style:{padding:"4px 12px 0"}}, FEATURE_DESCRIPTIONS[o])
             )),
             pollOpts.length<6 && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",style:{marginTop:4},onClick:addPollOpt},"+ Opción")
           ),

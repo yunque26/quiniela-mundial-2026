@@ -338,6 +338,31 @@ select.bare{-webkit-appearance:none;appearance:none}
 .gol-row .gn{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gol-row .gv{font-family:var(--mono);font-weight:800;color:var(--gold);flex-shrink:0}
 .gol-empty{font-size:24px;margin-bottom:4px}
+
+/* ===== STANDINGS BREAKDOWN ===== */
+.std-row{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.std-row.me{border-color:rgba(21,168,90,.4);background:rgba(21,168,90,.05)}
+.std-head{display:flex;align-items:center;gap:10px;cursor:pointer}
+.std-pos{font-family:var(--mono);font-weight:800;font-size:13px;color:var(--muted2);width:20px;flex-shrink:0}
+.std-name{font-weight:700;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.std-pts{font-family:var(--mono);font-weight:800;font-size:18px;color:var(--gold);flex-shrink:0}
+.std-chev{font-size:14px;color:var(--muted2);flex-shrink:0;transition:transform .15s}
+.std-chev.open{transform:rotate(90deg)}
+.std-breakdown{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:grid;gap:6px}
+.std-concept{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.std-concept .sc-label{color:var(--muted);display:flex;align-items:center;gap:6px}
+.std-concept .sc-val{font-family:var(--mono);font-weight:700;color:var(--text)}
+.std-concept .sc-val.zero{color:var(--muted2)}
+.std-total-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding-top:6px;margin-top:4px;border-top:1px solid rgba(39,57,92,.4);font-weight:800}
+.std-total-row .sc-val{color:var(--gold)}
+
+/* ===== PARTIDO DE LA JORNADA ===== */
+.featured-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:rgba(246,197,68,.2);color:var(--gold);margin-left:6px}
+.matchcard.featured{border-color:rgba(246,197,68,.5);background:linear-gradient(135deg,rgba(246,197,68,.06),var(--panel))}
+.featured-select-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;margin-bottom:8px;cursor:pointer}
+.featured-select-row:hover{border-color:var(--gold)}
+.featured-select-row.current{border-color:var(--gold);background:rgba(246,197,68,.08)}
+.featured-current-card{background:linear-gradient(135deg,rgba(246,197,68,.1),rgba(246,197,68,.02));border:1px solid rgba(246,197,68,.4);border-radius:14px;padding:14px;margin-bottom:12px}
 .muro-title{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--coral);margin-bottom:10px}
 .muro-trophy{font-size:52px;margin-bottom:6px;display:block;animation:wobble 2s infinite}
 .muro-name{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;margin-bottom:4px}
@@ -393,6 +418,12 @@ select.bare{-webkit-appearance:none;appearance:none}
 .poll-banner-title{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#38bdf8;margin-bottom:2px}
 .poll-banner-q{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .poll-banner-sub{font-size:10px;color:var(--muted2);margin-top:2px}
+.featured-banner{background:linear-gradient(135deg,rgba(246,197,68,.12),rgba(246,197,68,.02));border:1px solid rgba(246,197,68,.4);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.featured-banner-icon{font-size:24px;flex-shrink:0}
+.featured-banner-text{flex:1;min-width:0}
+.featured-banner-title{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.featured-banner-q{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;font-family:var(--disp)}
+.featured-banner-sub{font-size:10px;color:var(--muted2);margin-top:2px}
 .zapato{font-size:20px}
 .podium-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .podium-card{background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;position:relative;overflow:hidden}
@@ -658,6 +689,7 @@ const CARTA_STATIC = [
   {emoji:"🇦🇷", text:"Argentina es la selección que más finales de Mundial ha disputado en este siglo: 2014 y 2022."},
   {emoji:"🦵", text:"La 'Mano de Dios' de Maradona ocurrió en cuartos de final del Mundial de México 1986."},
   {emoji:"🏆", text:"El Mundial 2026 se juega por primera vez en tres países anfitriones: Canadá, México y Estados Unidos."},
+  {emoji:"🌟", text:"Uruguay luce 4 estrellas en su escudo: 2 por sus Mundiales (1930 y 1950) y 2 por sus oros olímpicos de 1924 y 1928, reconocidos por la FIFA como campeonatos mundiales."},
 ];
 
 function getCartaCandidate(results, now) {
@@ -990,6 +1022,7 @@ function App() {
   const [carta, setCarta] = useState(null);
   const [polls, setPolls] = useState([]);
   const [pollVotes, setPollVotes] = useState({});
+  const [featuredMatch, setFeaturedMatch] = useState(null);
   // Track last-seen timestamp for general messages (per device)
   const [lastSeenGeneral, setLastSeenGeneral] = useState(() => parseInt(localStorage.getItem("q26:lastSeenGeneral") || "0", 10));
   // Push notification subscription state
@@ -1101,6 +1134,8 @@ function App() {
       setPolls(arr.filter(Boolean).sort((a,b) => b.ts - a.ts));
     });
     const u10pollvotes = fbListen("pollvotes", v => setPollVotes(v || {}));
+    // partido de la jornada listener
+    const u11featured = fbListen("featuredMatch", v => setFeaturedMatch(v || null));
     // notifications listener — shows push to any open tab that has permission
     const u6 = fbListen("notifications", v => {
       if (!v || Notification.permission !== "granted") return;
@@ -1118,7 +1153,7 @@ function App() {
       }
     });
     return () => {
-      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u9polls(); u10pollvotes();
+      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u9polls(); u10pollvotes(); u11featured();
     };
   }, [ready]);
 
@@ -1600,6 +1635,11 @@ function App() {
       let pts = 0,
         exact = 0,
         outcome = 0,
+        gdBonus = 0,
+        doubled = 0,
+        shielded = 0,
+        halved = 0,
+        featuredBonus = 0,
         played = 0,
         made = 0;
       for (const g of GROUPS) {
@@ -1610,12 +1650,20 @@ function App() {
           doble: (cm.doble || []).includes(g.id),
           escudo: (cm.escudo || []).includes(g.id)
         };
-        const s = scoreFull(pr, r, sc, opt);
+        let s = scoreFull(pr, r, sc, opt);
         if (s) {
           played++;
+          if (featuredMatch && featuredMatch.id === g.id && s.pts > 0) {
+            featuredBonus += s.pts;
+            s = {...s, pts: s.pts * 2};
+          }
           pts += s.pts;
           if (s.exact) exact++;
+          else if (s.outcome && s.base === sc.gd) gdBonus++;
           if (s.outcome) outcome++;
+          if (s.doubled) doubled++;
+          if (s.shielded) shielded++;
+          if (s.halved) halved++;
         }
       }
       let champOk = false;
@@ -1628,6 +1676,11 @@ function App() {
         pts,
         exact,
         outcome,
+        gdBonus,
+        featuredBonus,
+        doubled,
+        shielded,
+        halved,
         played,
         made,
         champion: mp.champion,
@@ -1635,7 +1688,7 @@ function App() {
         isMe: mem === me
       };
     }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || b.outcome - a.outcome || Number(b.champOk) - Number(a.champOk) || a.name.localeCompare(b.name));
-  }, [pool, preds, results, sc, me, now]);
+  }, [pool, preds, results, sc, me, now, featuredMatch]);
 
   /* ---- FLASH BETS ---- */
   /* ---- AUTO NOTIFICATIONS ---- */
@@ -1655,6 +1708,23 @@ function App() {
   }
   async function clearCarta() {
     await getDb().ref("carta").remove();
+  }
+
+  /* ---- PARTIDO DE LA JORNADA ---- */
+  async function markFeaturedMatch(matchId) {
+    const m = ALL.find(x => x.id === matchId);
+    if (!m) return;
+    const fm = {id: matchId, ts: Date.now()};
+    await fbSet("featuredMatch", fm);
+    notifyAll(
+      "⚽ Partido de la jornada",
+      tName(m.home)+" vs "+tName(m.away)+" vale el DOBLE de puntos 🔥",
+      "⚽"
+    );
+    flash("⚽ Partido de la jornada marcado");
+  }
+  async function clearFeaturedMatch() {
+    await getDb().ref("featuredMatch").remove();
   }
 
   /* ---- ENCUESTAS ---- */
@@ -2001,7 +2071,10 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     createPoll,
     votePoll,
     closePoll,
-    deletePoll
+    deletePoll,
+    featuredMatch,
+    markFeaturedMatch,
+    clearFeaturedMatch
   };
   if (!ready) return /*#__PURE__*/React.createElement("div", {
     className: "splash"
@@ -2187,7 +2260,8 @@ function MatchCard({
   onSet,
   onClear,
   getTools,
-  lk
+  lk,
+  featured
 }) {
   const locked = lk ? lk(m) : isLocked(m);
   const dl = dayLabel(m.kickoff, tz);
@@ -2223,14 +2297,16 @@ function MatchCard({
     if (sresult.shielded) badgeLab = "Escudo 🛡";
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "card match"
+    className: "card match" + (featured ? " featured" : "")
   }, /*#__PURE__*/React.createElement("div", {
     className: "match top"
   }, m.group ? /*#__PURE__*/React.createElement("span", {
     className: "grp"
   }, "Grupo ", m.group) : /*#__PURE__*/React.createElement("span", {
     className: "grp"
-  }, m.stage), /*#__PURE__*/React.createElement("span", {
+  }, m.stage), featured && /*#__PURE__*/React.createElement("span", {
+    className: "featured-badge"
+  }, "🔥 x2"), /*#__PURE__*/React.createElement("span", {
     className: "muted2",
     style: {
       fontSize: 9,
@@ -2518,7 +2594,8 @@ function HomeView({
   polls,
   pollVotes,
   now,
-  safeKey
+  safeKey,
+  featuredMatch
 }) {
   // Admin board state
   const [aCompose, setACompose] = useState(false);
@@ -2560,6 +2637,24 @@ function HomeView({
     setGCompose(false);
   }
   return /*#__PURE__*/React.createElement("div", null, (() => {
+    const fm = featuredMatch ? ALL.find(x => x.id === featuredMatch.id) : null;
+    if (!fm) return null;
+    return /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("div", {
+        className:"featured-banner",
+        style:{cursor:"pointer"},
+        onClick: () => { setView("predict"); window.scrollTo(0,0); }
+      },
+        /*#__PURE__*/React.createElement("span",{className:"featured-banner-icon"},"🔥"),
+        /*#__PURE__*/React.createElement("div",{className:"featured-banner-text"},
+          /*#__PURE__*/React.createElement("div",{className:"featured-banner-title"},"Partido de la jornada · vale x2"),
+          /*#__PURE__*/React.createElement("div",{className:"featured-banner-q"}, tFlag(fm.home)+" "+tName(fm.home)+" vs "+tName(fm.away)+" "+tFlag(fm.away)),
+          /*#__PURE__*/React.createElement("div",{className:"featured-banner-sub"}, "Toca para pronosticar")
+        ),
+        /*#__PURE__*/React.createElement("span",{className:"muted",style:{fontSize:18}},"›")
+      )
+    );
+  })(), (() => {
     const latestPoll = polls && polls.length>0 ? polls[0] : null;
     const pollExpired = latestPoll?.deadline && now > latestPoll.deadline;
     const pollClosed = latestPoll && (latestPoll.status === "closed" || pollExpired);
@@ -2711,61 +2806,19 @@ function HomeView({
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
-  }), "En vivo"), /*#__PURE__*/React.createElement("div", {
-    className: "stat-row"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "stat-card",
-    style: {
-      borderColor: "rgba(246,197,68,.35)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "si"
-  }, "\uD83E\uDD47"), /*#__PURE__*/React.createElement("div", {
-    className: "sl"
-  }, "L\xEDder"), /*#__PURE__*/React.createElement("div", {
-    className: "sv"
-  }, leader?.name || "—"), /*#__PURE__*/React.createElement("div", {
-    className: "sp"
-  }, leader?.pts ?? 0, "pts")), myRank > 0 && me !== leader?.name ? /*#__PURE__*/React.createElement("div", {
-    className: "stat-card",
-    style: {
-      borderColor: "rgba(21,168,90,.3)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "si"
-  }, "\uD83D\uDE4B"), /*#__PURE__*/React.createElement("div", {
-    className: "sl"
-  }, "T\xFA"), /*#__PURE__*/React.createElement("div", {
-    className: "sv"
-  }, "#", myRank), /*#__PURE__*/React.createElement("div", {
-    className: "sp"
-  }, standings[myRank - 1]?.pts ?? 0, "pts")) : /*#__PURE__*/React.createElement("div", {
-    className: "stat-card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "si"
-  }, "\uD83D\uDC65"), /*#__PURE__*/React.createElement("div", {
-    className: "sl"
-  }, "Jugadores"), /*#__PURE__*/React.createElement("div", {
-    className: "sv"
-  }, standings.length), /*#__PURE__*/React.createElement("div", {
-    className: "sp"
-  }, "\xA0")), /*#__PURE__*/React.createElement("div", {
-    className: "stat-card",
-    style: {
-      borderColor: "rgba(255,92,121,.2)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "si"
-  }, "\uD83D\uDE2C"), /*#__PURE__*/React.createElement("div", {
-    className: "sl"
-  }, "\xDAltimo"), /*#__PURE__*/React.createElement("div", {
-    className: "sv"
-  }, last?.name || "—"), /*#__PURE__*/React.createElement("div", {
-    className: "sp"
-  }, last?.pts ?? 0, "pts")))), nextMatch && /*#__PURE__*/React.createElement("div", {
+  }), "🏆 Top 3"), /*#__PURE__*/React.createElement("div", {
+    className: "podium-row"
+  }, standings.slice(0,3).map((p,i)=>/*#__PURE__*/React.createElement("div",{
+    key:p.name,
+    className:"podium-card "+(i===0?"first":i===1?"second":"third")
+  },
+    /*#__PURE__*/React.createElement("div",{className:"podium-medal"}, i===0?"🥇":i===1?"🥈":"🥉"),
+    /*#__PURE__*/React.createElement("div",{className:"podium-name",title:p.name}, p.name),
+    /*#__PURE__*/React.createElement("div",{className:"podium-pts"}, p.pts),
+    /*#__PURE__*/React.createElement("div",{className:"podium-sub"}, "pts"),
+    p.name===me && /*#__PURE__*/React.createElement("span",{className:"chip green",style:{fontSize:8,marginTop:4}},"TÚ")
+  )))), nextMatch && /*#__PURE__*/React.createElement("div", {
     className: "section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "home-split2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "next-match"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2784,25 +2837,8 @@ function HomeView({
     className: "nm-tname away"
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group)),
-    /*#__PURE__*/React.createElement("div", {className:"carta-card"},
-      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
-      carta
-        ? /*#__PURE__*/React.createElement(React.Fragment, null,
-            /*#__PURE__*/React.createElement("div", {className:"carta-row"},
-              /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
-              /*#__PURE__*/React.createElement("div",{className:"carta-text"}, truncate(carta.text, 100))
-            ),
-            carta.ts && /*#__PURE__*/React.createElement("div",{className:"carta-date"},
-              new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
-            )
-          )
-        : /*#__PURE__*/React.createElement("div",{className:"sabias-empty"},
-            /*#__PURE__*/React.createElement("div",{className:"se-icon"},"💡"),
-            /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10}},"Próximamente...")
-          )
-    )
-  )), !nextMatch && carta && /*#__PURE__*/React.createElement("div", {className:"section"},
+  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))
+  ), carta && /*#__PURE__*/React.createElement("div", {className:"section"},
     /*#__PURE__*/React.createElement("div", {className:"carta-card"},
       /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
       /*#__PURE__*/React.createElement("div", {className:"carta-row"},
@@ -3101,7 +3137,8 @@ function PredictView({
   reqs,
   lk,
   classicMode,
-  tournamentStarted
+  tournamentStarted,
+  featuredMatch
 }) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {
     setModal: setModal,
@@ -3126,7 +3163,8 @@ function PredictView({
     pred: myPreds.matches[m.id],
     actual: results.matches[m.id],
     onSet: setPrediction,
-    onClear: clearPrediction
+    onClear: clearPrediction,
+    featured: featuredMatch && featuredMatch.id === m.id
   });
   return /*#__PURE__*/React.createElement("div", null, gateOn && !canPlay && /*#__PURE__*/React.createElement("div", {
     className: "section"
@@ -3264,7 +3302,8 @@ function CalendarView({
   setModal,
   getTools,
   lk,
-  isMaster
+  isMaster,
+  featuredMatch
 }) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {
     setModal: setModal,
@@ -3326,7 +3365,8 @@ function CalendarView({
       pred: myPreds.matches[m.id],
       actual: results.matches[m.id],
       onSet: setPrediction,
-      onClear: clearPrediction
+      onClear: clearPrediction,
+      featured: featuredMatch && featuredMatch.id === m.id
     })));
   })));
 }
@@ -3351,79 +3391,103 @@ function TableView({
   }, "\uD83D\uDC65"), "No hay participantes aprobados todav\xEDa."));
   const top3 = standings.slice(0, 3);
   const medals = ["🥇", "🥈", "🥉"];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "section"
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      justifyContent: "center",
-      flexWrap: "wrap",
-      margin: "8px 0 16px"
-    }
-  }, top3.map((p, i) => /*#__PURE__*/React.createElement("div", {
-    key: p.name,
-    className: "card pad",
-    style: {
-      textAlign: "center",
-      flex: 1,
-      minWidth: 80,
-      maxWidth: 140
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 26
-    }
-  }, medals[i]), /*#__PURE__*/React.createElement("div", {
-    className: "disp",
-    style: {
-      fontWeight: 800,
-      fontSize: 13,
-      textTransform: "uppercase",
-      marginTop: 4
-    }
-  }, p.name), /*#__PURE__*/React.createElement("div", {
-    className: "mono",
-    style: {
-      fontSize: 20,
-      color: "var(--gold)",
-      fontWeight: 800
-    }
-  }, p.pts), /*#__PURE__*/React.createElement("div", {
-    className: "muted small"
-  }, "pts")))), /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      overflow: "auto"
-    }
-  }, /*#__PURE__*/React.createElement("table", {
-    className: "standings"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", {
-    style: {
-      textAlign: "left"
-    }
-  }, "Nombre"), /*#__PURE__*/React.createElement("th", null, "Pts"), /*#__PURE__*/React.createElement("th", null, "Exact"), /*#__PURE__*/React.createElement("th", null, "Acier"), /*#__PURE__*/React.createElement("th", null, "Campn"))), /*#__PURE__*/React.createElement("tbody", null, standings.map((p, i) => /*#__PURE__*/React.createElement("tr", {
-    key: p.name,
-    className: p.isMe ? "me" : ""
-  }, /*#__PURE__*/React.createElement("td", {
-    className: "muted2"
-  }, i + 1), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, p.name)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: "var(--gold)"
-    }
-  }, p.pts)), /*#__PURE__*/React.createElement("td", null, p.exact), /*#__PURE__*/React.createElement("td", null, p.outcome), /*#__PURE__*/React.createElement("td", null, p.champion ? tFlag(p.champion) : "", p.champOk ? "✅" : "")))))), /*#__PURE__*/React.createElement("div", {
-    className: "hint",
-    style: {
-      marginTop: 8,
-      fontSize: 11
-    }
-  }, "Desempate: 1) m\xE1s exactos \xB7 2) m\xE1s aciertos \xB7 3) acert\xF3 el campe\xF3n"), standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"muro-card",style:{marginTop:12}},
-    /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro de la Vergüenza"),
-    /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
-    /*#__PURE__*/React.createElement("div", {className:"muro-name"}, standings[standings.length-1].name),
-    /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, standings[standings.length-1].pts," pts · Último lugar 😬"),
-    /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, "¡"+standings[standings.length-1].name+" necesita un milagro futbolero! 😂")
-  )));
+  const [openRow, setOpenRow] = useState(null);
+  const standingsRows = standings.map((p, i) => {
+    const isOpen = openRow === p.name;
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.name,
+      className: "std-row" + (p.isMe ? " me" : "")
+    },
+      /*#__PURE__*/React.createElement("div", {
+        className: "std-head",
+        onClick: () => setOpenRow(isOpen ? null : p.name)
+      },
+        /*#__PURE__*/React.createElement("span", {className:"std-pos"}, i+1),
+        /*#__PURE__*/React.createElement("span", {className:"std-name"}, p.name, p.isMe && " (tú)"),
+        /*#__PURE__*/React.createElement("span", {className:"std-pts"}, p.pts, " pts"),
+        /*#__PURE__*/React.createElement("span", {className:"std-chev"+(isOpen?" open":"")}, "›")
+      ),
+      isOpen && /*#__PURE__*/React.createElement("div", {className:"std-breakdown"},
+        /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "✨ Resultados exactos (×"+sc.exact+")"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"+(p.exact===0?" zero":"")}, p.exact+" = "+(p.exact*sc.exact)+" pts")
+        ),
+        sc.useGd && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "📐 Bonus diferencia (×"+sc.gd+")"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"+(p.gdBonus===0?" zero":"")}, p.gdBonus+" = "+(p.gdBonus*sc.gd)+" pts")
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "⚽ Resultado básico, 1/X/2 (×"+sc.win+")"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"+(p.outcome-p.exact-p.gdBonus<=0?" zero":"")}, Math.max(0,p.outcome-p.exact-p.gdBonus)+" = "+(Math.max(0,p.outcome-p.exact-p.gdBonus)*sc.win)+" pts")
+        ),
+        p.doubled>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🃏 Comodín Doblar usado"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.doubled+" partido"+(p.doubled!==1?"s":""))
+        ),
+        p.shielded>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🛡️ Comodín Escudo usado"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.shielded+" partido"+(p.shielded!==1?"s":""))
+        ),
+        p.halved>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "⏱️ Pronóstico tardío (mitad pts)"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.halved+" partido"+(p.halved!==1?"s":""))
+        ),
+        p.featuredBonus>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🔥 Bonus partido de la jornada (×2)"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"}, "+"+p.featuredBonus+" pts")
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🏆 Campeón acertado (×"+sc.champion+")"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"+(!p.champOk?" zero":"")}, p.champOk ? (tFlag(p.champion)+" = "+sc.champion+" pts") : "No acertado")
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "📝 Pronósticos completados"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.made+" / "+GROUPS.length)
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"std-total-row"},
+          /*#__PURE__*/React.createElement("span", null, "Total"),
+          /*#__PURE__*/React.createElement("span", {className:"sc-val"}, p.pts+" pts")
+        )
+      )
+    );
+  });
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("div", {className: "section"},
+      /*#__PURE__*/React.createElement("div", {
+        style: {display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", margin: "8px 0 16px"}
+      }, top3.map((p, i) => /*#__PURE__*/React.createElement("div", {
+        key: p.name,
+        className: "card pad",
+        style: {textAlign: "center", flex: 1, minWidth: 80, maxWidth: 140}
+      },
+        /*#__PURE__*/React.createElement("div", {style: {fontSize: 26}}, medals[i]),
+        /*#__PURE__*/React.createElement("div", {
+          className: "disp",
+          style: {fontWeight: 800, fontSize: 13, textTransform: "uppercase", marginTop: 4}
+        }, p.name),
+        /*#__PURE__*/React.createElement("div", {
+          className: "mono",
+          style: {fontSize: 20, color: "var(--gold)", fontWeight: 800}
+        }, p.pts),
+        /*#__PURE__*/React.createElement("div", {className: "muted small"}, "pts")
+      )))
+    ),
+    /*#__PURE__*/React.createElement("div", {className: "section"},
+      /*#__PURE__*/React.createElement("div", {className:"hint", style:{marginBottom:10, fontSize:11}}, "Toca a cualquier jugador para ver el desglose completo de sus puntos."),
+      standingsRows,
+      /*#__PURE__*/React.createElement("div", {
+        className: "hint",
+        style: {marginTop: 8, fontSize: 11}
+      }, "Desempate: 1) m\xE1s exactos \xB7 2) m\xE1s aciertos \xB7 3) acert\xF3 el campe\xF3n"),
+      standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"muro-card",style:{marginTop:12}},
+        /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro de la Vergüenza"),
+        /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
+        /*#__PURE__*/React.createElement("div", {className:"muro-name"}, standings[standings.length-1].name),
+        /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, standings[standings.length-1].pts," pts · Último lugar 😬"),
+        /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, "¡"+standings[standings.length-1].name+" necesita un milagro futbolero! 😂")
+      )
+    )
+  );
 }
 
 /* ---- CUENTA (no-master) ---- */
@@ -3876,7 +3940,10 @@ function PanelView({
   carta,
   publishCarta,
   clearCarta,
-  now
+  now,
+  featuredMatch,
+  markFeaturedMatch,
+  clearFeaturedMatch
 }) {
   const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");
@@ -3890,6 +3957,10 @@ function PanelView({
   const [syncLog, setSyncLog] = useState([]);
   const [syncing, setSyncing] = useState(false);
   const [cartaPreview, setCartaPreview] = useState(null);
+  const [cartaMode, setCartaMode] = useState("generar");
+  const [cartaFreeText, setCartaFreeText] = useState("");
+  const [cartaFreeEmoji, setCartaFreeEmoji] = useState("💡");
+  const [featuredPick, setFeaturedPick] = useState(null);
 
   // Map API team names/codes to our codes
   const API_TEAM_MAP = {
@@ -4010,7 +4081,7 @@ function PanelView({
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
   }), "Crear tu primera quiniela"), CreateBox));
-  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"]];
+  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"], ["jornada", "🔥 Jornada"]];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -4472,29 +4543,56 @@ function PanelView({
     className: "section"
   },
     /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "💡 ¿Sabías que...?"),
-    /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
-      "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio."
+    /*#__PURE__*/React.createElement("div",{className:"filterbar", style:{marginBottom:10}},
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(cartaMode==="generar"?" active":""), onClick:()=>setCartaMode("generar")}, "🔄 Generar"),
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(cartaMode==="libre"?" active":""), onClick:()=>setCartaMode("libre")}, "✏️ Escribir la mía")
     ),
-    /*#__PURE__*/React.createElement("button", {
-      className: "sync-btn",
-      onClick: () => setCartaPreview(getCartaCandidate(results, now))
-    }, "🔄 Generar dato curioso"),
 
-    cartaPreview && /*#__PURE__*/React.createElement("div", {className:"carta-preview"},
-      /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, cartaPreview.emoji),
-      /*#__PURE__*/React.createElement("div",{style:{flex:1}},
-        /*#__PURE__*/React.createElement("div",{className:"carta-text"}, cartaPreview.text),
-        /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:8,marginTop:10}},
-          /*#__PURE__*/React.createElement("button",{
-            className:"btn primary sm",
-            onClick: () => { publishCarta(cartaPreview.text, cartaPreview.emoji); setCartaPreview(null); }
-          }, "📢 Publicar a todos"),
-          /*#__PURE__*/React.createElement("button",{
-            className:"btn ghost sm",
-            onClick: () => setCartaPreview(getCartaCandidate(results, now))
-          }, "🔄 Otro")
+    cartaMode === "generar" && /*#__PURE__*/React.createElement(React.Fragment, null,
+      /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
+        "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio."
+      ),
+      /*#__PURE__*/React.createElement("button", {
+        className: "sync-btn",
+        onClick: () => setCartaPreview(getCartaCandidate(results, now))
+      }, "🔄 Generar dato curioso"),
+
+      cartaPreview && /*#__PURE__*/React.createElement("div", {className:"carta-preview"},
+        /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, cartaPreview.emoji),
+        /*#__PURE__*/React.createElement("div",{style:{flex:1}},
+          /*#__PURE__*/React.createElement("div",{className:"carta-text"}, cartaPreview.text),
+          /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:8,marginTop:10}},
+            /*#__PURE__*/React.createElement("button",{
+              className:"btn primary sm",
+              onClick: () => { publishCarta(cartaPreview.text, cartaPreview.emoji); setCartaPreview(null); }
+            }, "📢 Publicar a todos"),
+            /*#__PURE__*/React.createElement("button",{
+              className:"btn ghost sm",
+              onClick: () => setCartaPreview(getCartaCandidate(results, now))
+            }, "🔄 Otro")
+          )
         )
       )
+    ),
+
+    cartaMode === "libre" && /*#__PURE__*/React.createElement(React.Fragment, null,
+      /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
+        "Escribe tu propio dato curioso, anuncio o mensaje y publícalo directo."
+      ),
+      /*#__PURE__*/React.createElement("div",{className:"field", style:{marginTop:0}},
+        /*#__PURE__*/React.createElement("label",null,"Emoji"),
+        /*#__PURE__*/React.createElement("input",{className:"bare", value:cartaFreeEmoji, maxLength:4, style:{maxWidth:80,textAlign:"center",fontSize:20}, onChange:e=>setCartaFreeEmoji(e.target.value)})
+      ),
+      /*#__PURE__*/React.createElement("div",{className:"field"},
+        /*#__PURE__*/React.createElement("label",null,"Texto"),
+        /*#__PURE__*/React.createElement("textarea",{className:"bare", value:cartaFreeText, rows:3, placeholder:"Escribe tu dato curioso o mensaje…", style:{resize:"vertical",fontFamily:"var(--body)"}, onChange:e=>setCartaFreeText(e.target.value)})
+      ),
+      /*#__PURE__*/React.createElement("button",{
+        className:"btn primary",
+        style:{width:"100%"},
+        disabled: !cartaFreeText.trim(),
+        onClick: () => { publishCarta(cartaFreeText.trim(), cartaFreeEmoji.trim()||"💡"); setCartaFreeText(""); }
+      }, "📢 Publicar a todos")
     ),
 
     /*#__PURE__*/React.createElement("div",{style:{marginTop:16}},
@@ -4514,6 +4612,43 @@ function PanelView({
           )
         : /*#__PURE__*/React.createElement("div",{className:"card pad muted small"}, "No hay carta publicada en este momento.")
     )
+  )), tab === "jornada" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "section"
+  },
+    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🔥 Partido de la jornada"),
+    /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 14px"}},
+      "Marca un partido especial que otorgue el ", /*#__PURE__*/React.createElement("b",null,"doble de puntos"), " a todos en la quiniela. Se notifica automáticamente a la familia."
+    ),
+
+    featuredMatch && (() => {
+      const fm = ALL.find(x => x.id === featuredMatch.id);
+      if (!fm) return null;
+      return /*#__PURE__*/React.createElement("div", {className:"featured-current-card"},
+        /*#__PURE__*/React.createElement("div", {style:{fontSize:9,fontWeight:800,letterSpacing:.5,textTransform:"uppercase",color:"var(--gold)",marginBottom:8}}, "🔥 Activo ahora · vale x2"),
+        /*#__PURE__*/React.createElement("div", {className:"row between", style:{alignItems:"center"}},
+          /*#__PURE__*/React.createElement("span", {style:{fontFamily:"var(--disp)",fontWeight:800,fontSize:14,textTransform:"uppercase"}},
+            tFlag(fm.home)+" "+tName(fm.home)+" vs "+tName(fm.away)+" "+tFlag(fm.away)
+          ),
+          /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger", onClick:clearFeaturedMatch}, "Quitar")
+        )
+      );
+    })(),
+
+    /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:8}}, "Elige el próximo partido a destacar:"),
+    GROUPS.filter(g => !lk(g)).slice(0,10).map(g => /*#__PURE__*/React.createElement("div", {
+      key: g.id,
+      className: "featured-select-row" + (featuredMatch?.id===g.id ? " current" : ""),
+      onClick: () => setFeaturedPick(g.id)
+    },
+      /*#__PURE__*/React.createElement("span",null, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
+      /*#__PURE__*/React.createElement("span",{className:"muted small",style:{marginLeft:"auto"}}, "Gr."+g.group)
+    )),
+
+    featuredPick && featuredPick !== featuredMatch?.id && /*#__PURE__*/React.createElement("button", {
+      className: "btn primary",
+      style: {width:"100%", marginTop:10},
+      onClick: () => { markFeaturedMatch(featuredPick); setFeaturedPick(null); }
+    }, "🔥 Confirmar como partido de la jornada")
   )));
 }
 

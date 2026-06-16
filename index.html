@@ -690,9 +690,31 @@ const CARTA_STATIC = [
   {emoji:"🦵", text:"La 'Mano de Dios' de Maradona ocurrió en cuartos de final del Mundial de México 1986."},
   {emoji:"🏆", text:"El Mundial 2026 se juega por primera vez en tres países anfitriones: Canadá, México y Estados Unidos."},
   {emoji:"🌟", text:"Uruguay luce 4 estrellas en su escudo: 2 por sus Mundiales (1930 y 1950) y 2 por sus oros olímpicos de 1924 y 1928, reconocidos por la FIFA como campeonatos mundiales."},
+  {emoji:"🥈", text:"Alemania ostenta el invicto récord de ser el equipo con más finales jugadas: 8 finales de Mundial."},
+  {emoji:"👶", text:"Pelé se convirtió en campeón del mundo con solo 17 años en 1958, el más joven en lograrlo."},
+  {emoji:"🧓", text:"Roger Milla, de Camerún, anotó un gol en Estados Unidos 1994 a los 42 años, el goleador más veterano en la historia del Mundial."},
+  {emoji:"📺", text:"El Mundial de Sudáfrica 2010 fue el primero en transmitirse en alta definición 3D para algunos partidos."},
+  {emoji:"🚫", text:"Italia y Países Bajos comparten la curiosa marca de no haber clasificado a algún Mundial reciente pese a su historia futbolística."},
+  {emoji:"⚽", text:"El balón oficial de cada Mundial tiene nombre propio; el de 2022 en Qatar se llamó 'Al Rihla', que significa 'el viaje' en árabe."},
+  {emoji:"🎯", text:"Geoff Hurst es el único jugador en anotar un triplete (hat-trick) en una final de Mundial: Inglaterra 1966."},
+  {emoji:"🔴", text:"La primera tarjeta roja en la historia de los Mundiales se mostró en México 1970, al chileno Carlos Caszely."},
+  {emoji:"🇸🇳", text:"Senegal fue el primer equipo africano en llegar a cuartos de final de un Mundial, en Corea-Japón 2002."},
+  {emoji:"🥇", text:"Italia y Brasil comparten el récord de más Mundiales ganados consecutivos: cada uno ganó 2 seguidos (1934-38 y 1958-62)."},
+  {emoji:"🇰🇷", text:"Corea del Sur y Japón fueron coanfitriones del Mundial 2002, el primero realizado en Asia y con sede compartida."},
+  {emoji:"📈", text:"El primer Mundial transmitido por televisión en vivo a varios países fue Suiza 1954."},
+  {emoji:"🧤", text:"Lev Yashin, portero soviético, es el único arquero en ganar el Balón de Oro, aunque no por un Mundial específico."},
+  {emoji:"🇫🇷", text:"Francia ganó su primer Mundial como anfitrión en 1998, derrotando a Brasil 3-0 en la final."},
+  {emoji:"💰", text:"El primer Mundial con premio económico para el campeón fue México 1970."},
+  {emoji:"🌡️", text:"Qatar 2022 fue el Mundial más caro de la historia, con una inversión estimada de más de 200 mil millones de dólares."},
+  {emoji:"🏃", text:"El jugador con más partidos disputados en Mundiales es Lionel Messi, con 26 presencias hasta Qatar 2022."},
+  {emoji:"🇩🇪", text:"Alemania fue el primer país en ganar el Mundial tras una reunificación, en 1990, justo antes de la caída del Muro."},
+  {emoji:"🎪", text:"El himno oficial del Mundial 2010 'Waka Waka' de Shakira es una de las canciones de FIFA más escuchadas de la historia."},
+  {emoji:"🧮", text:"Solo 8 selecciones han ganado un Mundial: Brasil, Alemania, Italia, Argentina, Francia, Uruguay, Inglaterra y España."},
 ];
 
-function getCartaCandidate(results, now) {
+const CARTA_EXCLUDE_PHRASES = []; // populated dynamically via history filter
+
+function getCartaCandidate(results, now, history) {
   const dynamic = [];
 
   // Goals so far + comparison to 2022
@@ -765,7 +787,10 @@ function getCartaCandidate(results, now) {
   });
 
   const pool = [...CARTA_STATIC, ...dynamic];
-  return pool[Math.floor(Math.random()*pool.length)];
+  const used = new Set(history || []);
+  const fresh = pool.filter(c => !used.has(c.text));
+  const finalPool = fresh.length > 0 ? fresh : pool; // if all used, allow repeats
+  return finalPool[Math.floor(Math.random()*finalPool.length)];
 }
 
 
@@ -1020,6 +1045,7 @@ function App() {
   const [flashBets, setFlashBets] = useState([]);
   const [flashVotes, setFlashVotes] = useState({});
   const [carta, setCarta] = useState(null);
+  const [cartaHistory, setCartaHistory] = useState([]);
   const [polls, setPolls] = useState([]);
   const [pollVotes, setPollVotes] = useState({});
   const [featuredMatch, setFeaturedMatch] = useState(null);
@@ -1127,6 +1153,7 @@ function App() {
     const u7flash = fbListen("flashvotes", v => setFlashVotes(v || {}));
     // carta del día listener
     const u8carta = fbListen("carta", v => setCarta(v || null));
+    const u8history = fbListen("cartaHistory", v => setCartaHistory(Array.isArray(v) ? v : (v ? Object.values(v) : [])));
     // polls listeners
     const u9polls = fbListen("polls", v => {
       if (!v) { setPolls([]); return; }
@@ -1153,7 +1180,7 @@ function App() {
       }
     });
     return () => {
-      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u9polls(); u10pollvotes(); u11featured();
+      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u8history(); u9polls(); u10pollvotes(); u11featured();
     };
   }, [ready]);
 
@@ -1703,11 +1730,21 @@ function App() {
   async function publishCarta(text, emoji) {
     const c = {text, emoji, ts: Date.now()};
     await fbSet("carta", c);
+    // track history to avoid repeats
+    try {
+      const hist = (await fbGet("cartaHistory")) || [];
+      const next = [...hist, text].slice(-60); // keep last 60
+      await fbSet("cartaHistory", next);
+    } catch(e) { /* ignore */ }
     notifyAll("💡 ¿Sabías que...?", emoji+" "+text, "💡");
     flash("📰 Carta publicada");
   }
   async function clearCarta() {
     await getDb().ref("carta").remove();
+  }
+  async function clearCartaHistory() {
+    await getDb().ref("cartaHistory").remove();
+    flash("🗑️ Historial de cartas borrado");
   }
 
   /* ---- PARTIDO DE LA JORNADA ---- */
@@ -2066,6 +2103,8 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     carta,
     publishCarta,
     clearCarta,
+    cartaHistory,
+    clearCartaHistory,
     polls,
     pollVotes,
     createPoll,
@@ -2817,7 +2856,18 @@ function HomeView({
     /*#__PURE__*/React.createElement("div",{className:"podium-pts"}, p.pts),
     /*#__PURE__*/React.createElement("div",{className:"podium-sub"}, "pts"),
     p.name===me && /*#__PURE__*/React.createElement("span",{className:"chip green",style:{fontSize:8,marginTop:4}},"TÚ")
-  )))), nextMatch && /*#__PURE__*/React.createElement("div", {
+  )))), carta && /*#__PURE__*/React.createElement("div", {className:"section"},
+    /*#__PURE__*/React.createElement("div", {className:"carta-card"},
+      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
+      /*#__PURE__*/React.createElement("div", {className:"carta-row"},
+        /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
+        /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
+      ),
+      carta.ts && /*#__PURE__*/React.createElement("div",{className:"carta-date"},
+        new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+      )
+    )
+  ), nextMatch && /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "next-match"
@@ -2838,17 +2888,6 @@ function HomeView({
   }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
     className: "nm-time"
   }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))
-  ), carta && /*#__PURE__*/React.createElement("div", {className:"section"},
-    /*#__PURE__*/React.createElement("div", {className:"carta-card"},
-      /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
-      /*#__PURE__*/React.createElement("div", {className:"carta-row"},
-        /*#__PURE__*/React.createElement("span",{className:"carta-emoji"}, carta.emoji||"📰"),
-        /*#__PURE__*/React.createElement("div",{className:"carta-text"}, carta.text)
-      ),
-      carta.ts && /*#__PURE__*/React.createElement("div",{className:"carta-date"},
-        new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
-      )
-    )
   ), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
     /*#__PURE__*/React.createElement("div", {className:"home-split"},
       /*#__PURE__*/React.createElement("div", {className:"muro-card"},
@@ -3940,6 +3979,8 @@ function PanelView({
   carta,
   publishCarta,
   clearCarta,
+  cartaHistory,
+  clearCartaHistory,
   now,
   featuredMatch,
   markFeaturedMatch,
@@ -4550,11 +4591,15 @@ function PanelView({
 
     cartaMode === "generar" && /*#__PURE__*/React.createElement(React.Fragment, null,
       /*#__PURE__*/React.createElement("p", {className:"muted small", style:{margin:"0 0 10px"}},
-        "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio."
+        "Genera un dato curioso (estadísticas reales del torneo o trivia mundialista) y publícalo para que todos lo vean en Inicio. Los ya publicados no se repiten."
+      ),
+      cartaHistory.length > 0 && /*#__PURE__*/React.createElement("div", {className:"row between", style:{marginBottom:8}},
+        /*#__PURE__*/React.createElement("span",{className:"muted small"}, "📚 "+cartaHistory.length+" dato(s) ya publicados"),
+        /*#__PURE__*/React.createElement("button",{className:"btn ghost sm", style:{fontSize:10}, onClick:()=>{if(confirm("¿Permitir que se repitan los datos ya publicados?"))clearCartaHistory();}}, "Reiniciar historial")
       ),
       /*#__PURE__*/React.createElement("button", {
         className: "sync-btn",
-        onClick: () => setCartaPreview(getCartaCandidate(results, now))
+        onClick: () => setCartaPreview(getCartaCandidate(results, now, cartaHistory))
       }, "🔄 Generar dato curioso"),
 
       cartaPreview && /*#__PURE__*/React.createElement("div", {className:"carta-preview"},
@@ -4568,7 +4613,7 @@ function PanelView({
             }, "📢 Publicar a todos"),
             /*#__PURE__*/React.createElement("button",{
               className:"btn ghost sm",
-              onClick: () => setCartaPreview(getCartaCandidate(results, now))
+              onClick: () => setCartaPreview(getCartaCandidate(results, now, cartaHistory))
             }, "🔄 Otro")
           )
         )

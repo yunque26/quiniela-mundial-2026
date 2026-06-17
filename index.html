@@ -339,6 +339,23 @@ select.bare{-webkit-appearance:none;appearance:none}
 .gol-row .gv{font-family:var(--mono);font-weight:800;color:var(--gold);flex-shrink:0}
 .gol-empty{font-size:24px;margin-bottom:4px}
 
+/* ===== RACHA DE ACIERTOS ===== */
+.streak-card{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,138,61,.02));border:1px solid rgba(255,138,61,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.streak-fire{font-size:30px;flex-shrink:0}
+.streak-text{flex:1;min-width:0}
+.streak-title{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#ff8a3d;margin-bottom:2px}
+.streak-name{font-size:14px;font-weight:800;font-family:var(--disp);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.streak-sub{font-size:10px;color:var(--muted2);margin-top:2px}
+.streak-num{font-family:var(--mono);font-weight:800;font-size:24px;color:#ff8a3d;flex-shrink:0}
+
+/* ===== REACTIONS ===== */
+.reaction-bar{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.reaction-chip{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:999px;padding:4px 9px;font-size:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.reaction-chip:hover{border-color:var(--gold)}
+.reaction-chip.active{background:rgba(246,197,68,.15);border-color:var(--gold)}
+.reaction-count{font-family:var(--mono);font-weight:800;font-size:10px;color:var(--muted)}
+.reaction-chip.active .reaction-count{color:var(--gold)}
+
 /* ===== STANDINGS BREAKDOWN ===== */
 .std-row{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
 .std-row.me{border-color:rgba(21,168,90,.4);background:rgba(21,168,90,.05)}
@@ -1058,6 +1075,7 @@ function App() {
   const [pollVotes, setPollVotes] = useState({});
   const [featuredMatch, setFeaturedMatch] = useState(null);
   const [wcScorers, setWcScorers] = useState([]);
+  const [reactions, setReactions] = useState({});
   // Track last-seen timestamp for general messages (per device)
   const [lastSeenGeneral, setLastSeenGeneral] = useState(() => parseInt(localStorage.getItem("q26:lastSeenGeneral") || "0", 10));
   // Push notification subscription state
@@ -1177,6 +1195,7 @@ function App() {
       const arr = typeof v === "object" && !Array.isArray(v) ? Object.values(v) : Array.isArray(v) ? v : [];
       setWcScorers(arr.filter(Boolean).sort((a,b) => b.goals - a.goals));
     });
+    const u13reactions = fbListen("reactions", v => setReactions(v || {}));
     // notifications listener — shows push to any open tab that has permission
     const u6 = fbListen("notifications", v => {
       if (!v || Notification.permission !== "granted") return;
@@ -1194,7 +1213,7 @@ function App() {
       }
     });
     return () => {
-      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u8history(); u9polls(); u10pollvotes(); u11featured(); u12scorers();
+      u1(); u2(); u3(); u4(); u5(); u6(); u6flash(); u7flash(); u8carta(); u8history(); u9polls(); u10pollvotes(); u11featured(); u12scorers(); u13reactions();
     };
   }, [ready]);
 
@@ -1692,7 +1711,8 @@ function App() {
         halved = 0,
         featuredBonus = 0,
         played = 0,
-        made = 0;
+        made = 0,
+        streak = 0;
       for (const g of GROUPS) {
         const pr = mp.matches[g.id];
         if (pr && pr.h != null && pr.a != null) made++;
@@ -1715,6 +1735,9 @@ function App() {
           if (s.doubled) doubled++;
           if (s.shielded) shielded++;
           if (s.halved) halved++;
+          // streak: consecutive played matches with a hit (exact or outcome)
+          if (s.exact || s.outcome) streak++;
+          else streak = 0;
         }
       }
       let champOk = false;
@@ -1734,6 +1757,7 @@ function App() {
         halved,
         played,
         made,
+        streak,
         champion: mp.champion,
         champOk,
         isMe: mem === me
@@ -1803,6 +1827,20 @@ function App() {
   async function removeWcScorer(id) {
     const next = wcScorers.filter(s => s.id !== id);
     await saveWcScorers(next);
+  }
+
+  /* ---- REACCIONES RÁPIDAS ---- */
+  const REACTION_EMOJIS = ["🔥","😂","😱","👏","🤔"];
+  async function toggleReaction(targetId, emoji) {
+    if (!me) { setModal("identity"); return; }
+    const key = safeKey(me);
+    const current = reactions[targetId]?.[emoji]?.[key];
+    const path = "reactions/" + targetId + "/" + emoji + "/" + key;
+    if (current) {
+      await getDb().ref(path).remove();
+    } else {
+      await fbSet(path, true);
+    }
   }
 
   /* ---- ENCUESTAS ---- */
@@ -2163,7 +2201,10 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     addWcScorer,
     updateWcScorer,
     removeWcScorer,
-    saveWcScorers
+    saveWcScorers,
+    reactions,
+    toggleReaction,
+    REACTION_EMOJIS
   };
   if (!ready) return /*#__PURE__*/React.createElement("div", {
     className: "splash"
@@ -2339,6 +2380,29 @@ function Stepper({
     disabled: locked || value <= 0 || value == null,
     onClick: () => onChange((value ?? 0) - 1)
   }, "\u2212"));
+}
+
+/* =========================================================
+   REACTION BAR — reusable quick-reactions component
+   ========================================================= */
+function ReactionBar({targetId, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey}) {
+  const myKey = me ? safeKey(me) : null;
+  const targetReactions = reactions[targetId] || {};
+  return /*#__PURE__*/React.createElement("div", {className:"reaction-bar"},
+    REACTION_EMOJIS.map(emoji => {
+      const users = targetReactions[emoji] || {};
+      const count = Object.keys(users).length;
+      const mine = myKey && !!users[myKey];
+      return /*#__PURE__*/React.createElement("button", {
+        key: emoji,
+        className: "reaction-chip" + (mine ? " active" : ""),
+        onClick: () => toggleReaction(targetId, emoji)
+      },
+        /*#__PURE__*/React.createElement("span",null, emoji),
+        count > 0 && /*#__PURE__*/React.createElement("span",{className:"reaction-count"}, count)
+      );
+    })
+  );
 }
 function MatchCard({
   m,
@@ -2684,7 +2748,10 @@ function HomeView({
   pollVotes,
   now,
   safeKey,
-  featuredMatch
+  featuredMatch,
+  reactions,
+  toggleReaction,
+  REACTION_EMOJIS
 }) {
   // Admin board state
   const [aCompose, setACompose] = useState(false);
@@ -2859,7 +2926,7 @@ function HomeView({
       padding: "3px 7px"
     },
     onClick: () => deleteMessage(msg.id, "admin")
-  }, "\u2715")))), adminHist.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "\u2715"))), /*#__PURE__*/React.createElement(ReactionBar,{targetId:"msg_"+msg.id, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey})), adminHist.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       marginTop: 4
@@ -2965,7 +3032,21 @@ function HomeView({
             )
       )
     )
-  ), /*#__PURE__*/React.createElement("div", {
+  ), (() => {
+    const streakLeader = standings.filter(p => p.streak >= 3).sort((a,b) => b.streak - a.streak)[0];
+    if (!streakLeader) return null;
+    return /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("div", {className:"streak-card"},
+        /*#__PURE__*/React.createElement("span",{className:"streak-fire"}, "🔥"),
+        /*#__PURE__*/React.createElement("div",{className:"streak-text"},
+          /*#__PURE__*/React.createElement("div",{className:"streak-title"}, "Racha caliente"),
+          /*#__PURE__*/React.createElement("div",{className:"streak-name"}, streakLeader.name+(streakLeader.isMe?" (tú)":"")),
+          /*#__PURE__*/React.createElement("div",{className:"streak-sub"}, "lleva "+streakLeader.streak+" partidos acertados seguidos")
+        ),
+        /*#__PURE__*/React.createElement("div",{className:"streak-num"}, "×"+streakLeader.streak)
+      )
+    );
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "row between",
@@ -3079,7 +3160,7 @@ function HomeView({
       lineHeight: 1.45,
       color: "var(--text)"
     }
-  }, msg.text))), genHasMore && /*#__PURE__*/React.createElement("button", {
+  }, msg.text), /*#__PURE__*/React.createElement(ReactionBar,{targetId:"msg_"+msg.id, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey}))), genHasMore && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     style: {
       width: "100%",
@@ -3532,6 +3613,10 @@ function TableView({
         /*#__PURE__*/React.createElement("div", {className:"std-concept"},
           /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "📝 Pronósticos completados"),
           /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.made+" / "+GROUPS.length)
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+          /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🔥 Racha actual de aciertos"),
+          /*#__PURE__*/React.createElement("span",{className:"sc-val"+(p.streak===0?" zero":"")}, p.streak+" partido"+(p.streak!==1?"s":""))
         ),
         /*#__PURE__*/React.createElement("div", {className:"std-total-row"},
           /*#__PURE__*/React.createElement("span", null, "Total"),
@@ -4796,7 +4881,8 @@ function PanelView({
    ========================================================= */
 function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, flashVotes, goleadores,
   createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash, now,
-  polls, pollVotes, createPoll, votePoll, closePoll, deletePoll, safeKey}) {
+  polls, pollVotes, createPoll, votePoll, closePoll, deletePoll, safeKey,
+  reactions, toggleReaction, REACTION_EMOJIS}) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
 
   const LOCAS_PRESET = [
@@ -4926,7 +5012,8 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
           (bet.opts||[]).map((opt,i)=>/*#__PURE__*/React.createElement("button",{key:i,className:"btn primary sm",style:{fontSize:10},onClick:()=>resolveFlash(bet.id,opt)},opt))
         ),
         isMaster && /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",style:{fontSize:10,marginLeft:"4px"},onClick:()=>{if(confirm("¿Eliminar?"))deleteFlash(bet.id)}},"✕")
-      )
+      ),
+      /*#__PURE__*/React.createElement(ReactionBar,{targetId:"flash_"+bet.id, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey})
     );
   }
 

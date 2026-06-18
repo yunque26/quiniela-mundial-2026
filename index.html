@@ -356,6 +356,24 @@ select.bare{-webkit-appearance:none;appearance:none}
 .reaction-count{font-family:var(--mono);font-weight:800;font-size:10px;color:var(--muted)}
 .reaction-chip.active .reaction-count{color:var(--gold)}
 
+/* ===== INSIGNIAS / LOGROS ===== */
+.badges-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge-chip{display:flex;align-items:center;gap:4px;background:rgba(246,197,68,.1);border:1px solid rgba(246,197,68,.35);border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;color:var(--gold)}
+.badge-chip .be{font-size:14px}
+.badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badge-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;position:relative}
+.badge-card.locked{opacity:.35}
+.badge-card .bc-emoji{font-size:28px;margin-bottom:4px;display:block}
+.badge-card .bc-name{font-size:9.5px;font-weight:700;line-height:1.2}
+.badge-card .bc-holders{font-size:8.5px;color:var(--muted2);margin-top:3px}
+.badge-leader-card{background:linear-gradient(135deg,rgba(246,197,68,.1),rgba(246,197,68,.02));border:1px solid rgba(246,197,68,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.badge-leader-emoji{font-size:30px;flex-shrink:0}
+.badge-leader-text{flex:1;min-width:0}
+.badge-leader-title{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.badge-leader-name{font-size:14px;font-weight:800;font-family:var(--disp);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge-leader-sub{font-size:10px;color:var(--muted2);margin-top:2px}
+.badge-leader-num{font-family:var(--mono);font-weight:800;font-size:22px;color:var(--gold);flex-shrink:0}
+
 /* ===== STANDINGS BREAKDOWN ===== */
 .std-row{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
 .std-row.me{border-color:rgba(21,168,90,.4);background:rgba(21,168,90,.05)}
@@ -509,6 +527,9 @@ select.bare{-webkit-appearance:none;appearance:none}
 .carta-preview{background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:12px;padding:12px;margin:10px 0;display:flex;gap:10px;align-items:flex-start}
 
 /* ===== HOME VIEW ===== */
+.gen-board-scroll{max-height:560px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+.gen-board-scroll::-webkit-scrollbar{width:4px}
+.gen-board-scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
 .msg-pin{
   background:linear-gradient(135deg,var(--navy2),var(--panel2));
   border:1px solid var(--line2);border-radius:16px;
@@ -834,6 +855,31 @@ const DEFAULT_COMODINES = {
   escudo: 2,
   espia: 1
 };
+
+/* =========================================================
+   INSIGNIAS / LOGROS
+   ========================================================= */
+const BADGE_CATALOG = [
+  {id:"first_exact", emoji:"🎯", name:"Primer exacto", desc:"Acertaste tu primer marcador exacto.", check:p=>p.exact>=1},
+  {id:"sharpshooter", emoji:"🏹", name:"Francotirador", desc:"5 marcadores exactos en la quiniela.", check:p=>p.exact>=5},
+  {id:"sniper", emoji:"🥇", name:"Sniper de élite", desc:"10 marcadores exactos en la quiniela.", check:p=>p.exact>=10},
+  {id:"streak3", emoji:"🔥", name:"Racha caliente", desc:"3 aciertos seguidos.", check:p=>p.maxStreak>=3},
+  {id:"streak5", emoji:"🌋", name:"En llamas", desc:"5 aciertos seguidos.", check:p=>p.maxStreak>=5},
+  {id:"streak8", emoji:"☄️", name:"Imparable", desc:"8 aciertos seguidos.", check:p=>p.maxStreak>=8},
+  {id:"completed", emoji:"📋", name:"Tarea cumplida", desc:"Completaste los 72 pronósticos de fase de grupos.", check:p=>p.made>=GROUPS.length},
+  {id:"jugador_full", emoji:"💯", name:"Jugador full", desc:"Tienes al menos 50 puntos en la quiniela.", check:p=>p.pts>=50},
+  {id:"jugador_pro", emoji:"🏆", name:"Nivel pro", desc:"Tienes al menos 100 puntos en la quiniela.", check:p=>p.pts>=100},
+  {id:"wildcard_user", emoji:"🃏", name:"Apostador", desc:"Usaste al menos un comodín (Doblar o Escudo).", check:p=>(p.doubled+p.shielded)>=1},
+  {id:"wildcard_master", emoji:"🎩", name:"Mago de comodines", desc:"Usaste 4 o más comodines.", check:p=>(p.doubled+p.shielded)>=4},
+  {id:"champion_caller", emoji:"👑", name:"Visionario", desc:"Acertaste quién es el campeón del Mundial.", check:p=>p.champOk},
+  {id:"top1", emoji:"🥇", name:"Líder del torneo", desc:"Estás en el 1er lugar de la quiniela.", check:(p,rank)=>rank===0},
+  {id:"podio", emoji:"🏅", name:"En el podio", desc:"Estás entre los 3 primeros lugares.", check:(p,rank)=>rank<3 && rank>=0},
+];
+
+function getEarnedBadges(player, rank) {
+  return BADGE_CATALOG.filter(b => b.check(player, rank));
+}
+
 const CMD_META = {
   doble: {
     icon: "✖️2",
@@ -1712,7 +1758,8 @@ function App() {
         featuredBonus = 0,
         played = 0,
         made = 0,
-        streak = 0;
+        streak = 0,
+        maxStreak = 0;
       for (const g of GROUPS) {
         const pr = mp.matches[g.id];
         if (pr && pr.h != null && pr.a != null) made++;
@@ -1736,7 +1783,7 @@ function App() {
           if (s.shielded) shielded++;
           if (s.halved) halved++;
           // streak: consecutive played matches with a hit (exact or outcome)
-          if (s.exact || s.outcome) streak++;
+          if (s.exact || s.outcome) { streak++; if (streak > maxStreak) maxStreak = streak; }
           else streak = 0;
         }
       }
@@ -1758,11 +1805,13 @@ function App() {
         played,
         made,
         streak,
+        maxStreak,
         champion: mp.champion,
         champOk,
         isMe: mem === me
       };
-    }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || b.outcome - a.outcome || Number(b.champOk) - Number(a.champOk) || a.name.localeCompare(b.name));
+    }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || b.outcome - a.outcome || Number(b.champOk) - Number(a.champOk) || a.name.localeCompare(b.name))
+      .map((p, rank) => ({...p, rank, badges: getEarnedBadges(p, rank)}));
   }, [pool, preds, results, sc, me, now, featuredMatch]);
 
   /* ---- FLASH BETS ---- */
@@ -1899,6 +1948,40 @@ function App() {
       } catch (e) { /* ignore */ }
     })();
   }, [pool?.id, standings[0]?.name, standings[0]?.pts]);
+
+  // Detect newly-earned badges and notify
+  useEffect(() => {
+    if (!pool || standings.length === 0) return;
+    (async () => {
+      try {
+        const seenKey = "meta/badgesSeen_" + pool.id;
+        const seen = (await fbGet(seenKey)) || {};
+        let changed = false;
+        const nextSeen = {...seen};
+        for (const p of standings) {
+          const pKey = safeKey(p.name);
+          const prevIds = new Set(nextSeen[pKey] || []);
+          const currentIds = p.badges.map(b => b.id);
+          const newOnes = p.badges.filter(b => !prevIds.has(b.id));
+          if (newOnes.length > 0) {
+            nextSeen[pKey] = currentIds;
+            changed = true;
+            // Only auto-notify if this isn't the very first calculation (prevIds existed)
+            if (seen[pKey] !== undefined) {
+              for (const b of newOnes) {
+                notifyAll(
+                  "🏅 ¡Nueva insignia desbloqueada!",
+                  p.name + " consiguió: " + b.emoji + " " + b.name,
+                  "🏅"
+                );
+              }
+            }
+          }
+        }
+        if (changed) await fbSet(seenKey, nextSeen);
+      } catch (e) { /* ignore */ }
+    })();
+  }, [pool?.id, JSON.stringify(standings.map(p => p.name + ":" + p.badges.map(b=>b.id).join(",")))]);
 
 
   async function createFlash(q, opts, goles, tipo="flash") {
@@ -3120,7 +3203,9 @@ function HomeView({
     }
   }, "\uD83D\uDCAC"), /*#__PURE__*/React.createElement("div", {
     className: "muted small"
-  }, canPlay || isMaster ? "¡Sé el primero en escribir algo!" : "Aún no hay mensajes.")), genVisible8.map(msg => /*#__PURE__*/React.createElement("div", {
+  }, canPlay || isMaster ? "¡Sé el primero en escribir algo!" : "Aún no hay mensajes.")), generalMessages.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "gen-board-scroll"
+  }, generalMessages.map(msg => /*#__PURE__*/React.createElement("div", {
     key: msg.id,
     className: "card pad",
     style: {
@@ -3160,14 +3245,7 @@ function HomeView({
       lineHeight: 1.45,
       color: "var(--text)"
     }
-  }, msg.text), /*#__PURE__*/React.createElement(ReactionBar,{targetId:"msg_"+msg.id, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey}))), genHasMore && /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    style: {
-      width: "100%",
-      marginBottom: 8
-    },
-    onClick: () => setGenVisible(v => v + 8)
-  }, "Ver m\xE1s (", generalMessages.length - genVisible, " mensajes)")), /*#__PURE__*/React.createElement("div", {
+  }, msg.text), /*#__PURE__*/React.createElement(ReactionBar,{targetId:"msg_"+msg.id, reactions, toggleReaction, REACTION_EMOJIS, me, safeKey}))))), /*#__PURE__*/React.createElement("div", {
     className: "section",
     style: {
       marginBottom: 24
@@ -3621,6 +3699,11 @@ function TableView({
         /*#__PURE__*/React.createElement("div", {className:"std-total-row"},
           /*#__PURE__*/React.createElement("span", null, "Total"),
           /*#__PURE__*/React.createElement("span", {className:"sc-val"}, p.pts+" pts")
+        ),
+        p.badges.length > 0 && /*#__PURE__*/React.createElement("div", {className:"badges-row"},
+          p.badges.map(b => /*#__PURE__*/React.createElement("span", {key:b.id, className:"badge-chip", title:b.desc},
+            /*#__PURE__*/React.createElement("span",{className:"be"}, b.emoji), b.name
+          ))
         )
       )
     );
@@ -3660,7 +3743,40 @@ function TableView({
         /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, standings[standings.length-1].pts," pts · Último lugar 😬"),
         /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, "¡"+standings[standings.length-1].name+" necesita un milagro futbolero! 😂")
       )
-    )
+    ),
+
+    // INSIGNIAS / LOGROS
+    /*#__PURE__*/React.createElement("div", {className:"section"}, (() => {
+      const badgeLeaderboard = standings
+        .map(p => ({name:p.name, isMe:p.isMe, count:p.badges.length}))
+        .filter(p => p.count > 0)
+        .sort((a,b) => b.count - a.count);
+      const topCollector = badgeLeaderboard[0];
+      return /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🏅 Insignias"),
+        topCollector && /*#__PURE__*/React.createElement("div", {className:"badge-leader-card"},
+          /*#__PURE__*/React.createElement("span",{className:"badge-leader-emoji"}, "🏅"),
+          /*#__PURE__*/React.createElement("div",{className:"badge-leader-text"},
+            /*#__PURE__*/React.createElement("div",{className:"badge-leader-title"}, "Mayor coleccionista"),
+            /*#__PURE__*/React.createElement("div",{className:"badge-leader-name"}, topCollector.name+(topCollector.isMe?" (tú)":"")),
+            /*#__PURE__*/React.createElement("div",{className:"badge-leader-sub"}, "tiene "+topCollector.count+" insignia"+(topCollector.count!==1?"s":"")+" desbloqueada"+(topCollector.count!==1?"s":""))
+          ),
+          /*#__PURE__*/React.createElement("div",{className:"badge-leader-num"}, topCollector.count)
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"badges-grid"},
+          BADGE_CATALOG.map(b => {
+            const holders = standings.filter(p => p.badges.some(pb => pb.id===b.id));
+            const locked = holders.length === 0;
+            return /*#__PURE__*/React.createElement("div", {key:b.id, className:"badge-card"+(locked?" locked":""), title:b.desc},
+              /*#__PURE__*/React.createElement("span",{className:"bc-emoji"}, b.emoji),
+              /*#__PURE__*/React.createElement("div",{className:"bc-name"}, b.name),
+              /*#__PURE__*/React.createElement("div",{className:"bc-holders"}, locked ? "Nadie aún" : holders.length+" jugador"+(holders.length!==1?"es":""))
+            );
+          })
+        ),
+        /*#__PURE__*/React.createElement("p",{className:"muted small",style:{marginTop:8,textAlign:"center",fontSize:10}}, "Toca cualquier jugador arriba para ver sus insignias específicas.")
+      );
+    })())
   );
 }
 
@@ -4854,19 +4970,43 @@ function PanelView({
     })(),
 
     /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:8}}, "Elige el próximo partido a destacar:"),
-    GROUPS.filter(g => !lk(g)).slice(0,10).map(g => {
-      const isCurrent = featuredMatch?.id===g.id;
-      const isPicked = featuredPick===g.id;
-      return /*#__PURE__*/React.createElement("div", {
-        key: g.id,
-        className: "featured-select-row" + (isCurrent || isPicked ? " current" : ""),
-        onClick: () => setFeaturedPick(g.id)
-      },
-        (isPicked || isCurrent) && /*#__PURE__*/React.createElement("span",null, "✓"),
-        /*#__PURE__*/React.createElement("span",null, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
-        /*#__PURE__*/React.createElement("span",{className:"muted small",style:{marginLeft:"auto"}}, isCurrent ? "🔥 Actual" : "Gr."+g.group)
+
+    (() => {
+      const upcoming = GROUPS.filter(g => !lk(g)).slice(0,10);
+      const todayKey = parts(new Date(), tz);
+      const todayStr = todayKey.year+"-"+todayKey.month+"-"+todayKey.day;
+      const isToday = g => {
+        const p = parts(g.kickoff, tz);
+        return (p.year+"-"+p.month+"-"+p.day) === todayStr;
+      };
+      const todayMatches = upcoming.filter(isToday);
+      const restMatches = upcoming.filter(g => !isToday(g));
+
+      const renderRow = g => {
+        const isCurrent = featuredMatch?.id===g.id;
+        const isPicked = featuredPick===g.id;
+        return /*#__PURE__*/React.createElement("div", {
+          key: g.id,
+          className: "featured-select-row" + (isCurrent || isPicked ? " current" : ""),
+          onClick: () => setFeaturedPick(g.id)
+        },
+          (isPicked || isCurrent) && /*#__PURE__*/React.createElement("span",null, "✓"),
+          /*#__PURE__*/React.createElement("span",null, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
+          /*#__PURE__*/React.createElement("span",{className:"muted small",style:{marginLeft:"auto"}}, isCurrent ? "🔥 Actual" : "Gr."+g.group)
+        );
+      };
+
+      return /*#__PURE__*/React.createElement(React.Fragment, null,
+        todayMatches.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("div",{className:"daybar", style:{marginBottom:6}}, "📅 Hoy"),
+          todayMatches.map(renderRow)
+        ),
+        restMatches.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("div",{className:"daybar", style:{marginTop: todayMatches.length>0?14:0, marginBottom:6}}, "🗓️ Próximos días"),
+          restMatches.map(renderRow)
+        )
       );
-    }),
+    })(),
 
     featuredPick && featuredPick !== featuredMatch?.id && /*#__PURE__*/React.createElement("button", {
       className: "btn primary",

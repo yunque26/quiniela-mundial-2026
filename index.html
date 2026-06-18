@@ -339,6 +339,16 @@ select.bare{-webkit-appearance:none;appearance:none}
 .gol-row .gv{font-family:var(--mono);font-weight:800;color:var(--gold);flex-shrink:0}
 .gol-empty{font-size:24px;margin-bottom:4px}
 
+/* ===== PARTIDOS DE HOY (home split) ===== */
+.today-card{background:linear-gradient(135deg,rgba(21,168,90,.08),rgba(21,168,90,.02));border:1px solid rgba(21,168,90,.3);border-radius:16px;padding:12px 10px;height:120px;overflow-y:auto;display:flex;flex-direction:column}
+.today-title{font-size:8.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--pitch);margin-bottom:6px;flex-shrink:0}
+.today-row{display:flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 0;border-bottom:1px solid rgba(39,57,92,.25)}
+.today-row:last-child{border-bottom:none}
+.today-row .tm-teams{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.today-row .tm-time{font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;font-size:9.5px}
+.today-empty{text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.today-empty .te-icon{font-size:20px;margin-bottom:2px}
+
 /* ===== RACHA DE ACIERTOS ===== */
 .streak-card{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,138,61,.02));border:1px solid rgba(255,138,61,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .streak-fire{font-size:30px;flex-shrink:0}
@@ -527,7 +537,7 @@ select.bare{-webkit-appearance:none;appearance:none}
 .carta-preview{background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:12px;padding:12px;margin:10px 0;display:flex;gap:10px;align-items:flex-start}
 
 /* ===== HOME VIEW ===== */
-.gen-board-scroll{max-height:560px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+.gen-board-scroll{max-height:440px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
 .gen-board-scroll::-webkit-scrollbar{width:4px}
 .gen-board-scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
 .msg-pin{
@@ -3067,55 +3077,46 @@ function HomeView({
         new Date(carta.ts).toLocaleDateString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
       )
     )
-  ), nextMatch && /*#__PURE__*/React.createElement("div", {
-    className: "section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "next-match"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "nm-label"
-  }, "\u26BD Pr\xF3ximo partido"), /*#__PURE__*/React.createElement("div", {
-    className: "nm-teams"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "nm-tname home"
-  }, tName(nextMatch.home)), /*#__PURE__*/React.createElement("span", {
-    className: "nm-flag"
-  }, tFlag(nextMatch.home)), /*#__PURE__*/React.createElement("span", {
-    className: "nm-vs"
-  }, "VS"), /*#__PURE__*/React.createElement("span", {
-    className: "nm-flag"
-  }, tFlag(nextMatch.away)), /*#__PURE__*/React.createElement("span", {
-    className: "nm-tname away"
-  }, tName(nextMatch.away))), /*#__PURE__*/React.createElement("div", {
-    className: "nm-time"
-  }, dayLabel(nextMatch.kickoff, tz).dow, " ", dayLabel(nextMatch.kickoff, tz).dnum, " \xB7 ", fmtTime(nextMatch.kickoff, tz), " \xB7 Grupo ", nextMatch.group))
-  ), last && standings.length > 1 && /*#__PURE__*/React.createElement("div", {className:"section"},
-    /*#__PURE__*/React.createElement("div", {className:"home-split"},
-      /*#__PURE__*/React.createElement("div", {className:"muro-card"},
-        /*#__PURE__*/React.createElement("div", {className:"muro-title"}, "💩 Muro vergüenza"),
-        /*#__PURE__*/React.createElement("span", {className:"muro-trophy"}, "💩"),
-        /*#__PURE__*/React.createElement("div", {className:"muro-name"}, last.name+(last.name===me?" (tú 😬)":"")),
-        /*#__PURE__*/React.createElement("div", {className:"muro-pts"}, last.pts," pts"),
-        /*#__PURE__*/React.createElement("div", {className:"muro-msg"}, last.name===me
-          ? "😬 ¡Animate!"
-          : "😂 ¡Milagro ya!")
-      ),
-      /*#__PURE__*/React.createElement("div", {className:"gol-card"},
-        /*#__PURE__*/React.createElement("div", {className:"gol-title"}, "👟 Top Goleadores"),
-        (!goleadores || goleadores.length===0 || goleadores.every(g=>g.goles===0))
-          ? /*#__PURE__*/React.createElement("div", {style:{padding:"6px 0"}},
-              /*#__PURE__*/React.createElement("div",{className:"gol-empty"},"⚽"),
-              /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10}},"Sin goles aún")
-            )
-          : /*#__PURE__*/React.createElement("div", {className:"gol-list"},
-              goleadores.slice(0,3).map((g,i)=>/*#__PURE__*/React.createElement("div",{key:g.name,className:"gol-row"},
-                /*#__PURE__*/React.createElement("span",{className:"gp"}, i===0?"🥇":i===1?"🥈":"🥉"),
-                /*#__PURE__*/React.createElement("span",{className:"gn"}, g.name+(g.isMe?" (tú)":"")),
-                /*#__PURE__*/React.createElement("span",{className:"gv"}, g.goles," ⚽")
-              ))
-            )
-      )
-    )
   ), (() => {
+    const todayKey = parts(new Date(), tz);
+    const todayStr = todayKey.year+"-"+todayKey.month+"-"+todayKey.day;
+    const todayMatches = GROUPS.filter(g => {
+      const p = parts(g.kickoff, tz);
+      return (p.year+"-"+p.month+"-"+p.day) === todayStr;
+    }).sort((a,b) => a.kickoff - b.kickoff);
+
+    return /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("div", {className:"home-split"},
+        /*#__PURE__*/React.createElement("div", {className:"today-card"},
+          /*#__PURE__*/React.createElement("div", {className:"today-title"}, "📅 Partidos de hoy"),
+          todayMatches.length === 0
+            ? /*#__PURE__*/React.createElement("div", {className:"today-empty"},
+                /*#__PURE__*/React.createElement("div",{className:"te-icon"},"😴"),
+                /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:9.5}},"Sin partidos hoy")
+              )
+            : todayMatches.map(g => /*#__PURE__*/React.createElement("div", {key:g.id, className:"today-row"},
+                /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
+                /*#__PURE__*/React.createElement("span",{className:"tm-time"}, fmtTime(g.kickoff, tz))
+              ))
+        ),
+        /*#__PURE__*/React.createElement("div", {className:"gol-card"},
+          /*#__PURE__*/React.createElement("div", {className:"gol-title"}, "👟 Top Goleadores"),
+          (!goleadores || goleadores.length===0 || goleadores.every(g=>g.goles===0))
+            ? /*#__PURE__*/React.createElement("div", {style:{padding:"6px 0"}},
+                /*#__PURE__*/React.createElement("div",{className:"gol-empty"},"⚽"),
+                /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10}},"Sin goles aún")
+              )
+            : /*#__PURE__*/React.createElement("div", {className:"gol-list"},
+                goleadores.slice(0,3).map((g,i)=>/*#__PURE__*/React.createElement("div",{key:g.name,className:"gol-row"},
+                  /*#__PURE__*/React.createElement("span",{className:"gp"}, i===0?"🥇":i===1?"🥈":"🥉"),
+                  /*#__PURE__*/React.createElement("span",{className:"gn"}, g.name+(g.isMe?" (tú)":"")),
+                  /*#__PURE__*/React.createElement("span",{className:"gv"}, g.goles," ⚽")
+                ))
+              )
+        )
+      )
+    );
+  })(), (() => {
     const streakLeader = standings.filter(p => p.streak >= 3).sort((a,b) => b.streak - a.streak)[0];
     if (!streakLeader) return null;
     return /*#__PURE__*/React.createElement("div", {className:"section"},

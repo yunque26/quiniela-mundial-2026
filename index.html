@@ -323,7 +323,7 @@ select.bare{-webkit-appearance:none;appearance:none}
 
 /* ===== MURO DE LA VERGÜENZA ===== */
 .muro-card{background:linear-gradient(135deg,rgba(255,92,121,.1),rgba(255,92,121,.03));border:1px solid rgba(255,92,121,.4);border-radius:16px;padding:16px;margin-bottom:10px;text-align:center;position:relative;overflow:hidden}
-.home-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;align-items:stretch}
+.home-split{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px;align-items:stretch}
 .home-split .muro-card{margin-bottom:0;padding:12px 8px;height:120px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .home-split .muro-trophy{font-size:28px;margin-bottom:2px}
 .home-split .muro-name{font-size:13px}
@@ -344,8 +344,11 @@ select.bare{-webkit-appearance:none;appearance:none}
 .today-title{font-size:8.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--pitch);margin-bottom:6px;flex-shrink:0}
 .today-row{display:flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 0;border-bottom:1px solid rgba(39,57,92,.25)}
 .today-row:last-child{border-bottom:none}
-.today-row .tm-teams{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.today-row .tm-time{font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;font-size:9.5px}
+.today-row.played{opacity:.55}
+.today-row .tm-teams{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:10px}
+.today-row .tm-time{font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;font-size:9px}
+.today-row.played .tm-time{color:var(--pitch);font-size:9px}
+.today-row .tm-check{font-size:9px;flex-shrink:0;color:var(--pitch)}
 .today-empty{text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .today-empty .te-icon{font-size:20px;margin-bottom:2px}
 
@@ -2936,7 +2939,7 @@ function HomeView({
         /*#__PURE__*/React.createElement("span",{className:"muted",style:{fontSize:18}},"›")
       )
     );
-  })(), /*#__PURE__*/React.createElement("div", {
+  })(), (messages.length > 0 || isMaster) && /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "row between",
@@ -2985,7 +2988,7 @@ function HomeView({
     },
     disabled: !aTxt.trim(),
     onClick: postAdmin
-  }, "Publicar en tabl\xF3n admin")), adminPinned.length === 0 && /*#__PURE__*/React.createElement("div", {
+  }, "Publicar en tabl\xF3n admin")), adminPinned.length === 0 && isMaster && /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       textAlign: "center",
@@ -3094,10 +3097,15 @@ function HomeView({
                 /*#__PURE__*/React.createElement("div",{className:"te-icon"},"😴"),
                 /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:9.5}},"Sin partidos hoy")
               )
-            : todayMatches.map(g => /*#__PURE__*/React.createElement("div", {key:g.id, className:"today-row"},
-                /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
-                /*#__PURE__*/React.createElement("span",{className:"tm-time"}, fmtTime(g.kickoff, tz))
-              ))
+            : todayMatches.map(g => {
+                const r = results.matches?.[g.id];
+                const isPlayed = r && r.h != null && r.a != null;
+                return /*#__PURE__*/React.createElement("div", {key:g.id, className:"today-row"+(isPlayed?" played":"")},
+                  isPlayed && /*#__PURE__*/React.createElement("span",{className:"tm-check"}, "✅"),
+                  /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tName(g.home)+" vs "+tName(g.away)),
+                  /*#__PURE__*/React.createElement("span",{className:"tm-time"}, isPlayed ? r.h+"-"+r.a : fmtTime(g.kickoff, tz))
+                );
+              })
         ),
         /*#__PURE__*/React.createElement("div", {className:"gol-card"},
           /*#__PURE__*/React.createElement("div", {className:"gol-title"}, "👟 Top Goleadores"),

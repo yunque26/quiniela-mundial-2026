@@ -3102,7 +3102,7 @@ function HomeView({
                 const isPlayed = r && r.h != null && r.a != null;
                 return /*#__PURE__*/React.createElement("div", {key:g.id, className:"today-row"+(isPlayed?" played":"")},
                   isPlayed && /*#__PURE__*/React.createElement("span",{className:"tm-check"}, "✅"),
-                  /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tName(g.home)+" vs "+tName(g.away)),
+                  /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
                   /*#__PURE__*/React.createElement("span",{className:"tm-time"}, isPlayed ? r.h+"-"+r.a : fmtTime(g.kickoff, tz))
                 );
               })

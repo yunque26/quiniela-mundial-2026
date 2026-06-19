@@ -342,13 +342,13 @@ select.bare{-webkit-appearance:none;appearance:none}
 /* ===== PARTIDOS DE HOY (home split) ===== */
 .today-card{background:linear-gradient(135deg,rgba(21,168,90,.08),rgba(21,168,90,.02));border:1px solid rgba(21,168,90,.3);border-radius:16px;padding:12px 10px;height:120px;overflow-y:auto;display:flex;flex-direction:column}
 .today-title{font-size:8.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--pitch);margin-bottom:6px;flex-shrink:0}
-.today-row{display:flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 0;border-bottom:1px solid rgba(39,57,92,.25)}
+.today-row{display:flex;align-items:center;gap:0;font-size:10.5px;padding:4px 0;border-bottom:1px solid rgba(39,57,92,.4)}
 .today-row:last-child{border-bottom:none}
-.today-row.played{opacity:.55}
-.today-row .tm-teams{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:10px}
-.today-row .tm-time{font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;font-size:9px}
-.today-row.played .tm-time{color:var(--pitch);font-size:9px}
-.today-row .tm-check{font-size:9px;flex-shrink:0;color:var(--pitch)}
+.today-row.played{opacity:.6}
+.today-row .tm-check{font-size:9px;flex-shrink:0;color:var(--pitch);width:16px}
+.today-row .tm-teams{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:10px;padding-left:2px}
+.today-row .tm-time{font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;font-size:9px;padding-left:4px}
+.today-row.played .tm-time{color:var(--pitch)}
 .today-empty{text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .today-empty .te-icon{font-size:20px;margin-bottom:2px}
 
@@ -3101,7 +3101,7 @@ function HomeView({
                 const r = results.matches?.[g.id];
                 const isPlayed = r && r.h != null && r.a != null;
                 return /*#__PURE__*/React.createElement("div", {key:g.id, className:"today-row"+(isPlayed?" played":"")},
-                  isPlayed && /*#__PURE__*/React.createElement("span",{className:"tm-check"}, "✅"),
+                  /*#__PURE__*/React.createElement("span",{className:"tm-check"}, isPlayed ? "✅" : ""),
                   /*#__PURE__*/React.createElement("span",{className:"tm-teams"}, tFlag(g.home)+" "+tName(g.home)+" vs "+tName(g.away)+" "+tFlag(g.away)),
                   /*#__PURE__*/React.createElement("span",{className:"tm-time"}, isPlayed ? r.h+"-"+r.a : fmtTime(g.kickoff, tz))
                 );

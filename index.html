@@ -2552,7 +2552,8 @@ function MatchCard({
   onClear,
   getTools,
   lk,
-  featured
+  featured,
+  results
 }) {
   const locked = lk ? lk(m) : isLocked(m);
   const dl = dayLabel(m.kickoff, tz);
@@ -2759,7 +2760,7 @@ function MatchCard({
     className: "ptsbadge p" + badgeLvl
   }, badgeLab, " \xB7 ", sresult.pts, "pts")), tools && tools.enabled && !locked && /*#__PURE__*/React.createElement(ComodinBar, {
     tools: tools
-  }), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz})) : /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz, results})) : /*#__PURE__*/React.createElement("div", {
     className: "ko"
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -2772,76 +2773,77 @@ function MatchCard({
     }
   }, m.label), /*#__PURE__*/React.createElement("div", {
     className: "muted small"
-  }, dl.dow, " ", dl.dnum, " ", dl.mon, " \xB7 ", fmtTime(m.kickoff, tz))), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz})));
+  }, dl.dow, " ", dl.dnum, " ", dl.mon, " \xB7 ", fmtTime(m.kickoff, tz))), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz, results})));
 }
-function MatchStats({m, actual, tz}) {
+function MatchStats({m, actual, tz, results}) {
   const [open, setOpen] = useState(false);
-  const [h2h, setH2h] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
-  const FD_KEY = "TUKEY_AQUI"; // ← reemplaza con tu key de football-data.org
-  const FD_IDS = {
-    MEX:758,RSA:815,KOR:732,CZE:798,CAN:733,BIH:801,QAT:833,SUI:788,
-    BRA:762,MAR:1017,HAI:890,SCO:1054,USA:768,PAR:795,AUS:797,TUR:803,
-    GER:759,CUW:1923,CIV:1025,ECU:742,NED:784,JPN:764,SWE:760,TUN:1028,
-    BEL:805,EGY:951,IRN:1108,NZL:1835,ESP:760,CPV:2016,KSA:907,URU:744,
-    FRA:773,SEN:907,IRQ:1022,NOR:781,ARG:762,ALG:1022,AUT:816,JOR:1838,
-    POR:765,COD:1033,UZB:2097,COL:771,ENG:770,CRO:799,GHA:1023,PAN:800
-  };
-  async function load() {
-    if (open) { setOpen(false); return; }
-    setOpen(true);
-    if (h2h !== null) return;
-    setLoading(true); setErr(null);
-    try {
-      const hId = FD_IDS[m.home], aId = FD_IDS[m.away];
-      if (!hId || !aId) throw new Error("Sin datos H2H para estos equipos");
-      const res = await fetch(
-        "https://api.football-data.org/v4/teams/"+hId+"/matches?status=FINISHED&limit=30",
-        {headers:{"X-Auth-Token":FD_KEY}}
-      );
-      if (!res.ok) throw new Error("Error API "+res.status);
-      const data = await res.json();
-      const matches = (data.matches||[]).filter(x => {
-        const ids = [x.homeTeam?.id, x.awayTeam?.id];
-        return ids.includes(hId) && ids.includes(aId);
-      }).slice(0,5);
-      setH2h(matches);
-    } catch(e) { setErr(e.message); }
-    setLoading(false);
-  }
   const hasResult = actual && actual.h != null && actual.a != null;
+  if (!hasResult && !m.group) return null;
   return /*#__PURE__*/React.createElement("div", {style:{marginTop:6}},
     /*#__PURE__*/React.createElement("button", {
       className:"btn ghost sm",
       style:{width:"100%",fontSize:10,padding:"5px"},
-      onClick:load
-    }, open ? "▲ Ocultar" : "📊 Ver estadísticas / H2H"),
+      onClick:()=>setOpen(v=>!v)
+    }, open ? "▲ Ocultar" : (hasResult ? "📊 Ver resultado real" : "📊 Ver análisis del grupo")),
     open && /*#__PURE__*/React.createElement("div", {className:"stats-panel"},
-      hasResult && /*#__PURE__*/React.createElement("div", {className:"stats-result"},
-        /*#__PURE__*/React.createElement("div",{className:"sr-label"}, "Resultado real 2026"),
+      hasResult && /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("div",{className:"sr-label"}, "Resultado final · Mundial 2026"),
         /*#__PURE__*/React.createElement("div",{className:"sr-score"},
-          tFlag(m.home)," ",actual.h," – ",actual.a," ",tFlag(m.away)
+          tFlag(m.home)," ",tName(m.home)," ",actual.h," – ",actual.a," ",tName(m.away)," ",tFlag(m.away)
         )
       ),
-      loading && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{textAlign:"center",padding:8}}, "Cargando H2H..."),
-      err && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{textAlign:"center",padding:8,color:"var(--coral)"}}, "⚠️ "+err),
-      h2h && h2h.length === 0 && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{textAlign:"center",padding:8}}, "Sin enfrentamientos previos registrados."),
-      h2h && h2h.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
-        /*#__PURE__*/React.createElement("div",{className:"sr-label"}, "Últimos H2H"),
-        h2h.map((x,i) => {
-          const isHome = x.homeTeam?.id === FD_IDS[m.home];
-          const hGoals = isHome ? x.score?.fullTime?.home : x.score?.fullTime?.away;
-          const aGoals = isHome ? x.score?.fullTime?.away : x.score?.fullTime?.home;
-          const won = hGoals > aGoals ? "W" : hGoals < aGoals ? "L" : "D";
-          return /*#__PURE__*/React.createElement("div",{key:i,className:"h2h-row"},
-            /*#__PURE__*/React.createElement("span",{className:"h2h-badge "+won.toLowerCase()}, won),
-            /*#__PURE__*/React.createElement("span",{className:"h2h-teams"}, tName(m.home)+" "+hGoals+"-"+aGoals+" "+tName(m.away)),
-            /*#__PURE__*/React.createElement("span",{className:"h2h-comp"}, (x.competition?.name||"").substring(0,12))
-          );
-        })
-      )
+      !hasResult && m.group && /*#__PURE__*/React.createElement(GroupAnalysis, {m, results: results||{matches:{}}})
     )
+  );
+}
+
+function GroupAnalysis({m, results}) {
+  const group = m.group;
+  const teams = [...new Set(GROUPS.filter(g=>g.group===group).flatMap(g=>[g.home,g.away]))];
+  const table = {};
+  teams.forEach(t=>{table[t]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};});
+  GROUPS.filter(g=>g.group===group).forEach(g=>{
+    const r=results.matches?.[g.id];
+    if(!r||r.h==null||r.a==null) return;
+    const h=table[g.home],a=table[g.away];
+    h.pj++;a.pj++;h.gf+=r.h;h.gc+=r.a;a.gf+=r.a;a.gc+=r.h;
+    if(r.h>r.a){h.pg++;h.pts+=3;a.pp++;}
+    else if(r.h<r.a){a.pg++;a.pts+=3;h.pp++;}
+    else{h.pe++;h.pts++;a.pe++;a.pts++;}
+  });
+  const data = Object.entries(table)
+    .sort((a,b)=>b[1].pts-a[1].pts||(b[1].gf-b[1].gc)-(a[1].gf-a[1].gc)||b[1].gf-a[1].gf)
+    .map(([name,s])=>({name,...s,gd:s.gf-s.gc}));
+  const hPos = data.findIndex(t=>t.name===m.home);
+  const aPos = data.findIndex(t=>t.name===m.away);
+  const hSt = data[hPos], aSt = data[aPos];
+  const genMsg = (team,st,pos) => {
+    const name = tName(team);
+    const left = 3 - st.pj;
+    const maxPts = st.pts + left*3;
+    const pts2nd = data[1]?.pts||0;
+    if (maxPts < (data[1]?.pts||0) && pos>1) return "❌ "+name+" ya está eliminado matemáticamente";
+    if (st.pts >= 7 && pos<=1) return "✅ "+name+" ya está clasificado";
+    if (pos===0) return "🥇 "+name+" lidera — gana y asegura el 1er puesto";
+    if (pos===1) return "🥈 "+name+" está 2do — necesita sumar para clasificar";
+    if (pos===2 && left===1) return "⚠️ "+name+" necesita ganar sí o sí para tener chances";
+    if (pos===2) return "⚠️ "+name+" está 3ro — urgente sumar puntos";
+    if (pos===3 && left===1) return "🚨 "+name+" necesita ganar Y que fallen los de arriba — último tren";
+    if (pos===3) return "🚨 "+name+" está último — necesita ganar o queda eliminado";
+    return null;
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement("div",{className:"sr-label"}, "Tabla Grupo "+group),
+    data.map((t,i)=>/*#__PURE__*/React.createElement("div",{key:t.name,className:"h2h-row"},
+      /*#__PURE__*/React.createElement("span",{className:"h2h-badge "+(i<2?"w":"d")}, i+1),
+      /*#__PURE__*/React.createElement("span",{className:"h2h-teams"}, tFlag(t.name)+" "+tName(t.name)),
+      /*#__PURE__*/React.createElement("span",{className:"h2h-comp"}, t.pts+"pts "+t.pj+"J "+t.gd+"DG")
+    )),
+    /*#__PURE__*/React.createElement("div",{className:"sr-label",style:{marginTop:8}}, "Análisis"),
+    hSt && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginBottom:4}}, genMsg(m.home,hSt,hPos)),
+    aSt && /*#__PURE__*/React.createElement("div",{className:"muted small"}, genMsg(m.away,aSt,aPos)),
+    hPos>=2&&aPos>=2 && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginTop:4,color:"var(--coral)"}}, "🔥 El que pierda prácticamente se despide del Mundial"),
+    (hPos===0&&aPos===1)||(hPos===1&&aPos===0) ? /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginTop:4,color:"var(--gold)"}}, "👑 Duelo de líderes — en juego el 1er lugar del grupo") : null
   );
 }
 function ComodinBar({
@@ -3558,6 +3560,7 @@ function PredictView({
     actual: results.matches[m.id],
     onSet: setPrediction,
     onClear: clearPrediction,
+    results: results,
     featured: featuredMatch && featuredMatch.id === m.id
   });
   return /*#__PURE__*/React.createElement("div", null, gateOn && !canPlay && /*#__PURE__*/React.createElement("div", {
@@ -3760,6 +3763,7 @@ function CalendarView({
       actual: results.matches[m.id],
       onSet: setPrediction,
       onClear: clearPrediction,
+      results: results,
       featured: featuredMatch && featuredMatch.id === m.id
     })));
   })));

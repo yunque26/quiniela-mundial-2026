@@ -2773,6 +2773,8 @@ function MatchCard({
   }, m.label), /*#__PURE__*/React.createElement("div", {
     className: "muted small"
   }, dl.dow, " ", dl.dnum, " ", dl.mon, " \xB7 ", fmtTime(m.kickoff, tz))), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz})));
+}
+function MatchStats({m, actual, tz}) {
   const [open, setOpen] = useState(false);
   const [h2h, setH2h] = useState(null);
   const [loading, setLoading] = useState(false);

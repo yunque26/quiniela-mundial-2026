@@ -4470,7 +4470,8 @@ function PanelView({
   coAdmins,
   toggleCoAdmin,
   isMasterDev,
-  preds
+  preds,
+  safeKey
 }) {
   const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");

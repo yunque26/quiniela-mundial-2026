@@ -797,6 +797,29 @@ const CARTA_STATIC = [
   {emoji:"🇩🇪", text:"Alemania fue el primer país en ganar el Mundial tras una reunificación, en 1990, justo antes de la caída del Muro."},
   {emoji:"🎪", text:"El himno oficial del Mundial 2010 'Waka Waka' de Shakira es una de las canciones de FIFA más escuchadas de la historia."},
   {emoji:"🧮", text:"Solo 8 selecciones han ganado un Mundial: Brasil, Alemania, Italia, Argentina, Francia, Uruguay, Inglaterra y España."},
+  // NEW BATCH
+  {emoji:"🇵🇹", text:"Portugal nunca ha ganado un Mundial, a pesar de tener a Eusébio (1966) y Cristiano Ronaldo como los mejores jugadores de su historia."},
+  {emoji:"🤿", text:"El Mundial de 1950 en Brasil no tuvo una final formal — el campeón se decidió con una mini-liga final. Uruguay le ganó a Brasil 2-1 en el último partido, en el Maracaná lleno."},
+  {emoji:"🎰", text:"En Qatar 2022, Marruecos se convirtió en el primer equipo africano en llegar a semifinales de un Mundial."},
+  {emoji:"📐", text:"La pelota oficial del Mundial 1970 (Telstar) fue la primera en tener el diseño icónico de hexágonos negros y blancos, pensado para verse mejor en televisión en blanco y negro."},
+  {emoji:"🧱", text:"Fabio Cannavaro, técnico de Uzbekistán en 2026, fue campeón del mundo con Italia en 2006 y ganó el Balón de Oro ese mismo año — el único defensor en lograrlo."},
+  {emoji:"🇨🇴", text:"Colombia jugó su primer Mundial en 1962 y empató 4-4 con la URSS. Ese resultado sigue siendo uno de los más sorprendentes en debuts mundialistas."},
+  {emoji:"🦅", text:"El logo oficial del Mundial 2026 incluye una estrella de 26 puntas, en referencia al año del torneo y a los 3 países anfitriones."},
+  {emoji:"🏙️", text:"El partido inaugural del Mundial 2026 se jugó en el Estadio Azteca de Ciudad de México, el mismo recinto donde se jugó la final del Mundial 1970 y la del 1986."},
+  {emoji:"🎯", text:"Miroslav Klose (Alemania) es el máximo goleador histórico de los Mundiales con 16 goles, superando a Ronaldo (Brasil) que tenía 15."},
+  {emoji:"⏱️", text:"El partido más largo de la historia de los Mundiales duró 120 minutos más tanda de penales — una situación que se repite en eliminatorias cuando hay empate al término del tiempo regular."},
+  {emoji:"🌡️", text:"El Mundial 2026 es el primero en realizarse en junio-julio en Norteamérica, con temperaturas que pueden superar los 35°C en ciudades como Houston y Miami."},
+  {emoji:"🇸🇳", text:"Senegal ganó la Copa Africana de Naciones en 2021 y 2022, consolidándose como la potencia africana más fuerte del fútbol actual."},
+  {emoji:"🧤", text:"El portero más joven en jugar un Mundial fue Norman Whiteside (Irlanda del Norte) en 1982, con 17 años y 41 días — aunque era delantero. El récord de porteros es más difuso."},
+  {emoji:"🌍", text:"En el Mundial 2026, por primera vez participan 48 selecciones divididas en 12 grupos de 4, con los 2 primeros y los 8 mejores terceros avanzando a la siguiente ronda."},
+  {emoji:"🎻", text:"La canción más famosa asociada a un Mundial es 'Nessun Dorma' de Pavarotti, usada por la BBC en Italia 1990, aunque no fue compuesta para el torneo."},
+  {emoji:"🔢", text:"El número 10 es el más famoso del fútbol mundial — Pelé, Maradona, Zidane, Messi y Ronaldinho lo usaron en sus Mundiales más gloriosos."},
+  {emoji:"🇯🇵", text:"Japón es el único equipo asiático que ha clasificado a 8 Mundiales consecutivos, desde Francia 1998 hasta 2026."},
+  {emoji:"💥", text:"El gol más rápido en la historia de los Mundiales lo marcó Hakan Şükür de Turquía a los 11 segundos contra Corea del Sur en el tercer lugar de 2002."},
+  {emoji:"🎪", text:"Estados Unidos organizó el Mundial 1994 a pesar de no tener una liga profesional de fútbol establecida. Fue el torneo con mayor asistencia de la historia (3.5 millones de personas)."},
+  {emoji:"🇦🇺", text:"Australia clasificó a su primer Mundial moderno en 2006 (Alemania) tras 32 años de ausencia, y llegó a los octavos de final."},
+  {emoji:"🔵", text:"Italia es el único país que jugó la final del Mundial usando camiseta negra — lo hizo en 1938, bajo el régimen de Mussolini."},
+  {emoji:"🌊", text:"Nueva Zelanda es el único equipo que jugó un Mundial completo (Sudáfrica 2010) sin perder ningún partido — aunque tampoco ganó ninguno, con 3 empates."},
 ];
 
 const CARTA_EXCLUDE_PHRASES = []; // populated dynamically via history filter
@@ -1542,6 +1565,17 @@ function App() {
     flash(name + " retirado");
   }
 
+  /* ---- GIFT COMODIN ---- */
+  async function giftComodin(name, tipo) {
+    if (!pool) return;
+    const key = safeKey(name);
+    const cur = preds[key] || {};
+    const extra = cur.comodinesExtra || {};
+    const current = extra[tipo] || 0;
+    await fbSet("preds/" + pool.id + "/" + key + "/comodinesExtra/" + tipo, current + 1);
+    flash("🎁 Comodín " + tipo + " regalado a " + name);
+  }
+
   /* ---- PREDICTIONS ---- */
   async function setPrediction(matchId, side, val, htMode) {
     if (!requireMember()) return;
@@ -1752,6 +1786,7 @@ function App() {
       ...((preds[key] || {}).comodines || {})
     };
     const used = t => (cm[t] || []).length;
+    const extra = (preds[key] || {}).comodinesExtra || {};
     return {
       enabled: pc.enabled !== false,
       applied: {
@@ -1760,9 +1795,9 @@ function App() {
         espia: cm.espia.includes(matchId)
       },
       avail: {
-        doble: pc.doble - used("doble"),
-        escudo: pc.escudo - used("escudo"),
-        espia: pc.espia - used("espia")
+        doble: pc.doble + (extra.doble||0) - used("doble"),
+        escudo: pc.escudo + (extra.escudo||0) - used("escudo"),
+        espia: pc.espia + (extra.espia||0) - used("espia")
       },
       htOpen: !!(results.ht && results.ht[matchId]),
       onToggle: t => toggleComodin(t, matchId),
@@ -2283,6 +2318,7 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     clearRequests,
     removeMember,
     updateAccess,
+    giftComodin,
     coAdmins,
     isCoAdmin,
     toggleCoAdmin,
@@ -4363,6 +4399,7 @@ function PanelView({
   clearRequests,
   removeMember,
   updateAccess,
+  giftComodin,
   changeMaster,
   exportBackup,
   importBackup,
@@ -4634,7 +4671,20 @@ function PanelView({
     className: "btn ghost sm",
     style: coAdmins.includes(nm) ? {borderColor:"var(--gold)",color:"var(--gold)"} : {},
     onClick: () => toggleCoAdmin(nm)
-  }, coAdmins.includes(nm) ? "✓ Admin" : "+ Admin"), nm !== me && /*#__PURE__*/React.createElement("button", {
+  }, coAdmins.includes(nm) ? "✓ Admin" : "+ Admin"),
+  isMaster && nm !== me && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {fontSize:10, borderColor:"var(--pitch)", color:"var(--pitch)"},
+    title: "Regalar comodín Doblar",
+    onClick: () => { if(confirm("¿Regalar 1 Doblar a "+nm+"?")) giftComodin(nm,"doble"); }
+  }, "🃏+"),
+  isMaster && nm !== me && /*#__PURE__*/React.createElement("button", {
+    className: "btn ghost sm",
+    style: {fontSize:10, borderColor:"var(--sky)", color:"var(--sky)"},
+    title: "Regalar comodín Escudo",
+    onClick: () => { if(confirm("¿Regalar 1 Escudo a "+nm+"?")) giftComodin(nm,"escudo"); }
+  }, "🛡️+"),
+  nm !== me && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm danger",
     onClick: () => {
       if (confirm("¿Retirar a " + nm + "?")) removeMember(nm);
@@ -5197,24 +5247,24 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
 
   // Encuesta (poll) local state
   const FEATURE_PROPOSALS = [
-    "🎽 Draft de equipos",
-    "🔥 Reacciones rápidas en Flash",
-    "📈 Gráfico de evolución",
-    "🎯 Racha de aciertos",
-    "🃏 Tabla de comodines",
-    "📸 Compartir resultados",
-    "🎙️ Mensajes de voz",
-    "🏅 Insignias / logros"
+    "🗺️ Mapa del Mundial",
+    "🎙️ Mensajes de voz en el tablón",
+    "📸 Tarjeta de resultados para compartir",
+    "🏅 Tabla histórica de quinielas",
+    "🎯 Predicción del campeón con apuesta",
+    "🌡️ Termómetro de forma (últimos 5 partidos)",
+    "🤖 Asistente IA para sugerir pronósticos",
+    "📊 Gráfico de evolución de posiciones"
   ];
   const FEATURE_DESCRIPTIONS = {
-    "🎽 Draft de equipos": "Cada participante 'adopta' una selección y suma puntos extra según cómo le vaya en el Mundial.",
-    "🔥 Reacciones rápidas en Flash": "Reaccionar con 🔥😂😱 a las apuestas y predicciones, sin necesidad de votar formalmente.",
-    "📈 Gráfico de evolución": "Un gráfico que muestra cómo ha cambiado tu posición en la tabla partido a partido.",
-    "🎯 Racha de aciertos": "Una medalla especial cuando aciertas 3 o más partidos seguidos en tus pronósticos.",
-    "🃏 Tabla de comodines": "Un ranking de quién ha usado mejor sus comodines (Doblar, Escudo) durante el torneo.",
-    "📸 Compartir resultados": "Generar una imagen de tu tabla de posiciones o tus apuestas para mandar directo por WhatsApp.",
-    "🎙️ Mensajes de voz": "Poder dejar audios cortos en el tablón general, además de los mensajes de texto.",
-    "🏅 Insignias / logros": "Medallas coleccionables por hitos como primer gol acertado, racha, o ganar una jornada."
+    "🗺️ Mapa del Mundial": "Un mapa interactivo de las sedes con partidos del día, estadio y clima local.",
+    "🎙️ Mensajes de voz en el tablón": "Dejar audios cortos en el tablón general además de texto — más expresivo para celebrar goles.",
+    "📸 Tarjeta de resultados para compartir": "Genera una imagen bonita con tu posición y puntos para mandar directo por WhatsApp.",
+    "🏅 Tabla histórica de quinielas": "Recordatorio de quinielas anteriores — quién ganó, con cuántos puntos, y el podio final.",
+    "🎯 Predicción del campeón con apuesta": "Cada uno apuesta goles a que su selección elegida gana el Mundial. El que acierte se lleva el pozo.",
+    "🌡️ Termómetro de forma (últimos 5 partidos)": "Ver si estás en racha positiva o negativa según tus últimos 5 pronósticos — como en el fútbol real.",
+    "🤖 Asistente IA para sugerir pronósticos": "Un mini-asistente que analiza el grupo y sugiere un marcador probable antes de que cierren las apuestas.",
+    "📊 Gráfico de evolución de posiciones": "Ver cómo ha cambiado tu posición en la tabla partido a partido — quién subió, quién bajó."
   };
   const [pollQ, setPollQ] = useState("¿Qué función te gustaría que agreguemos después? 🚀");
   const [pollOpts, setPollOpts] = useState([...FEATURE_PROPOSALS]);
@@ -5570,35 +5620,47 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
 function StatsView({pool, standings, preds, results, sc, me, setModal, isMaster, safeKey, tz, wcScorers}) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
 
-  // --- Torneo: partidos jugados, goles totales ---
+  // --- Torneo: stats completas ---
   const playedAll = GROUPS.filter(g => {
     const r = results.matches[g.id];
     return r && r.h != null && r.a != null;
   });
-  const totalGoals = playedAll.reduce((sum,g) => {
-    const r = results.matches[g.id];
-    return sum + (r.h||0) + (r.a||0);
-  }, 0);
+  const totalGoals = playedAll.reduce((sum,g) => { const r=results.matches[g.id]; return sum+(r.h||0)+(r.a||0); }, 0);
   const avgGoals = playedAll.length > 0 ? (totalGoals/playedAll.length) : 0;
-  const cleanSheets = playedAll.filter(g => {
-    const r = results.matches[g.id];
-    return r.h===0 || r.a===0;
-  }).length;
-  let biggestWin = null;
+  const homeWins = playedAll.filter(g => { const r=results.matches[g.id]; return r.h>r.a; }).length;
+  const awayWins = playedAll.filter(g => { const r=results.matches[g.id]; return r.a>r.h; }).length;
+  const draws = playedAll.filter(g => { const r=results.matches[g.id]; return r.h===r.a; }).length;
+  const cleanSheets = playedAll.filter(g => { const r=results.matches[g.id]; return r.h===0||r.a===0; }).length;
+  const bothScore = playedAll.filter(g => { const r=results.matches[g.id]; return r.h>0&&r.a>0; }).length;
+
+  let mostGoalsMatch = null, biggestWin = null;
   playedAll.forEach(g => {
-    const r = results.matches[g.id];
-    const diff = Math.abs(r.h - r.a);
-    if (!biggestWin || diff > biggestWin.diff) biggestWin = {g, r, diff};
-  });
-  let mostGoalsMatch = null;
-  playedAll.forEach(g => {
-    const r = results.matches[g.id];
-    const total = r.h + r.a;
-    if (!mostGoalsMatch || total > mostGoalsMatch.total) mostGoalsMatch = {g, r, total};
+    const r=results.matches[g.id];
+    const total=r.h+r.a, diff=Math.abs(r.h-r.a);
+    if (!mostGoalsMatch || total>mostGoalsMatch.total) mostGoalsMatch={g,r,total};
+    if (!biggestWin || diff>biggestWin.diff) biggestWin={g,r,diff};
   });
 
-  // --- Clasificación de grupos (calculada desde resultados) ---
-  // Para cada equipo contar PJ PG PE PP GF GC
+  // Team stats across all played matches
+  const teamStats = {};
+  GROUPS.forEach(m => {
+    [m.home, m.away].forEach(c => {
+      if (!teamStats[c]) teamStats[c] = {pg:0,pe:0,pp:0,gf:0,gc:0,pj:0};
+    });
+    const r=results.matches[m.id];
+    if (!r||r.h==null||r.a==null) return;
+    const h=teamStats[m.home], a=teamStats[m.away];
+    h.pj++;a.pj++;h.gf+=r.h;h.gc+=r.a;a.gf+=r.a;a.gc+=r.h;
+    if(r.h>r.a){h.pg++;a.pp++;}else if(r.h<r.a){a.pg++;h.pp++;}else{h.pe++;a.pe++;}
+  });
+  const teamList = Object.entries(teamStats).filter(([,t])=>t.pj>0);
+  const topScorer = teamList.sort((a,b)=>b[1].gf-a[1].gf)[0];
+  const topDefense = teamList.filter(([,t])=>t.pj>0).sort((a,b)=>a[1].gc-b[1].gc)[0];
+  const mostWins = teamList.sort((a,b)=>b[1].pg-a[1].pg)[0];
+  const unbeaten = teamList.filter(([,t])=>t.pp===0&&t.pj>0);
+  const winless = teamList.filter(([,t])=>t.pg===0&&t.pj>0);
+
+  // --- Clasificación de grupos ---
   const groupTeams = {};
   GROUPS.forEach(m => {
     const r = results.matches[m.id];
@@ -5607,18 +5669,15 @@ function StatsView({pool, standings, preds, results, sc, me, setModal, isMaster,
       if (!groupTeams[m.group][c]) groupTeams[m.group][c] = {pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
     });
     if (!r || r.h==null || r.a==null) return;
-    const hT = groupTeams[m.group][m.home];
-    const aT = groupTeams[m.group][m.away];
-    hT.pj++; aT.pj++;
-    hT.gf+=r.h; hT.gc+=r.a; aT.gf+=r.a; aT.gc+=r.h;
-    if (r.h>r.a) { hT.pg++; hT.pts+=3; aT.pp++; }
-    else if (r.h<r.a) { aT.pg++; aT.pts+=3; hT.pp++; }
-    else { hT.pe++; hT.pts++; aT.pe++; aT.pts++; }
+    const hT=groupTeams[m.group][m.home], aT=groupTeams[m.group][m.away];
+    hT.pj++;aT.pj++;hT.gf+=r.h;hT.gc+=r.a;aT.gf+=r.a;aT.gc+=r.h;
+    if(r.h>r.a){hT.pg++;hT.pts+=3;aT.pp++;}
+    else if(r.h<r.a){aT.pg++;aT.pts+=3;hT.pp++;}
+    else{hT.pe++;hT.pts++;aT.pe++;aT.pts++;}
   });
 
   const sortedGroups = [...new Set(GROUPS.map(g=>g.group))].sort();
   const [selGroup, setSelGroup] = useState(sortedGroups[0]||"A");
-
   const groupRows = groupTeams[selGroup]
     ? Object.entries(groupTeams[selGroup])
         .sort((a,b)=>b[1].pts-a[1].pts||(b[1].gf-b[1].gc)-(a[1].gf-a[1].gc)||b[1].gf-a[1].gf)
@@ -5630,40 +5689,77 @@ function StatsView({pool, standings, preds, results, sc, me, setModal, isMaster,
     return !(r && r.h != null && r.a != null);
   }).sort((a,b) => a.kickoff - b.kickoff).slice(0,3);
 
+  const StatCard = ({icon,label,val,sub}) => /*#__PURE__*/React.createElement("div",{className:"stat-card"},
+    /*#__PURE__*/React.createElement("div",{className:"si"},icon),
+    /*#__PURE__*/React.createElement("div",{className:"sl"},label),
+    /*#__PURE__*/React.createElement("div",{className:"sv"},val),
+    /*#__PURE__*/React.createElement("div",{className:"sp"},sub||"\xA0")
+  );
+
   return /*#__PURE__*/React.createElement("div", null,
 
     // RESUMEN DEL TORNEO
     /*#__PURE__*/React.createElement("div", {className:"section"},
       /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "📊 Resumen del torneo"),
-      /*#__PURE__*/React.createElement("div", {className:"stat-row"},
-        /*#__PURE__*/React.createElement("div", {className:"stat-card"},
-          /*#__PURE__*/React.createElement("div", {className:"si"}, "⚽"),
-          /*#__PURE__*/React.createElement("div", {className:"sl"}, "Partidos jugados"),
-          /*#__PURE__*/React.createElement("div", {className:"sv"}, playedAll.length, "/", GROUPS.length),
-          /*#__PURE__*/React.createElement("div", {className:"sp"}, "\xA0")
-        ),
-        /*#__PURE__*/React.createElement("div", {className:"stat-card"},
-          /*#__PURE__*/React.createElement("div", {className:"si"}, "🥅"),
-          /*#__PURE__*/React.createElement("div", {className:"sl"}, "Goles totales"),
-          /*#__PURE__*/React.createElement("div", {className:"sv"}, totalGoals),
-          /*#__PURE__*/React.createElement("div", {className:"sp"}, "\xA0")
-        ),
-        /*#__PURE__*/React.createElement("div", {className:"stat-card"},
-          /*#__PURE__*/React.createElement("div", {className:"si"}, "📈"),
-          /*#__PURE__*/React.createElement("div", {className:"sl"}, "Prom. por partido"),
-          /*#__PURE__*/React.createElement("div", {className:"sv"}, avgGoals.toFixed(2)),
-          /*#__PURE__*/React.createElement("div", {className:"sp"}, "\xA0")
-        )
-      ),
-      mostGoalsMatch && mostGoalsMatch.total >= 3 && /*#__PURE__*/React.createElement("div", {className:"card pad", style:{marginBottom:8}},
-        /*#__PURE__*/React.createElement("div", {className:"hint", style:{fontSize:10,marginBottom:4}}, "🔥 Partido más goleador"),
-        /*#__PURE__*/React.createElement("div", {style:{fontWeight:700,fontSize:13}},
-          tFlag(mostGoalsMatch.g.home)+" "+tName(mostGoalsMatch.g.home)+" "+mostGoalsMatch.r.h+"-"+mostGoalsMatch.r.a+" "+tName(mostGoalsMatch.g.away)+" "+tFlag(mostGoalsMatch.g.away)
-        )
-      ),
-      cleanSheets > 0 && /*#__PURE__*/React.createElement("div", {className:"hint", style:{fontSize:11,textAlign:"center"}},
-        "🧱 "+cleanSheets+" de "+playedAll.length+" partidos terminaron con al menos un equipo en cero."
-      )
+      playedAll.length === 0
+        ? /*#__PURE__*/React.createElement("div",{className:"card pad muted small",style:{textAlign:"center",padding:24}}, "Aún no hay resultados cargados.")
+        : /*#__PURE__*/React.createElement(React.Fragment, null,
+            /*#__PURE__*/React.createElement("div",{className:"stat-row"},
+              /*#__PURE__*/React.createElement(StatCard,{icon:"⚽",label:"Partidos jugados",val:playedAll.length+"/"+GROUPS.length}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"🥅",label:"Goles totales",val:totalGoals}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"📈",label:"Prom. por partido",val:avgGoals.toFixed(2)})
+            ),
+            /*#__PURE__*/React.createElement("div",{className:"stat-row",style:{marginTop:8}},
+              /*#__PURE__*/React.createElement(StatCard,{icon:"🏠",label:"Gana local",val:homeWins,sub:playedAll.length>0?Math.round(homeWins/playedAll.length*100)+"%":""}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"🤝",label:"Empates",val:draws,sub:playedAll.length>0?Math.round(draws/playedAll.length*100)+"%":""}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"✈️",label:"Gana visitante",val:awayWins,sub:playedAll.length>0?Math.round(awayWins/playedAll.length*100)+"%":""})
+            ),
+            /*#__PURE__*/React.createElement("div",{className:"stat-row",style:{marginTop:8}},
+              /*#__PURE__*/React.createElement(StatCard,{icon:"🧱",label:"Ceros",val:cleanSheets,sub:"portería en cero"}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"⚡",label:"Ambos anotan",val:bothScore,sub:"de "+playedAll.length}),
+              /*#__PURE__*/React.createElement(StatCard,{icon:"🔢",label:"Goles 1er tiempo",val:"—"})
+            ),
+            mostGoalsMatch && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{marginBottom:8,marginTop:8}},
+              /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:4}}, "🔥 Partido más goleador ("+mostGoalsMatch.total+" goles)"),
+              /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:13}},
+                tFlag(mostGoalsMatch.g.home)+" "+tName(mostGoalsMatch.g.home)+" "+mostGoalsMatch.r.h+"-"+mostGoalsMatch.r.a+" "+tName(mostGoalsMatch.g.away)+" "+tFlag(mostGoalsMatch.g.away)
+              )
+            ),
+            biggestWin && biggestWin.diff >= 2 && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{marginBottom:8}},
+              /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:4}}, "💥 Mayor goleada (+"+biggestWin.diff+")"),
+              /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:13}},
+                tFlag(biggestWin.g.home)+" "+tName(biggestWin.g.home)+" "+biggestWin.r.h+"-"+biggestWin.r.a+" "+tName(biggestWin.g.away)+" "+tFlag(biggestWin.g.away)
+              )
+            ),
+            /*#__PURE__*/React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:4}},
+              topScorer && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center"}},
+                /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:9,marginBottom:4}},"⚽ Más goleador"),
+                /*#__PURE__*/React.createElement("div",{style:{fontSize:22}},tFlag(topScorer[0])),
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:11}},tName(topScorer[0])),
+                /*#__PURE__*/React.createElement("div",{style:{color:"var(--gold)",fontFamily:"var(--mono)",fontWeight:800}},topScorer[1].gf," goles")
+              ),
+              topDefense && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center"}},
+                /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:9,marginBottom:4}},"🧱 Mejor defensa"),
+                /*#__PURE__*/React.createElement("div",{style:{fontSize:22}},tFlag(topDefense[0])),
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:11}},tName(topDefense[0])),
+                /*#__PURE__*/React.createElement("div",{style:{color:"var(--pitch)",fontFamily:"var(--mono)",fontWeight:800}},topDefense[1].gc," recibidos")
+              ),
+              mostWins && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center"}},
+                /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:9,marginBottom:4}},"🏆 Más victorias"),
+                /*#__PURE__*/React.createElement("div",{style:{fontSize:22}},tFlag(mostWins[0])),
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:11}},tName(mostWins[0])),
+                /*#__PURE__*/React.createElement("div",{style:{color:"var(--gold)",fontFamily:"var(--mono)",fontWeight:800}},mostWins[1].pg," ganados")
+              ),
+              /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center"}},
+                /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:9,marginBottom:4}},"😤 Sin perder"),
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:11,lineHeight:1.3}},
+                  unbeaten.length===0
+                    ? /*#__PURE__*/React.createElement("span",{className:"muted"},"Todos han perdido")
+                    : unbeaten.map(([c])=>tFlag(c)+" "+tName(c)).join(", ")
+                )
+              )
+            )
+          )
     ),
 
     // PRÓXIMOS PARTIDOS

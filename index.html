@@ -4716,13 +4716,13 @@ function PanelView({
     style: coAdmins.includes(nm) ? {borderColor:"var(--gold)",color:"var(--gold)"} : {},
     onClick: () => toggleCoAdmin(nm)
   }, coAdmins.includes(nm) ? "✓ Admin" : "+ Admin"),
-  isMasterDev && nm !== me && /*#__PURE__*/React.createElement("button", {
+  isMasterDev && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {fontSize:10, borderColor:"var(--pitch)", color:"var(--pitch)"},
     title: "Regalar comodín Doblar",
     onClick: () => { if(confirm("¿Regalar 1 Doblar a "+nm+"?")) giftComodin(nm,"doble"); }
   }, "🃏+"),
-  isMasterDev && nm !== me && /*#__PURE__*/React.createElement("button", {
+  isMasterDev && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {fontSize:10, borderColor:"var(--sky)", color:"var(--sky)"},
     title: "Regalar comodín Escudo",

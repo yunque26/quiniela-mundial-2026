@@ -1671,7 +1671,8 @@ function App() {
       ...(pool.comodines || {})
     };
     if (!has) {
-      if (arr.length >= pc[type]) {
+      const extra = (mine.comodinesExtra || {})[type] || 0;
+      if (arr.length >= pc[type] + extra) {
         flash("No te quedan comodines de ese tipo");
         return;
       }
@@ -4723,13 +4724,13 @@ function PanelView({
     style: {fontSize:10, borderColor:"var(--pitch)", color:"var(--pitch)"},
     title: "Regalar comodín Doblar",
     onClick: () => { if(confirm("¿Regalar 1 Doblar a "+nm+"?")) giftComodin(nm,"doble"); }
-  }, "🃏+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.doble||[]).length; const extra=p.comodinesExtra?.doble||0; const avail=(sc.comodines?.doble||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
+  }, "🃏+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.doble||[]).length; const extra=p.comodinesExtra?.doble||0; const avail=(poolCmd?.doble||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
   isMasterDev && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {fontSize:10, borderColor:"var(--sky)", color:"var(--sky)"},
     title: "Regalar comodín Escudo",
     onClick: () => { if(confirm("¿Regalar 1 Escudo a "+nm+"?")) giftComodin(nm,"escudo"); }
-  }, "🛡️+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.escudo||[]).length; const extra=p.comodinesExtra?.escudo||0; const avail=(sc.comodines?.escudo||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
+  }, "🛡️+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.escudo||[]).length; const extra=p.comodinesExtra?.escudo||0; const avail=(poolCmd?.escudo||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
   nm !== me && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm danger",
     onClick: () => { if (confirm("¿Retirar a " + nm + "?")) removeMember(nm); }

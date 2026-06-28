@@ -366,6 +366,21 @@ select.bare{-webkit-appearance:none;appearance:none}
 .h2h-teams{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .h2h-comp{color:var(--muted2);font-size:9px;flex-shrink:0}
 
+/* ===== BRACKET ===== */
+.bracket-round{margin-bottom:20px}
+.br-title{font-family:var(--disp);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.br-grid{display:grid;gap:6px}
+.bm-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.bm-team{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;font-weight:600}
+.bm-team.winner{color:var(--gold)}
+.bm-flag{font-size:16px;flex-shrink:0}
+.bm-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.bm-score{font-family:var(--mono);font-weight:800;font-size:15px;flex-shrink:0;margin-left:auto}
+.bm-score.gold{color:var(--gold)}
+.bm-tbd{color:var(--muted2);font-size:11px;font-style:italic}
+.bm-date{font-size:9px;color:var(--muted2);margin-top:2px;text-align:center}
+.bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px}
+
 /* ===== RACHA DE ACIERTOS ===== */
 .streak-card{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,138,61,.02));border:1px solid rgba(255,138,61,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .streak-fire{font-size:30px;flex-shrink:0}
@@ -818,8 +833,22 @@ const CARTA_STATIC = [
   {emoji:"🇩🇪", text:"Alemania fue el primer país en ganar el Mundial tras una reunificación, en 1990, justo antes de la caída del Muro."},
   {emoji:"🎪", text:"El himno oficial del Mundial 2010 'Waka Waka' de Shakira es una de las canciones de FIFA más escuchadas de la historia."},
   {emoji:"🧮", text:"Solo 8 selecciones han ganado un Mundial: Brasil, Alemania, Italia, Argentina, Francia, Uruguay, Inglaterra y España."},
-  // NEW BATCH
-  {emoji:"🇵🇹", text:"Portugal nunca ha ganado un Mundial, a pesar de tener a Eusébio (1966) y Cristiano Ronaldo como los mejores jugadores de su historia."},
+  // NEW BATCH - Fase de Grupos 2026
+  {emoji:"🐐", text:"Messi anotó su primer hat-trick mundialista en 2026 contra Argelia, convirtiéndose en el máximo goleador de la historia de los Mundiales con 18 goles, superando los 16 de Klose."},
+  {emoji:"🇵🇹", text:"Cristiano Ronaldo se convirtió en el único jugador en marcar goles en 6 ediciones distintas del Mundial — 2006, 2010, 2014, 2018, 2022 y 2026."},
+  {emoji:"🇩🇪", text:"Alemania goleó a Curazao 7-1 en el debut. Fue la primera vez que Alemania marcaba 7 goles en un partido mundialista desde que le hizo 7-1 a Brasil en 2014."},
+  {emoji:"🏝️", text:"Curazao, con solo 150.000 habitantes y 171 km², se convirtió en la nación más pequeña en participar y en anotar un gol en la historia de los Mundiales masculinos."},
+  {emoji:"🧓", text:"Dick Advocaat, técnico de Curazao, se convirtió a sus 78 años en el entrenador de más edad en dirigir en un Mundial, superando el récord que ya se había batido dos veces en el mismo torneo."},
+  {emoji:"🇫🇷", text:"Mbappé se convirtió en el máximo goleador histórico de la selección francesa durante el torneo, superando a Thierry Henry. Además, lleva ya 15 goles mundialistas y persigue el récord de Messi."},
+  {emoji:"🧤", text:"Eloy Room, portero de Curazao, realizó 16 atajadas en el empate 0-0 contra Ecuador — el mayor número de paradas en un partido de 90 minutos en toda la historia de los Mundiales."},
+  {emoji:"🇪🇸", text:"España no recibió ni un solo gol en toda la fase de grupos del Mundial 2026 — la primera vez en su historia que logra ese hito. Unai Simón lleva 430 minutos sin ser batido en Mundiales."},
+  {emoji:"⚽", text:"El partido Túnez 0-4 Japón (20 de junio) fue el partido número 1.000 en la historia de los Mundiales masculinos."},
+  {emoji:"🎩", text:"Ousmane Dembélé marcó un hat-trick contra Noruega con solo 0.19 de xG acumulado — el hat-trick de menor calidad estadística en un Mundial desde László Kiss en 1982."},
+  {emoji:"🇳🇱", text:"Países Bajos lleva 14 partidos mundialistas sin perder (9 victorias y 5 empates), la racha más larga de cualquier selección en la historia del torneo."},
+  {emoji:"🌍", text:"En el Mundial 2026, por primera vez 4 selecciones africanas clasificaron a octavos en el mismo torneo: Sudáfrica, Costa de Marfil, Senegal y Egipto. Cabo Verde también avanzó."},
+  {emoji:"👴", text:"Vozinha, portero de Cabo Verde con 40 años, se unió a Dino Zoff y Peter Shilton como los únicos porteros mayores de 40 en guardar múltiples porterías en cero en un mismo Mundial."},
+  {emoji:"🏆", text:"Argentina terminó primera en su grupo con 9 puntos y 18 goles marcados. Messi lleva 6 goles en solo 3 partidos de grupos, igualando su mejor marca personal en un Mundial."},
+  {emoji:"🔢", text:"En la fase de grupos del Mundial 2026 se marcaron más de 215 goles en 72 partidos — uno de los torneos con más goles por partido en la historia reciente del fútbol."},
   {emoji:"🤿", text:"El Mundial de 1950 en Brasil no tuvo una final formal — el campeón se decidió con una mini-liga final. Uruguay le ganó a Brasil 2-1 en el último partido, en el Maracaná lleno."},
   {emoji:"🎰", text:"En Qatar 2022, Marruecos se convirtió en el primer equipo africano en llegar a semifinales de un Mundial."},
   {emoji:"📐", text:"La pelota oficial del Mundial 1970 (Telstar) fue la primera en tener el diseño icónico de hexágonos negros y blancos, pensado para verse mejor en televisión en blanco y negro."},
@@ -2398,7 +2427,7 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
   }, "CARGANDO\u2026"));
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Header, _extends({}, ctx, {
     view: view
-  })), view === "home" && /*#__PURE__*/React.createElement(HomeView, ctx), view === "predict" && /*#__PURE__*/React.createElement(PredictView, ctx), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, ctx), view === "flash" && /*#__PURE__*/React.createElement(FlashView, ctx), view === "stats" && /*#__PURE__*/React.createElement(StatsView, ctx), view === "table" && /*#__PURE__*/React.createElement(TableView, ctx), view === "manage" && (isMaster ? /*#__PURE__*/React.createElement(PanelView, _extends({}, ctx, {
+  })), view === "home" && /*#__PURE__*/React.createElement(HomeView, ctx), view === "predict" && /*#__PURE__*/React.createElement(PredictView, ctx), view === "calendar" && /*#__PURE__*/React.createElement(CalendarView, ctx), view === "flash" && /*#__PURE__*/React.createElement(FlashView, ctx), view === "stats" && /*#__PURE__*/React.createElement(StatsView, ctx), view === "bracket" && /*#__PURE__*/React.createElement(BracketView, ctx), view === "table" && /*#__PURE__*/React.createElement(TableView, ctx), view === "manage" && (isMaster ? /*#__PURE__*/React.createElement(PanelView, _extends({}, ctx, {
     createPool: createPool,
     updateScoring: updateScoring,
     updateComodines: updateComodines,
@@ -2511,7 +2540,7 @@ function Nav({
   newMsgCount,
   onHome
 }) {
-  const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Pronos"], ["flash", "⚡", "Flash"], ["stats", "📊", "Stats"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
+  const items = [["home", "🏠", "Inicio"], ["predict", "🎯", "Pronos"], ["flash", "⚡", "Flash"], ["bracket", "⚔️", "Bracket"], ["manage", isMaster ? "🛠️" : "👤", isMaster ? "Panel" : "Cuenta"]];
   function handleTab(k) {
     if (k === "home" && onHome) onHome();
     setView(k);
@@ -4754,13 +4783,13 @@ function PanelView({
     style: {fontSize:10, borderColor:"var(--pitch)", color:"var(--pitch)"},
     title: "Regalar comodín Doblar",
     onClick: () => { if(confirm("¿Regalar 1 Doblar a "+nm+"?")) giftComodin(nm,"doble"); }
-  }, "🃏+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.doble||[]).length; const extra=p.comodinesExtra?.doble||0; const avail=(poolCmd?.doble||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
+  }, "🃏+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.doble||[]).length; const extra=p.comodinesExtra?.doble||0; const avail=Math.max(0,(poolCmd?.doble||0)+extra-used); return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
   isMasterDev && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm",
     style: {fontSize:10, borderColor:"var(--sky)", color:"var(--sky)"},
     title: "Regalar comodín Escudo",
     onClick: () => { if(confirm("¿Regalar 1 Escudo a "+nm+"?")) giftComodin(nm,"escudo"); }
-  }, "🛡️+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.escudo||[]).length; const extra=p.comodinesExtra?.escudo||0; const avail=(poolCmd?.escudo||2)+extra-used; return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
+  }, "🛡️+", (() => { const k=safeKey(nm); const p=preds[k]||{}; const used=(p.comodines?.escudo||[]).length; const extra=p.comodinesExtra?.escudo||0; const avail=Math.max(0,(poolCmd?.escudo||2)+extra-used); return /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}, avail); })()),
   nm !== me && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost sm danger",
     onClick: () => { if (confirm("¿Retirar a " + nm + "?")) removeMember(nm); }
@@ -5692,6 +5721,83 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
 /* =========================================================
    STATS VIEW
    ========================================================= */
+/* =========================================================
+   BRACKET VIEW — cuadro eliminatorio
+   ========================================================= */
+function BracketView({results, pool, standings, preds, sc, me, setModal, isMaster, safeKey, tz, wcScorers, setView}) {
+  if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
+  const [bracketTab, setBracketTab] = useState("bracket");
+
+  // Round of 32 matches from KOS
+  const r32 = KOS.filter(m => m.stage === "32avos");
+  const r16 = KOS.filter(m => m.stage === "Octavos");
+  const qf  = KOS.filter(m => m.stage === "Cuartos");
+  const sf  = KOS.filter(m => m.stage === "Semifinal");
+  const fin = KOS.filter(m => m.stage === "Final" || m.stage === "3er puesto");
+
+  const matchResult = m => results.matches?.[m.id];
+  const isPlayed = m => { const r = matchResult(m); return r && r.h != null && r.a != null; };
+
+  const BracketMatch = ({m, compact}) => {
+    const r = matchResult(m);
+    const played = isPlayed(m);
+    const hWin = played && r.h > r.a;
+    const aWin = played && r.a > r.h;
+    const myPred = preds[safeKey(me)]?.matches?.[m.id];
+    const hasPred = myPred && myPred.h != null && myPred.a != null;
+    return /*#__PURE__*/React.createElement("div", {className:"bm-card"},
+      /*#__PURE__*/React.createElement("div", {className:"bm-team"+(hWin?" winner":"")},
+        m.home ? /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(m.home)),
+          /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(m.home))
+        ) : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, "Por definir"),
+        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(hWin?" gold":"")}, r.h)
+      ),
+      /*#__PURE__*/React.createElement("div", {className:"bm-team"+(aWin?" winner":"")},
+        m.away ? /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(m.away)),
+          /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(m.away))
+        ) : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, "Por definir"),
+        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(aWin?" gold":"")}, r.a)
+      ),
+      !played && /*#__PURE__*/React.createElement("div",{className:"bm-date"},
+        (() => { const dl = dayLabel(m.kickoff, tz); return dl.dow+" "+dl.dnum+" "+dl.mon+" · "+fmtTime(m.kickoff, tz); })()
+      ),
+      hasPred && !played && /*#__PURE__*/React.createElement("div",{className:"bm-pred"}, "🎯 "+myPred.h+"-"+myPred.a)
+    );
+  };
+
+  const Round = ({title, matches, cols}) => /*#__PURE__*/React.createElement("div", {className:"bracket-round"},
+    /*#__PURE__*/React.createElement("div",{className:"br-title"}, title),
+    /*#__PURE__*/React.createElement("div",{className:"br-grid", style:{gridTemplateColumns: cols||"1fr 1fr"}},
+      matches.map(m => /*#__PURE__*/React.createElement(BracketMatch, {key:m.id, m}))
+    )
+  );
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("div", {className:"filterbar", style:{marginBottom:10, marginTop:8}},
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="bracket"?" active":""), onClick:()=>setBracketTab("bracket")}, "⚔️ Bracket"),
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="stats"?" active":""), onClick:()=>setBracketTab("stats")}, "📊 Stats")
+    ),
+
+    bracketTab === "bracket" && /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "⚔️ Fase Eliminatoria"),
+      /*#__PURE__*/React.createElement("p",{className:"muted small",style:{marginBottom:12}},
+        "🎯 Tu pronóstico aparece debajo de cada partido no jugado"
+      ),
+      /*#__PURE__*/React.createElement(Round, {title:"🔸 32avos de Final", matches:r32, cols:"1fr 1fr"}),
+      r16.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"⚡ Octavos de Final", matches:r16, cols:"1fr 1fr"}),
+      qf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🔥 Cuartos de Final", matches:qf, cols:"1fr 1fr"}),
+      sf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🌟 Semifinales", matches:sf, cols:"1fr 1fr"}),
+      fin.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🏆 Final y 3er Puesto", matches:fin, cols:"1fr 1fr"})
+    ),
+
+    bracketTab === "stats" && /*#__PURE__*/React.createElement(StatsView, {
+      pool, standings, preds, results, sc, me, setModal, isMaster, safeKey, tz, wcScorers
+    })
+  );
+}
+
 function StatsView({pool, standings, preds, results, sc, me, setModal, isMaster, safeKey, tz, wcScorers}) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
 

@@ -731,7 +731,23 @@ const tName = c => TEAMS[c] ? TEAMS[c][0] : c;
 const truncate = (s, n) => (s && s.length > n) ? s.slice(0, n).trimEnd() + "…" : s;
 const tFlag = c => TEAMS[c] ? TEAMS[c][1] : "🏳️";
 const GROUP_RAW = [["A", "MEX", "RSA", "2026-06-11T15:00", "Estadio Azteca, Ciudad de México"], ["A", "KOR", "CZE", "2026-06-11T22:00", "Estadio Akron, Guadalajara"], ["B", "CAN", "BIH", "2026-06-12T15:00", "BMO Field, Toronto"], ["D", "USA", "PAR", "2026-06-12T21:00", "SoFi Stadium, Los Ángeles"], ["B", "QAT", "SUI", "2026-06-13T15:00", "Levi's Stadium, San Francisco"], ["C", "BRA", "MAR", "2026-06-13T18:00", "MetLife Stadium, Nueva York/NJ"], ["C", "HAI", "SCO", "2026-06-13T21:00", "Gillette Stadium, Boston"], ["D", "AUS", "TUR", "2026-06-14T00:00", "BC Place, Vancouver"], ["E", "GER", "CUW", "2026-06-14T13:00", "NRG Stadium, Houston"], ["F", "NED", "JPN", "2026-06-14T16:00", "AT&T Stadium, Dallas"], ["E", "CIV", "ECU", "2026-06-14T19:00", "Lincoln Financial Field, Filadelfia"], ["F", "SWE", "TUN", "2026-06-14T22:00", "Estadio BBVA, Monterrey"], ["H", "ESP", "CPV", "2026-06-15T12:00", "Mercedes-Benz Stadium, Atlanta"], ["G", "BEL", "EGY", "2026-06-15T15:00", "Lumen Field, Seattle"], ["H", "KSA", "URU", "2026-06-15T18:00", "Hard Rock Stadium, Miami"], ["G", "IRN", "NZL", "2026-06-15T21:00", "SoFi Stadium, Los Ángeles"], ["I", "FRA", "SEN", "2026-06-16T15:00", "MetLife Stadium, Nueva York/NJ"], ["I", "IRQ", "NOR", "2026-06-16T18:00", "Gillette Stadium, Boston"], ["J", "ARG", "ALG", "2026-06-16T21:00", "Arrowhead Stadium, Kansas City"], ["J", "AUT", "JOR", "2026-06-17T00:00", "Levi's Stadium, San Francisco"], ["K", "POR", "COD", "2026-06-17T13:00", "NRG Stadium, Houston"], ["L", "ENG", "CRO", "2026-06-17T16:00", "AT&T Stadium, Dallas"], ["L", "GHA", "PAN", "2026-06-17T19:00", "BMO Field, Toronto"], ["K", "UZB", "COL", "2026-06-17T22:00", "Estadio Azteca, Ciudad de México"], ["A", "CZE", "RSA", "2026-06-18T12:00", "Mercedes-Benz Stadium, Atlanta"], ["B", "SUI", "BIH", "2026-06-18T15:00", "SoFi Stadium, Los Ángeles"], ["B", "CAN", "QAT", "2026-06-18T18:00", "BC Place, Vancouver"], ["A", "MEX", "KOR", "2026-06-18T21:00", "Estadio Akron, Guadalajara"], ["D", "USA", "AUS", "2026-06-19T15:00", "Lumen Field, Seattle"], ["C", "SCO", "MAR", "2026-06-19T18:00", "Gillette Stadium, Boston"], ["C", "BRA", "HAI", "2026-06-19T20:30", "Lincoln Financial Field, Filadelfia"], ["D", "TUR", "PAR", "2026-06-19T23:00", "Levi's Stadium, San Francisco"], ["F", "NED", "SWE", "2026-06-20T13:00", "NRG Stadium, Houston"], ["E", "GER", "CIV", "2026-06-20T16:00", "BMO Field, Toronto"], ["E", "ECU", "CUW", "2026-06-20T20:00", "Arrowhead Stadium, Kansas City"], ["F", "TUN", "JPN", "2026-06-21T00:00", "Estadio BBVA, Monterrey"], ["H", "ESP", "KSA", "2026-06-21T12:00", "Mercedes-Benz Stadium, Atlanta"], ["G", "BEL", "IRN", "2026-06-21T15:00", "SoFi Stadium, Los Ángeles"], ["H", "URU", "CPV", "2026-06-21T18:00", "Hard Rock Stadium, Miami"], ["G", "NZL", "EGY", "2026-06-21T21:00", "BC Place, Vancouver"], ["J", "ARG", "AUT", "2026-06-22T13:00", "AT&T Stadium, Dallas"], ["I", "FRA", "IRQ", "2026-06-22T17:00", "Lincoln Financial Field, Filadelfia"], ["I", "NOR", "SEN", "2026-06-22T20:00", "MetLife Stadium, Nueva York/NJ"], ["J", "JOR", "ALG", "2026-06-22T23:00", "Levi's Stadium, San Francisco"], ["K", "POR", "UZB", "2026-06-23T13:00", "NRG Stadium, Houston"], ["L", "ENG", "GHA", "2026-06-23T16:00", "Gillette Stadium, Boston"], ["L", "PAN", "CRO", "2026-06-23T19:00", "BMO Field, Toronto"], ["K", "COL", "COD", "2026-06-23T22:00", "Estadio Akron, Guadalajara"], ["B", "SUI", "CAN", "2026-06-24T15:00", "BC Place, Vancouver"], ["B", "BIH", "QAT", "2026-06-24T15:00", "Lumen Field, Seattle"], ["C", "SCO", "BRA", "2026-06-24T18:00", "Hard Rock Stadium, Miami"], ["C", "MAR", "HAI", "2026-06-24T18:00", "Mercedes-Benz Stadium, Atlanta"], ["A", "CZE", "MEX", "2026-06-24T21:00", "Estadio Azteca, Ciudad de México"], ["A", "RSA", "KOR", "2026-06-24T21:00", "Estadio BBVA, Monterrey"], ["E", "CUW", "CIV", "2026-06-25T16:00", "Lincoln Financial Field, Filadelfia"], ["E", "ECU", "GER", "2026-06-25T16:00", "MetLife Stadium, Nueva York/NJ"], ["F", "JPN", "SWE", "2026-06-25T19:00", "AT&T Stadium, Dallas"], ["F", "TUN", "NED", "2026-06-25T19:00", "Arrowhead Stadium, Kansas City"], ["D", "TUR", "USA", "2026-06-25T22:00", "SoFi Stadium, Los Ángeles"], ["D", "PAR", "AUS", "2026-06-25T22:00", "Levi's Stadium, San Francisco"], ["I", "NOR", "FRA", "2026-06-26T15:00", "Gillette Stadium, Boston"], ["I", "SEN", "IRQ", "2026-06-26T15:00", "BMO Field, Toronto"], ["H", "CPV", "KSA", "2026-06-26T20:00", "NRG Stadium, Houston"], ["H", "URU", "ESP", "2026-06-26T20:00", "Estadio Akron, Guadalajara"], ["G", "EGY", "IRN", "2026-06-26T23:00", "Lumen Field, Seattle"], ["G", "NZL", "BEL", "2026-06-26T23:00", "BC Place, Vancouver"], ["L", "PAN", "ENG", "2026-06-27T17:00", "MetLife Stadium, Nueva York/NJ"], ["L", "CRO", "GHA", "2026-06-27T17:00", "Lincoln Financial Field, Filadelfia"], ["K", "COL", "POR", "2026-06-27T19:30", "Hard Rock Stadium, Miami"], ["K", "COD", "UZB", "2026-06-27T19:30", "Mercedes-Benz Stadium, Atlanta"], ["J", "ALG", "AUT", "2026-06-27T22:00", "Arrowhead Stadium, Kansas City"], ["J", "JOR", "ARG", "2026-06-27T22:00", "AT&T Stadium, Dallas"]];
-const KO_RAW = [["32avos", "2º A vs 2º B", "2026-06-28T15:00", "SoFi Stadium, Los Ángeles", 73], ["32avos", "1º C vs 2º F", "2026-06-29T13:00", "NRG Stadium, Houston", 76], ["32avos", "1º E vs Mejor 3º", "2026-06-29T16:30", "Gillette Stadium, Boston", 74], ["32avos", "1º F vs 2º C", "2026-06-29T21:00", "Estadio BBVA, Monterrey", 75], ["32avos", "2º E vs 2º I", "2026-06-30T13:00", "AT&T Stadium, Dallas", 78], ["32avos", "1º I vs Mejor 3º", "2026-06-30T17:00", "MetLife Stadium, Nueva York/NJ", 77], ["32avos", "1º A vs Mejor 3º", "2026-06-30T21:00", "Estadio Azteca, Ciudad de México", 79], ["32avos", "1º L vs Mejor 3º", "2026-07-01T12:00", "Mercedes-Benz Stadium, Atlanta", 80], ["32avos", "1º G vs Mejor 3º", "2026-07-01T16:00", "Lumen Field, Seattle", 82], ["32avos", "1º D vs Mejor 3º", "2026-07-01T20:00", "Levi's Stadium, San Francisco", 81], ["32avos", "1º H vs 2º J", "2026-07-02T15:00", "SoFi Stadium, Los Ángeles", 84], ["32avos", "2º K vs 2º L", "2026-07-02T19:00", "BMO Field, Toronto", 83], ["32avos", "1º B vs Mejor 3º", "2026-07-02T23:00", "BC Place, Vancouver", 85], ["32avos", "2º D vs 2º G", "2026-07-03T14:00", "AT&T Stadium, Dallas", 88], ["32avos", "1º J vs 2º H", "2026-07-03T18:00", "Hard Rock Stadium, Miami", 86], ["32avos", "1º K vs Mejor 3º", "2026-07-03T21:30", "Arrowhead Stadium, Kansas City", 87], ["Octavos", "Gan.73 vs Gan.75", "2026-07-04T13:00", "NRG Stadium, Houston", 90], ["Octavos", "Gan.74 vs Gan.77", "2026-07-04T17:00", "Lincoln Financial Field, Filadelfia", 89], ["Octavos", "Gan.76 vs Gan.78", "2026-07-05T16:00", "MetLife Stadium, Nueva York/NJ", 91], ["Octavos", "Gan.79 vs Gan.80", "2026-07-05T20:00", "Estadio Azteca, Ciudad de México", 92], ["Octavos", "Gan.83 vs Gan.84", "2026-07-06T15:00", "AT&T Stadium, Dallas", 93], ["Octavos", "Gan.81 vs Gan.82", "2026-07-06T20:00", "Lumen Field, Seattle", 94], ["Octavos", "Gan.86 vs Gan.88", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95], ["Octavos", "Gan.85 vs Gan.87", "2026-07-07T16:00", "BC Place, Vancouver", 96], ["Cuartos", "Gan.89 vs Gan.90", "2026-07-09T16:00", "Gillette Stadium, Boston", 97], ["Cuartos", "Gan.93 vs Gan.94", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98], ["Cuartos", "Gan.91 vs Gan.92", "2026-07-11T17:00", "Hard Rock Stadium, Miami", 99], ["Cuartos", "Gan.95 vs Gan.96", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100], ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101], ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102], ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T17:00", "Hard Rock Stadium, Miami", 103], ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]];
+const KO_RAW = [
+  ["32avos", "RSA vs CAN", "2026-06-28T15:00", "SoFi Stadium, Los Ángeles", 73],
+  ["32avos", "BRA vs JPN", "2026-06-29T13:00", "NRG Stadium, Houston", 76],
+  ["32avos", "GER vs PAR", "2026-06-29T16:30", "Gillette Stadium, Boston", 74],
+  ["32avos", "NED vs MAR", "2026-06-29T21:00", "Estadio BBVA, Monterrey", 75],
+  ["32avos", "CIV vs NOR", "2026-06-30T13:00", "AT&T Stadium, Dallas", 78],
+  ["32avos", "FRA vs SWE", "2026-06-30T17:00", "MetLife Stadium, Nueva York/NJ", 77],
+  ["32avos", "MEX vs ECU", "2026-06-30T21:00", "Estadio Azteca, Ciudad de México", 79],
+  ["32avos", "ENG vs COD", "2026-07-01T12:00", "Mercedes-Benz Stadium, Atlanta", 80],
+  ["32avos", "BEL vs SEN", "2026-07-01T13:00", "Lumen Field, Seattle", 82],
+  ["32avos", "USA vs BIH", "2026-07-01T20:00", "Levi's Stadium, San Francisco", 81],
+  ["32avos", "ESP vs AUT", "2026-07-02T15:00", "SoFi Stadium, Los Ángeles", 84],
+  ["32avos", "POR vs CRO", "2026-07-02T19:00", "BMO Field, Toronto", 83],
+  ["32avos", "SUI vs ALG", "2026-07-03T00:00", "BC Place, Vancouver", 85],
+  ["32avos", "ARG vs CPV", "2026-07-03T12:00", "AT&T Stadium, Dallas", 88],
+  ["32avos", "AUS vs EGY", "2026-07-03T14:00", "Hard Rock Stadium, Miami", 86],
+  ["32avos", "COL vs GHA", "2026-07-03T20:30", "Arrowhead Stadium, Kansas City", 87], ["Octavos", "Gan.73 vs Gan.75", "2026-07-04T13:00", "NRG Stadium, Houston", 90], ["Octavos", "Gan.74 vs Gan.77", "2026-07-04T17:00", "Lincoln Financial Field, Filadelfia", 89], ["Octavos", "Gan.76 vs Gan.78", "2026-07-05T16:00", "MetLife Stadium, Nueva York/NJ", 91], ["Octavos", "Gan.79 vs Gan.80", "2026-07-05T20:00", "Estadio Azteca, Ciudad de México", 92], ["Octavos", "Gan.83 vs Gan.84", "2026-07-06T15:00", "AT&T Stadium, Dallas", 93], ["Octavos", "Gan.81 vs Gan.82", "2026-07-06T20:00", "Lumen Field, Seattle", 94], ["Octavos", "Gan.86 vs Gan.88", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95], ["Octavos", "Gan.85 vs Gan.87", "2026-07-07T16:00", "BC Place, Vancouver", 96], ["Cuartos", "Gan.89 vs Gan.90", "2026-07-09T16:00", "Gillette Stadium, Boston", 97], ["Cuartos", "Gan.93 vs Gan.94", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98], ["Cuartos", "Gan.91 vs Gan.92", "2026-07-11T17:00", "Hard Rock Stadium, Miami", 99], ["Cuartos", "Gan.95 vs Gan.96", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100], ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101], ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102], ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T17:00", "Hard Rock Stadium, Miami", 103], ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]];
 const ET = "-04:00";
 const GROUPS = GROUP_RAW.map((r, i) => ({
   id: "g" + (i + 1),
@@ -743,16 +759,21 @@ const GROUPS = GROUP_RAW.map((r, i) => ({
   venue: r[4],
   playable: true
 }));
-const KOS = KO_RAW.map(r => ({
-  id: "k" + r[4],
-  stage: r[0],
-  group: null,
-  label: r[1],
-  kickoff: new Date(r[2] + ET),
-  venue: r[3],
-  no: r[4],
-  playable: false
-}));
+const KOS = KO_RAW.map(r => {
+  const parts = r[1].split(" vs ");
+  return {
+    id: "k" + r[4],
+    stage: r[0],
+    group: null,
+    label: r[1],
+    home: parts[0]?.trim() || null,
+    away: parts[1]?.trim() || null,
+    kickoff: new Date(r[2] + ET),
+    venue: r[3],
+    no: r[4],
+    playable: false
+  };
+});
 const ALL = [...GROUPS, ...KOS].sort((a, b) => a.kickoff - b.kickoff);
 const FIRST_KICKOFF = GROUPS[0].kickoff;
 const FINAL_KICKOFF = ALL[ALL.length - 1].kickoff;
@@ -915,7 +936,7 @@ const DEFAULT_SCORING = {
 };
 const DEFAULT_COMODINES = {
   enabled: true,
-  doble: 2,
+  doble: 0,
   escudo: 2,
   espia: 1
 };
@@ -1648,7 +1669,7 @@ function App() {
   }
   async function toggleComodin(type, matchId) {
     if (!requireMember()) return;
-    const m = GROUPS.find(g => g.id === matchId);
+    const m = ALL.find(g => g.id === matchId);
     if (!m || lk(m)) {
       flash("Ese partido ya está cerrado");
       return;
@@ -1796,9 +1817,9 @@ function App() {
         espia: cm.espia.includes(matchId)
       },
       avail: {
-        doble: pc.doble + (extra.doble||0) - used("doble"),
-        escudo: pc.escudo + (extra.escudo||0) - used("escudo"),
-        espia: pc.espia + (extra.espia||0) - used("espia")
+        doble: Math.max(0, pc.doble + (extra.doble||0) - used("doble")),
+        escudo: Math.max(0, pc.escudo + (extra.escudo||0) - used("escudo")),
+        espia: Math.max(0, pc.espia + (extra.espia||0) - used("espia"))
       },
       htOpen: !!(results.ht && results.ht[matchId]),
       onToggle: t => toggleComodin(t, matchId),

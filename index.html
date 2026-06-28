@@ -1689,7 +1689,8 @@ function App() {
     const has = arr.includes(matchId);
     const pc = {
       ...DEFAULT_COMODINES,
-      ...(pool.comodines || {})
+      ...(pool.comodines || {}),
+      doble: DEFAULT_COMODINES.doble
     };
     if (!has) {
       const extra = (mine.comodinesExtra || {})[type] || 0;
@@ -1796,9 +1797,11 @@ function App() {
     });
   }
   function matchTools(matchId) {
+    const poolCmd2 = pool && pool.comodines || {};
     const pc = {
       ...DEFAULT_COMODINES,
-      ...(pool && pool.comodines || {})
+      ...poolCmd2,
+      doble: DEFAULT_COMODINES.doble // doble is disabled globally, ignore pool override
     };
     const key = safeKey(me);
     const cm = {
@@ -2836,7 +2839,7 @@ function MatchCard({
 function MatchStats({m, actual, tz, results}) {
   const [open, setOpen] = useState(false);
   const hasResult = actual && actual.h != null && actual.a != null;
-  if (!hasResult && !m.group) return null;
+  if (!hasResult && !m.group && !m.home) return null;
   return /*#__PURE__*/React.createElement("div", {style:{marginTop:6}},
     /*#__PURE__*/React.createElement("button", {
       className:"btn ghost sm",
@@ -2850,7 +2853,13 @@ function MatchStats({m, actual, tz, results}) {
           tFlag(m.home)," ",tName(m.home)," ",actual.h," – ",actual.a," ",tName(m.away)," ",tFlag(m.away)
         )
       ),
-      !hasResult && m.group && /*#__PURE__*/React.createElement(GroupAnalysis, {m, results: results||{matches:{}}})
+      !hasResult && m.group && /*#__PURE__*/React.createElement(GroupAnalysis, {m, results: results||{matches:{}}}),
+      !hasResult && !m.group && m.home && /*#__PURE__*/React.createElement("div", {className:"muted small", style:{textAlign:"center",padding:8}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:28,marginBottom:6}}, tFlag(m.home)+" "+tFlag(m.away)),
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:700}}, tName(m.home)+" vs "+tName(m.away)),
+        /*#__PURE__*/React.createElement("div",{style:{marginTop:4,color:"var(--muted2)"}}, "⚔️ "+m.stage+" · Eliminación directa"),
+        /*#__PURE__*/React.createElement("div",{style:{marginTop:4,color:"var(--muted2)"}}, "El perdedor queda eliminado del Mundial.")
+      )
     )
   );
 }

@@ -2171,6 +2171,65 @@ function App() {
     flash("⚡ Voto registrado");
   }
 
+  async function betPozo(betId, opt, cantidad) {
+    if (!me) { setModal("identity"); return; }
+    if (!canPlay) { setModal("join"); return; }
+    const sk = safeKey(me);
+    const myGoles = goles[sk] || 0;
+    const cant = Math.min(parseInt(cantidad)||0, myGoles);
+    if (cant <= 0) { flash("No tienes goles para apostar"); return; }
+    // Deduct goles immediately
+    await fbSet("goles/"+sk, myGoles - cant);
+    // Save vote + bet amount
+    await fbSet("flashvotes/"+betId+"/"+sk, opt);
+    await fbSet("flash_bets/"+betId+"/"+sk, {opt, cant});
+    flash("🎰 Apostaste "+cant+" ⚽ a: "+opt);
+  }
+
+  async function resolveFlash(betId, correctOpt) {
+    const snap = await getDb().ref("flash").get();
+    if (!snap.exists()) return;
+    const data = snap.val();
+    const key = Object.keys(data).find(k => data[k].id === betId);
+    if (!key) return;
+    const bet = data[key];
+    await getDb().ref("flash/"+key).update({status:"resolved", correct:correctOpt});
+    const votes = flashVotes[betId] || {};
+
+    if (bet.tipo === "pozo") {
+      // Pozo: load all bets, sum pot, distribute among winners
+      const betsSnap = await fbGet("flash_bets/"+betId) || {};
+      const winners = Object.entries(betsSnap).filter(([,v]) => v.opt === correctOpt);
+      const losers  = Object.entries(betsSnap).filter(([,v]) => v.opt !== correctOpt);
+      const totalPot = Object.values(betsSnap).reduce((s,v) => s+(v.cant||0), 0);
+      if (winners.length > 0) {
+        const share = Math.floor(totalPot / winners.length);
+        for (const [sk] of winners) {
+          const cur = (await fbGet("goles/"+sk)) || 0;
+          await fbSet("goles/"+sk, cur + share);
+        }
+        flash("🎰 Pozo repartido · "+winners.length+" ganador(es) · "+share+" ⚽ c/u");
+      } else {
+        // Nobody won — refund losers
+        for (const [sk, v] of losers) {
+          const cur = (await fbGet("goles/"+sk)) || 0;
+          await fbSet("goles/"+sk, cur + (v.cant||0));
+        }
+        flash("🎰 Sin ganadores — goles devueltos");
+      }
+      notifyAll("🎰 Pozo resuelto", bet.q+" → "+correctOpt+(winners.length>0?" · "+share+" ⚽ para "+(winners.length>1?"cada ganador":"el ganador"):""), "🎰");
+    } else {
+      const winners = Object.entries(votes).filter(([,v]) => v === correctOpt).map(([name]) => name);
+      for (const name of winners) {
+        const sk = name.replace(/[.#$/[\]]/g, "_");
+        const cur = (await fbGet("goles/"+sk)) || 0;
+        await fbSet("goles/"+sk, cur + (bet.goles||1));
+      }
+      flash("✅ Resuelta · "+winners.length+" ganador(es)");
+      notifyAll("✅ Apuesta resuelta", bet.q+" → "+correctOpt+(winners.length>0?" · "+winners.length+" ganador(es)":""), "✅");
+    }
+  }
+
   // Goleadores: load from Firebase
   const [goles, setGoles] = useState({});
   useEffect(() => {
@@ -2385,11 +2444,13 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     flashBets,
     flashVotes,
     goleadores,
+    goles,
     createFlash,
     closeFlash,
     resolveFlash,
     deleteFlash,
     voteFlash,
+    betPozo,
     notifyAll,
     carta,
     publishCarta,
@@ -5324,9 +5385,9 @@ function PanelView({
    FLASH VIEW
    ========================================================= */
 function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, flashVotes, goleadores,
-  createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash, now,
+  createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash, betPozo, now,
   polls, pollVotes, createPoll, votePoll, closePoll, deletePoll, safeKey,
-  reactions, toggleReaction, REACTION_EMOJIS}) {
+  reactions, toggleReaction, REACTION_EMOJIS, goles}) {
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
 
   const LOCAS_PRESET = [
@@ -5467,6 +5528,7 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
     /*#__PURE__*/React.createElement("div", {className:"section"},
       /*#__PURE__*/React.createElement("div", {className:"filterbar"},
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="bets"?" active":""),onClick:()=>setTab("bets")},"⚡ Apuestas"),
+        /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="pozo"?" active":""),onClick:()=>setTab("pozo")},"🎰 Pozo"),
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="locas"?" active":""),onClick:()=>setTab("locas")},"🤪 Locas"),
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="goals"?" active":""),onClick:()=>setTab("goals")},"👟 Goleadores"),
         /*#__PURE__*/React.createElement("button",{className:"fb"+(tab==="encuesta"?" active":""),onClick:()=>setTab("encuesta")},"🗳️ Encuesta"),
@@ -5483,7 +5545,8 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
           /*#__PURE__*/React.createElement("label",null,"Tipo"),
           /*#__PURE__*/React.createElement("div",{className:"filterbar",style:{marginTop:6}},
             /*#__PURE__*/React.createElement("button",{className:"fb"+(tipo==="flash"?" active":""),onClick:()=>{setTipo("flash");setNewQ("");setNewOpts(["",""]);setPresetIdx(null)}},"⚡ Apuesta fútbol"),
-            /*#__PURE__*/React.createElement("button",{className:"fb"+(tipo==="loca"?" active":""),onClick:()=>{setTipo("loca");setNewQ("");setNewOpts(["",""]);setPresetIdx(null)}},"🤪 Predicción loca")
+            /*#__PURE__*/React.createElement("button",{className:"fb"+(tipo==="loca"?" active":""),onClick:()=>{setTipo("loca");setNewQ("");setNewOpts(["",""]);setPresetIdx(null)}},"🤪 Predicción loca"),
+            /*#__PURE__*/React.createElement("button",{className:"fb"+(tipo==="pozo"?" active":""),onClick:()=>{setTipo("pozo");setNewQ("");setNewOpts(["",""]);setPresetIdx(null)}},"🎰 Apuesta con pozo")
           )
         ),
         // PRESETS para locas
@@ -5548,6 +5611,86 @@ function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, f
           )
         : locasOnly.map(bet=>/*#__PURE__*/React.createElement(BetCard,{key:bet.id,bet}))
     ),
+
+    // POZO TAB
+    tab==="pozo" && /*#__PURE__*/React.createElement("div", {className:"section"}, (() => {
+      const pozoOnly = flashBets.filter(b => b.tipo==="pozo");
+      const myGolesCount = me ? (goles?.[safeKey(me)] || 0) : 0;
+      return /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("h2",null,/*#__PURE__*/React.createElement("span",{className:"bar"}),"🎰 Apuestas con Pozo"),
+        /*#__PURE__*/React.createElement("div",{className:"card pad",style:{marginBottom:12,background:"rgba(246,197,68,.06)",border:"1px solid rgba(246,197,68,.3)"}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:"var(--muted2)",marginBottom:4}}, "💰 Tus goles disponibles para apostar"),
+          /*#__PURE__*/React.createElement("div",{style:{fontFamily:"var(--mono)",fontWeight:800,fontSize:22,color:"var(--gold)"}}, myGolesCount," ⚽")
+        ),
+        pozoOnly.length===0
+          ? /*#__PURE__*/React.createElement("div",{className:"card pad",style:{textAlign:"center",padding:"32px 16px"}},
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:36,marginBottom:8}},"🎰"),
+              /*#__PURE__*/React.createElement("div",{className:"muted"},"No hay apuestas con pozo activas."),
+              isMaster && /*#__PURE__*/React.createElement("button",{className:"btn primary sm",style:{marginTop:12},onClick:()=>{setTipo("pozo");setTab("create")}},"Crear una")
+            )
+          : pozoOnly.map(bet => {
+              const votes = flashVotes[bet.id] || {};
+              const myVote = votes[safeKey(me)] || null;
+              const isOpen = bet.status==="open";
+              const isClosed = bet.status==="closed";
+              const isResolved = bet.status==="resolved";
+              const [pozoAmt, setPozoAmt] = useState(1);
+              // Calculate pot from all bets (we'll show votes as proxy)
+              const totalVoters = Object.keys(votes).length;
+              return /*#__PURE__*/React.createElement("div",{key:bet.id,className:"card pad",style:{marginBottom:12}},
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:14,marginBottom:6}}, "🎰 "+bet.q),
+                isResolved && /*#__PURE__*/React.createElement("div",{className:"chip green",style:{marginBottom:8}}, "✅ Resuelta · Ganó: "+bet.correct),
+                isClosed && /*#__PURE__*/React.createElement("div",{className:"chip",style:{marginBottom:8,background:"rgba(255,92,121,.15)",color:"var(--coral)"}}, "🔒 Cerrada — esperando resolución"),
+                bet.opts.map(opt => {
+                  const optVotes = Object.entries(votes).filter(([,v])=>v===opt).length;
+                  const isWinner = isResolved && opt===bet.correct;
+                  const isMine = myVote===opt;
+                  return /*#__PURE__*/React.createElement("div",{key:opt,
+                    className:"poll-opt"+(isWinner?" winner":"")+(isMine?" mine":""),
+                    style:{marginBottom:6}
+                  },
+                    /*#__PURE__*/React.createElement("div",{className:"row between"},
+                      /*#__PURE__*/React.createElement("span",{style:{fontWeight:isMine?700:400}}, isMine?"✓ ":"",(isWinner?"🏆 ":"")+opt),
+                      /*#__PURE__*/React.createElement("span",{className:"muted small"}, optVotes," voto"+(optVotes!==1?"s":""))
+                    )
+                  );
+                }),
+                isOpen && !myVote && canPlay && /*#__PURE__*/React.createElement("div",{style:{marginTop:10}},
+                  /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:"var(--muted2)",marginBottom:6}}, "Elige tu opción y cuántos ⚽ arriesgas:"),
+                  /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,marginBottom:8,alignItems:"center"}},
+                    /*#__PURE__*/React.createElement("span",{className:"muted small"},"Goles:"),
+                    /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",onClick:()=>setPozoAmt(a=>Math.max(1,a-1))},"-"),
+                    /*#__PURE__*/React.createElement("span",{style:{fontFamily:"var(--mono)",fontWeight:800,color:"var(--gold)",minWidth:24,textAlign:"center"}},pozoAmt),
+                    /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",onClick:()=>setPozoAmt(a=>Math.min(myGolesCount,a+1))},"+"),
+                    /*#__PURE__*/React.createElement("span",{className:"muted small"},"/ "+myGolesCount+" disp.")
+                  ),
+                  /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,flexWrap:"wrap"}},
+                    bet.opts.map(opt=>/*#__PURE__*/React.createElement("button",{key:opt,
+                      className:"btn primary sm",
+                      disabled:pozoAmt<=0||pozoAmt>myGolesCount,
+                      onClick:()=>betPozo(bet.id, opt, pozoAmt)
+                    },"Apostar "+pozoAmt+"⚽ a: "+opt))
+                  )
+                ),
+                isOpen && myVote && /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginTop:8,textAlign:"center"}},
+                  "✅ Ya apostaste a: "+myVote
+                ),
+                isMaster && isOpen && /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,marginTop:10}},
+                  /*#__PURE__*/React.createElement("button",{className:"btn ghost sm",onClick:()=>closeFlash(bet.id)},"🔒 Cerrar"),
+                  /*#__PURE__*/React.createElement("button",{className:"btn ghost sm danger",onClick:()=>{if(confirm("¿Eliminar?"))deleteFlash(bet.id)}},"✕")
+                ),
+                isMaster && isClosed && /*#__PURE__*/React.createElement("div",{style:{marginTop:10}},
+                  /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginBottom:6}},"Resolver — ¿quién ganó el pozo?"),
+                  /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,flexWrap:"wrap"}},
+                    bet.opts.map(opt=>/*#__PURE__*/React.createElement("button",{key:opt,className:"btn primary sm",
+                      onClick:()=>{if(confirm("¿Ganadó: "+opt+"?"))resolveFlash(bet.id,opt)}
+                    },"✅ "+opt))
+                  )
+                )
+              );
+            })
+      );
+    })()),
 
     // GOLEADORES TAB
     tab==="goals" && /*#__PURE__*/React.createElement("div", {className:"section"},

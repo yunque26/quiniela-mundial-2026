@@ -370,16 +370,18 @@ select.bare{-webkit-appearance:none;appearance:none}
 .bracket-round{margin-bottom:20px}
 .br-title{font-family:var(--disp);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
 .br-grid{display:grid;gap:6px}
-.bm-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
-.bm-team{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;font-weight:600}
-.bm-team.winner{color:var(--gold)}
-.bm-flag{font-size:16px;flex-shrink:0}
-.bm-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-.bm-score{font-family:var(--mono);font-weight:800;font-size:15px;flex-shrink:0;margin-left:auto}
+.bm-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;transition:border-color .2s}
+.bm-card.played{border-color:rgba(21,168,90,.3)}
+.bm-team{display:flex;align-items:center;gap:5px;padding:3px 0;font-size:11px;font-weight:600}
+.bm-team.winner{color:var(--gold);font-weight:800}
+.bm-flag{font-size:15px;flex-shrink:0}
+.bm-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-score{font-family:var(--mono);font-weight:800;font-size:16px;flex-shrink:0;margin-left:auto;padding-left:4px}
 .bm-score.gold{color:var(--gold)}
-.bm-tbd{color:var(--muted2);font-size:11px;font-style:italic}
-.bm-date{font-size:9px;color:var(--muted2);margin-top:2px;text-align:center}
-.bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px}
+.bm-divider{height:1px;background:var(--line);margin:1px 0}
+.bm-tbd{color:var(--muted2);font-size:10px;font-style:italic;line-height:1.3}
+.bm-date{font-size:9px;color:var(--muted2);margin-top:3px;text-align:center}
+.bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px;font-weight:700}
 
 /* ===== RACHA DE ACIERTOS ===== */
 .streak-card{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,138,61,.02));border:1px solid rgba(255,138,61,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
@@ -5871,48 +5873,109 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
   if (!pool) return /*#__PURE__*/React.createElement(NoPool, {setModal, isMaster});
   const [bracketTab, setBracketTab] = useState("bracket");
 
-  // Round of 32 matches from KOS
-  const r32 = KOS.filter(m => m.stage === "32avos");
-  const r16 = KOS.filter(m => m.stage === "Octavos");
-  const qf  = KOS.filter(m => m.stage === "Cuartos");
-  const sf  = KOS.filter(m => m.stage === "Semifinal");
-  const fin = KOS.filter(m => m.stage === "Final" || m.stage === "3er puesto");
+  // Build a map: matchNo → {home, away, result}
+  const matchByNo = {};
+  KOS.forEach(m => { matchByNo[m.no] = m; });
 
-  const matchResult = m => results.matches?.[m.id];
-  const isPlayed = m => { const r = matchResult(m); return r && r.h != null && r.a != null; };
+  // Resolve team from "Gan.73" or "Perd.101" notation
+  function resolveTeam(token) {
+    const ganMatch = token.match(/^Gan\.(\d+)$/);
+    const perdMatch = token.match(/^Perd\.(\d+)$/);
+    if (ganMatch) {
+      const no = parseInt(ganMatch[1]);
+      const m = matchByNo[no];
+      if (!m) return null;
+      const r = results.matches?.[m.id];
+      if (!r || r.h == null || r.a == null) return null;
+      if (r.h > r.a) return m.home;
+      if (r.a > r.h) return m.away;
+      return null; // draw — shouldn't happen in KO
+    }
+    if (perdMatch) {
+      const no = parseInt(perdMatch[1]);
+      const m = matchByNo[no];
+      if (!m) return null;
+      const r = results.matches?.[m.id];
+      if (!r || r.h == null || r.a == null) return null;
+      if (r.h < r.a) return m.home;
+      if (r.a < r.h) return m.away;
+      return null;
+    }
+    // Direct team code (32avos)
+    return token || null;
+  }
 
-  const BracketMatch = ({m, compact}) => {
-    const r = matchResult(m);
-    const played = isPlayed(m);
+  // Enrich KO match with resolved teams
+  function enrichMatch(m) {
+    const tokens = m.label.split(" vs ");
+    const home = resolveTeam(tokens[0]?.trim()) || null;
+    const away = resolveTeam(tokens[1]?.trim()) || null;
+    // Show pending label if team not yet resolved
+    const homeLabel = tokens[0]?.trim().startsWith("Gan.") || tokens[0]?.trim().startsWith("Perd.") ? tokens[0]?.trim() : null;
+    const awayLabel = tokens[1]?.trim().startsWith("Gan.") || tokens[1]?.trim().startsWith("Perd.") ? tokens[1]?.trim() : null;
+    return {...m, home: home || m.home, away: away || m.away,
+      homePending: !home && homeLabel ? homeLabel : null,
+      awayPending: !away && awayLabel ? awayLabel : null
+    };
+  }
+
+  // Friendly label for Gan.XX → "Gan. RSAvsCAN"
+  function pendingLabel(token) {
+    const ganMatch = token?.match(/^Gan\.(\d+)$/);
+    const perdMatch = token?.match(/^Perd\.(\d+)$/);
+    if (ganMatch) {
+      const m = matchByNo[parseInt(ganMatch[1])];
+      if (m) return "⚔️ "+tName(m.home)+" o "+tName(m.away);
+    }
+    if (perdMatch) {
+      const m = matchByNo[parseInt(perdMatch[1])];
+      if (m) return "3er: "+tName(m.home)+" / "+tName(m.away);
+    }
+    return token || "Por definir";
+  }
+
+  const r32 = KOS.filter(m => m.stage === "32avos").map(enrichMatch);
+  const r16 = KOS.filter(m => m.stage === "Octavos").map(enrichMatch);
+  const qf  = KOS.filter(m => m.stage === "Cuartos").map(enrichMatch);
+  const sf  = KOS.filter(m => m.stage === "Semifinal").map(enrichMatch);
+  const fin = KOS.filter(m => m.stage === "Final" || m.stage === "3er puesto").map(enrichMatch);
+
+  const BracketMatch = ({m}) => {
+    const r = results.matches?.[m.id];
+    const played = r && r.h != null && r.a != null;
     const hWin = played && r.h > r.a;
     const aWin = played && r.a > r.h;
     const myPred = preds[safeKey(me)]?.matches?.[m.id];
     const hasPred = myPred && myPred.h != null && myPred.a != null;
-    return /*#__PURE__*/React.createElement("div", {className:"bm-card"},
-      /*#__PURE__*/React.createElement("div", {className:"bm-team"+(hWin?" winner":"")},
-        m.home ? /*#__PURE__*/React.createElement(React.Fragment, null,
-          /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(m.home)),
-          /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(m.home))
-        ) : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, "Por definir"),
-        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(hWin?" gold":"")}, r.h)
-      ),
-      /*#__PURE__*/React.createElement("div", {className:"bm-team"+(aWin?" winner":"")},
-        m.away ? /*#__PURE__*/React.createElement(React.Fragment, null,
-          /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(m.away)),
-          /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(m.away))
-        ) : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, "Por definir"),
-        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(aWin?" gold":"")}, r.a)
-      ),
+    const dl = dayLabel(m.kickoff, tz);
+
+    const TeamRow = ({team, pending, win, score}) =>
+      /*#__PURE__*/React.createElement("div", {className:"bm-team"+(win?" winner":"")},
+        team
+          ? /*#__PURE__*/React.createElement(React.Fragment, null,
+              /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(team)),
+              /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(team))
+            )
+          : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, pendingLabel(pending)),
+        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(win?" gold":"")}, score)
+      );
+
+    return /*#__PURE__*/React.createElement("div", {className:"bm-card"+(played?" played":"")},
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.home, pending:m.homePending, win:hWin, score:r?.h}),
+      /*#__PURE__*/React.createElement("div",{className:"bm-divider"}),
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.away, pending:m.awayPending, win:aWin, score:r?.a}),
       !played && /*#__PURE__*/React.createElement("div",{className:"bm-date"},
-        (() => { const dl = dayLabel(m.kickoff, tz); return dl.dow+" "+dl.dnum+" "+dl.mon+" · "+fmtTime(m.kickoff, tz); })()
+        dl.dow+" "+dl.dnum+" "+dl.mon+" · "+fmtTime(m.kickoff, tz)
       ),
       hasPred && !played && /*#__PURE__*/React.createElement("div",{className:"bm-pred"}, "🎯 "+myPred.h+"-"+myPred.a)
     );
   };
 
-  const Round = ({title, matches, cols}) => /*#__PURE__*/React.createElement("div", {className:"bracket-round"},
-    /*#__PURE__*/React.createElement("div",{className:"br-title"}, title),
-    /*#__PURE__*/React.createElement("div",{className:"br-grid", style:{gridTemplateColumns: cols||"1fr 1fr"}},
+  const Round = ({title, matches}) => /*#__PURE__*/React.createElement("div", {className:"bracket-round"},
+    /*#__PURE__*/React.createElement("div",{className:"br-title"}, title,
+      /*#__PURE__*/React.createElement("span",{className:"br-count"}, " ("+matches.filter(m=>{const r=results.matches?.[m.id];return r&&r.h!=null}).length+"/"+matches.length+")")
+    ),
+    /*#__PURE__*/React.createElement("div",{className:"br-grid"},
       matches.map(m => /*#__PURE__*/React.createElement(BracketMatch, {key:m.id, m}))
     )
   );
@@ -5926,13 +5989,13 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
     bracketTab === "bracket" && /*#__PURE__*/React.createElement("div", {className:"section"},
       /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "⚔️ Fase Eliminatoria"),
       /*#__PURE__*/React.createElement("p",{className:"muted small",style:{marginBottom:12}},
-        "🎯 Tu pronóstico aparece debajo de cada partido no jugado"
+        "🎯 Tu pronóstico · 🏆 Ganador resaltado · equipos se actualizan con cada resultado"
       ),
-      /*#__PURE__*/React.createElement(Round, {title:"🔸 32avos de Final", matches:r32, cols:"1fr 1fr"}),
-      r16.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"⚡ Octavos de Final", matches:r16, cols:"1fr 1fr"}),
-      qf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🔥 Cuartos de Final", matches:qf, cols:"1fr 1fr"}),
-      sf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🌟 Semifinales", matches:sf, cols:"1fr 1fr"}),
-      fin.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🏆 Final y 3er Puesto", matches:fin, cols:"1fr 1fr"})
+      /*#__PURE__*/React.createElement(Round, {title:"🔸 32avos de Final", matches:r32}),
+      /*#__PURE__*/React.createElement(Round, {title:"⚡ Octavos de Final", matches:r16}),
+      qf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🔥 Cuartos de Final", matches:qf}),
+      sf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🌟 Semifinales", matches:sf}),
+      fin.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🏆 Final y 3er Puesto", matches:fin})
     ),
 
     bracketTab === "stats" && /*#__PURE__*/React.createElement(StatsView, {

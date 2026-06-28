@@ -1186,8 +1186,8 @@ function scoreFull(pred, actual, sc, opt, actualKo) {
     if (actualKo.ko_winner && pred.penWinner) {
       pts = sc.exact || 3; // 2pts for exact draw
       if (pred.penWinner === actualKo.ko_winner) {
-        penBonus = 2;
-        pts = 2 + 2; // 4pts total
+        penBonus = 1;
+        pts = 2 + 1; // 3pts total
       } else {
         pts = 2; // only draw bonus
       }
@@ -2932,7 +2932,7 @@ function MatchCard({
   // Penalty selector for KO matches when predicted draw
   !m.group && m.home && m.away && hasPred && pred.h === pred.a && !locked && onSetPen &&
     /*#__PURE__*/React.createElement("div", {className:"pen-selector"},
-      /*#__PURE__*/React.createElement("div",{className:"pen-label"}, "🥅 ¿Quién gana en penales? (+2 pts)"),
+      /*#__PURE__*/React.createElement("div",{className:"pen-label"}, "🥅 ¿Quién gana en penales? (+1 pt)"),
       /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,marginTop:5}},
         [m.home, m.away].map(team => /*#__PURE__*/React.createElement("button", {
           key: team,

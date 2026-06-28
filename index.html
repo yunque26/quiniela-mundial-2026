@@ -369,7 +369,7 @@ select.bare{-webkit-appearance:none;appearance:none}
 /* ===== BRACKET ===== */
 .bracket-round{margin-bottom:20px}
 .br-title{font-family:var(--disp);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
-.br-grid{display:grid;gap:6px}
+.br-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .bm-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;transition:border-color .2s}
 .bm-card.played{border-color:rgba(21,168,90,.3)}
 .bm-team{display:flex;align-items:center;gap:5px;padding:3px 0;font-size:11px;font-weight:600}
@@ -4646,7 +4646,8 @@ function PanelView({
         const aCode = API_TEAM_MAP[g.team2] ?? null;
         if (!hCode || !aCode) { skipped++; continue; }
 
-        const match = GROUPS.find(m => m.home === hCode && m.away === aCode);
+        // Search in both GROUPS and KOS
+        const match = ALL.find(m => m.home === hCode && m.away === aCode);
         if (!match) { skipped++; continue; }
 
         const prev = results.matches[match.id];
@@ -4655,6 +4656,13 @@ function PanelView({
 
         newMatches[match.id] = {h: hScore, a: aScore};
         updated++;
+
+        // Handle penalty shootout winner (score.p = [hPen, aPen])
+        if (g.score.p && hScore === aScore) {
+          const hPen = g.score.p[0], aPen = g.score.p[1];
+          const penWinner = hPen > aPen ? hCode : aCode;
+          await fbSet("results/ko_winner/"+match.id, penWinner);
+        }
 
         // Tally goalscorers from goals1/goals2
         (g.goals1 || []).forEach(sc => {
@@ -5878,28 +5886,22 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
   KOS.forEach(m => { matchByNo[m.no] = m; });
 
   // Resolve team from "Gan.73" or "Perd.101" notation
-  function resolveTeam(token) {
-    const ganMatch = token.match(/^Gan\.(\d+)$/);
-    const perdMatch = token.match(/^Perd\.(\d+)$/);
-    if (ganMatch) {
-      const no = parseInt(ganMatch[1]);
-      const m = matchByNo[no];
-      if (!m) return null;
-      const r = results.matches?.[m.id];
+  function resolveTeam(token, forLoser) {
+    const ganMatch = token?.match(/^Gan\.(\d+)$/);
+    const perdMatch = token?.match(/^Perd\.(\d+)$/);
+    const no = ganMatch ? parseInt(ganMatch[1]) : perdMatch ? parseInt(perdMatch[1]) : null;
+    if (no !== null) {
+      const km = matchByNo[no];
+      if (!km) return null;
+      const r = results.matches?.[km.id];
       if (!r || r.h == null || r.a == null) return null;
-      if (r.h > r.a) return m.home;
-      if (r.a > r.h) return m.away;
-      return null; // draw — shouldn't happen in KO
-    }
-    if (perdMatch) {
-      const no = parseInt(perdMatch[1]);
-      const m = matchByNo[no];
-      if (!m) return null;
-      const r = results.matches?.[m.id];
-      if (!r || r.h == null || r.a == null) return null;
-      if (r.h < r.a) return m.home;
-      if (r.a < r.h) return m.away;
-      return null;
+      // Check explicit KO winner (for draws/penalties)
+      const koWinner = results.ko_winner?.[km.id];
+      let winner = null, loser = null;
+      if (r.h > r.a) { winner = km.home; loser = km.away; }
+      else if (r.a > r.h) { winner = km.away; loser = km.home; }
+      else if (koWinner) { winner = koWinner; loser = (koWinner === km.home ? km.away : km.home); }
+      return forLoser ? loser : winner;
     }
     // Direct team code (32avos)
     return token || null;
@@ -5908,8 +5910,9 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
   // Enrich KO match with resolved teams
   function enrichMatch(m) {
     const tokens = m.label.split(" vs ");
-    const home = resolveTeam(tokens[0]?.trim()) || null;
-    const away = resolveTeam(tokens[1]?.trim()) || null;
+    const t0 = tokens[0]?.trim(); const t1 = tokens[1]?.trim();
+    const home = resolveTeam(t0, t0?.startsWith("Perd.")) || null;
+    const away = resolveTeam(t1, t1?.startsWith("Perd.")) || null;
     // Show pending label if team not yet resolved
     const homeLabel = tokens[0]?.trim().startsWith("Gan.") || tokens[0]?.trim().startsWith("Perd.") ? tokens[0]?.trim() : null;
     const awayLabel = tokens[1]?.trim().startsWith("Gan.") || tokens[1]?.trim().startsWith("Perd.") ? tokens[1]?.trim() : null;

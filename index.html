@@ -771,7 +771,7 @@ const KOS = KO_RAW.map(r => {
     kickoff: new Date(r[2] + ET),
     venue: r[3],
     no: r[4],
-    playable: false
+    playable: true
   };
 });
 const ALL = [...GROUPS, ...KOS].sort((a, b) => a.kickoff - b.kickoff);
@@ -3301,7 +3301,7 @@ function HomeView({
   ), (() => {
     const todayKey = parts(new Date(), tz);
     const todayStr = todayKey.year+"-"+todayKey.month+"-"+todayKey.day;
-    const todayMatches = GROUPS.filter(g => {
+    const todayMatches = ALL.filter(g => {
       const p = parts(g.kickoff, tz);
       return (p.year+"-"+p.month+"-"+p.day) === todayStr;
     }).sort((a,b) => a.kickoff - b.kickoff);
@@ -3642,8 +3642,8 @@ function PredictView({
     setModal: setModal,
     isMaster: isMaster
   });
-  const upcoming = GROUPS.filter(g => !lk(g));
-  const played = GROUPS.filter(g => lk(g));
+  const upcoming = ALL.filter(g => g.playable && !lk(g));
+  const played = ALL.filter(g => g.playable && lk(g));
   const [matchFilter, setMatchFilter] = useState("upcoming");
   const champLocked = !!results.champion;
   const pending = !!(me && (reqs || []).some(r => r.name === me) && !isMember);
@@ -5238,7 +5238,7 @@ function PanelView({
     /*#__PURE__*/React.createElement("div",{className:"hint",style:{fontSize:10,marginBottom:8}}, "Elige el próximo partido a destacar:"),
 
     (() => {
-      const upcoming = GROUPS.filter(g => !lk(g)).slice(0,10);
+      const upcoming = ALL.filter(g => !lk(g)).slice(0,10);
       const todayKey = parts(new Date(), tz);
       const todayStr = todayKey.year+"-"+todayKey.month+"-"+todayKey.day;
       const isToday = g => {
@@ -5750,7 +5750,7 @@ function StatsView({pool, standings, preds, results, sc, me, setModal, isMaster,
     : [];
 
   // --- Próximos partidos (siguientes 3) ---
-  const upcoming = GROUPS.filter(g => {
+  const upcoming = ALL.filter(g => {
     const r = results.matches[g.id];
     return !(r && r.h != null && r.a != null);
   }).sort((a,b) => a.kickoff - b.kickoff).slice(0,3);

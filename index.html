@@ -5907,34 +5907,38 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
     return token || null;
   }
 
+  // Resolve a token to a friendly display object {team, label}
+  function tokenInfo(token, forLoser) {
+    if (!token) return {team:null, label:"Por definir"};
+    const ganMatch = token.match(/^Gan\.(\d+)$/);
+    const perdMatch = token.match(/^Perd\.(\d+)$/);
+    const no = ganMatch ? parseInt(ganMatch[1]) : perdMatch ? parseInt(perdMatch[1]) : null;
+    if (no !== null) {
+      const km = matchByNo[no];
+      if (!km) return {team:null, label:"Por definir"};
+      // Try to resolve winner
+      const resolved = resolveTeam(token, forLoser);
+      if (resolved) return {team:resolved, label:null};
+      // Not yet played or draw without penalty result — show both options with flags
+      const prefix = forLoser ? "3er: " : "";
+      return {team:null, label: prefix+tFlag(km.home)+" "+tName(km.home)+" o "+tFlag(km.away)+" "+tName(km.away)};
+    }
+    // Direct team code
+    return {team:token, label:null};
+  }
+
   // Enrich KO match with resolved teams
   function enrichMatch(m) {
     const tokens = m.label.split(" vs ");
     const t0 = tokens[0]?.trim(); const t1 = tokens[1]?.trim();
-    const home = resolveTeam(t0, t0?.startsWith("Perd.")) || null;
-    const away = resolveTeam(t1, t1?.startsWith("Perd.")) || null;
-    // Show pending label if team not yet resolved
-    const homeLabel = tokens[0]?.trim().startsWith("Gan.") || tokens[0]?.trim().startsWith("Perd.") ? tokens[0]?.trim() : null;
-    const awayLabel = tokens[1]?.trim().startsWith("Gan.") || tokens[1]?.trim().startsWith("Perd.") ? tokens[1]?.trim() : null;
-    return {...m, home: home || m.home, away: away || m.away,
-      homePending: !home && homeLabel ? homeLabel : null,
-      awayPending: !away && awayLabel ? awayLabel : null
+    const hi = tokenInfo(t0, t0?.startsWith("Perd."));
+    const ai = tokenInfo(t1, t1?.startsWith("Perd."));
+    return {...m,
+      home: hi.team || null,
+      away: ai.team || null,
+      homeLabel: hi.label,
+      awayLabel: ai.label
     };
-  }
-
-  // Friendly label for Gan.XX → "Gan. RSAvsCAN"
-  function pendingLabel(token) {
-    const ganMatch = token?.match(/^Gan\.(\d+)$/);
-    const perdMatch = token?.match(/^Perd\.(\d+)$/);
-    if (ganMatch) {
-      const m = matchByNo[parseInt(ganMatch[1])];
-      if (m) return "⚔️ "+tName(m.home)+" o "+tName(m.away);
-    }
-    if (perdMatch) {
-      const m = matchByNo[parseInt(perdMatch[1])];
-      if (m) return "3er: "+tName(m.home)+" / "+tName(m.away);
-    }
-    return token || "Por definir";
   }
 
   const r32 = KOS.filter(m => m.stage === "32avos").map(enrichMatch);
@@ -5952,21 +5956,21 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
     const hasPred = myPred && myPred.h != null && myPred.a != null;
     const dl = dayLabel(m.kickoff, tz);
 
-    const TeamRow = ({team, pending, win, score}) =>
+    const TeamRow = ({team, label, win, score}) =>
       /*#__PURE__*/React.createElement("div", {className:"bm-team"+(win?" winner":"")},
         team
           ? /*#__PURE__*/React.createElement(React.Fragment, null,
               /*#__PURE__*/React.createElement("span",{className:"bm-flag"}, tFlag(team)),
               /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(team))
             )
-          : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, pendingLabel(pending)),
+          : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, label || "Por definir"),
         played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(win?" gold":"")}, score)
       );
 
     return /*#__PURE__*/React.createElement("div", {className:"bm-card"+(played?" played":"")},
-      /*#__PURE__*/React.createElement(TeamRow,{team:m.home, pending:m.homePending, win:hWin, score:r?.h}),
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.home, label:m.homeLabel, win:hWin, score:r?.h}),
       /*#__PURE__*/React.createElement("div",{className:"bm-divider"}),
-      /*#__PURE__*/React.createElement(TeamRow,{team:m.away, pending:m.awayPending, win:aWin, score:r?.a}),
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.away, label:m.awayLabel, win:aWin, score:r?.a}),
       !played && /*#__PURE__*/React.createElement("div",{className:"bm-date"},
         dl.dow+" "+dl.dnum+" "+dl.mon+" · "+fmtTime(m.kickoff, tz)
       ),

@@ -383,6 +383,11 @@ select.bare{-webkit-appearance:none;appearance:none}
 .bm-date{font-size:9px;color:var(--muted2);margin-top:3px;text-align:center}
 .bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px;font-weight:700}
 
+/* ===== PENALTY SELECTOR ===== */
+.pen-selector{background:rgba(246,197,68,.06);border:1px solid rgba(246,197,68,.25);border-radius:10px;padding:10px;margin-top:8px}
+.pen-label{font-size:10px;font-weight:700;color:var(--gold);text-align:center}
+.gold-btn{background:var(--gold);color:#04243f;border-color:var(--gold);font-weight:800}
+
 /* ===== RACHA DE ACIERTOS ===== */
 .streak-card{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,138,61,.02));border:1px solid rgba(255,138,61,.4);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .streak-fire{font-size:30px;flex-shrink:0}
@@ -1169,34 +1174,30 @@ function scoreOne(pred, actual, sc) {
     outcome
   };
 }
-function scoreFull(pred, actual, sc, opt) {
+function scoreFull(pred, actual, sc, opt, actualKo) {
+  // actualKo = {ko_winner: "RSA"} for penalty shootout results
   const base = scoreOne(pred, actual, sc);
   if (!base) return null;
-  let pts = base.pts,
-    halved = false,
-    doubled = false,
-    shielded = false;
-  if (pred && pred.ht && pts > 0) {
-    pts = Math.round(pts / 2);
-    halved = true;
+  let pts = base.pts, halved = false, doubled = false, shielded = false, penBonus = 0;
+
+  // KO penalty scoring: if draw + pred has penalty pick
+  if (actualKo && actual && actual.h === actual.a && pred && pred.h === pred.a) {
+    // Predicted draw correctly — check if also predicted the right penalty winner
+    if (actualKo.ko_winner && pred.penWinner) {
+      pts = sc.exact || 3; // 2pts for exact draw
+      if (pred.penWinner === actualKo.ko_winner) {
+        penBonus = 2;
+        pts = 2 + 2; // 4pts total
+      } else {
+        pts = 2; // only draw bonus
+      }
+    }
   }
-  if (opt && opt.doble) {
-    pts = pts * 2;
-    if (base.pts > 0) doubled = true;
-  }
-  if (opt && opt.escudo && pts < sc.win) {
-    pts = sc.win;
-    shielded = true;
-  }
-  return {
-    pts,
-    exact: base.exact,
-    outcome: base.outcome,
-    base: base.pts,
-    halved,
-    doubled,
-    shielded
-  };
+
+  if (pred && pred.ht && pts > 0) { pts = Math.round(pts / 2); halved = true; }
+  if (opt && opt.doble) { pts = pts * 2; if (base.pts > 0) doubled = true; }
+  if (opt && opt.escudo && pts < sc.win) { pts = sc.win; shielded = true; }
+  return { pts, exact: base.exact, outcome: base.outcome, base: base.pts, halved, doubled, shielded, penBonus };
 }
 
 /* =========================================================
@@ -1629,6 +1630,17 @@ function App() {
   }
 
   /* ---- PREDICTIONS ---- */
+  async function setPenWinner(matchId, team) {
+    if (!requireMember()) return;
+    const key = safeKey(me);
+    const cur = preds[key] || {matches:{}, champion:null};
+    const curM = cur.matches[matchId] || {h:null, a:null};
+    const nm = {...curM, penWinner: team};
+    const nextMine = {...cur, matches:{...cur.matches, [matchId]:nm}};
+    setPreds(pr => ({...pr, [key]:nextMine}));
+    await fbSet("preds/"+poolId+"/"+key, nextMine);
+  }
+
   async function setPrediction(matchId, side, val, htMode) {
     if (!requireMember()) return;
     const key = safeKey(me);
@@ -1900,7 +1912,8 @@ function App() {
           doble: (cm.doble || []).includes(g.id),
           escudo: (cm.escudo || []).includes(g.id)
         };
-        let s = scoreFull(pr, r, sc, opt);
+        const actualKo = {ko_winner: results.ko_winner?.[g.id]};
+        let s = scoreFull(pr, r, sc, opt, actualKo);
         if (s) {
           played++;
           if (featuredMatch && featuredMatch.id === g.id && s.pts > 0) {
@@ -2395,6 +2408,7 @@ self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil
     myMade,
     standings,
     setPrediction,
+    setPenWinner,
     clearPrediction,
     setChampion,
     setResult,
@@ -2703,6 +2717,7 @@ function MatchCard({
   sc,
   onSet,
   onClear,
+  onSetPen,
   getTools,
   lk,
   featured,
@@ -2913,7 +2928,23 @@ function MatchCard({
     className: "ptsbadge p" + badgeLvl
   }, badgeLab, " \xB7 ", sresult.pts, "pts")), tools && tools.enabled && !locked && /*#__PURE__*/React.createElement(ComodinBar, {
     tools: tools
-  }), /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz, results})) : /*#__PURE__*/React.createElement("div", {
+  }),
+  // Penalty selector for KO matches when predicted draw
+  !m.group && m.home && m.away && hasPred && pred.h === pred.a && !locked && onSetPen &&
+    /*#__PURE__*/React.createElement("div", {className:"pen-selector"},
+      /*#__PURE__*/React.createElement("div",{className:"pen-label"}, "🥅 ¿Quién gana en penales? (+2 pts)"),
+      /*#__PURE__*/React.createElement("div",{className:"row",style:{gap:6,marginTop:5}},
+        [m.home, m.away].map(team => /*#__PURE__*/React.createElement("button", {
+          key: team,
+          className: "btn sm"+(pred.penWinner===team?" gold-btn":" ghost"),
+          onClick: () => onSetPen(m.id, pred.penWinner===team ? null : team)
+        }, tFlag(team)+" "+tName(team)))
+      ),
+      pred.penWinner && /*#__PURE__*/React.createElement("div",{className:"muted",style:{fontSize:10,marginTop:4,textAlign:"center"}},
+        "🎯 Apostaste por "+tName(pred.penWinner)+" en penales"
+      )
+    ),
+  /*#__PURE__*/React.createElement(MatchStats, {m, actual, tz, results})) : /*#__PURE__*/React.createElement("div", {
     className: "ko"
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -3723,6 +3754,7 @@ function PredictView({
   myPreds,
   myMade,
   setPrediction,
+  setPenWinner,
   clearPrediction,
   setChampion,
   results,
@@ -3763,6 +3795,7 @@ function PredictView({
     actual: results.matches[m.id],
     onSet: setPrediction,
     onClear: clearPrediction,
+    onSetPen: setPenWinner,
     results: results,
     featured: featuredMatch && featuredMatch.id === m.id
   });

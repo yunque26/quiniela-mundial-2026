@@ -4054,15 +4054,15 @@ function TableView({
           /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "⚽ Resultado básico, 1/X/2 (×"+sc.win+")"),
           /*#__PURE__*/React.createElement("span",{className:"sc-val"+(p.outcome-p.exact-p.gdBonus<=0?" zero":"")}, Math.max(0,p.outcome-p.exact-p.gdBonus)+" = "+(Math.max(0,p.outcome-p.exact-p.gdBonus)*sc.win)+" pts")
         ),
-        p.doubled>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+        p.isMe && p.doubled>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
           /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🃏 Comodín Doblar usado"),
           /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.doubled+" partido"+(p.doubled!==1?"s":""))
         ),
-        p.shielded>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+        p.isMe && p.shielded>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
           /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "🛡️ Comodín Escudo usado"),
           /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.shielded+" partido"+(p.shielded!==1?"s":""))
         ),
-        p.halved>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
+        p.isMe && p.halved>0 && /*#__PURE__*/React.createElement("div", {className:"std-concept"},
           /*#__PURE__*/React.createElement("span",{className:"sc-label"}, "⏱️ Pronóstico tardío (mitad pts)"),
           /*#__PURE__*/React.createElement("span",{className:"sc-val"}, p.halved+" partido"+(p.halved!==1?"s":""))
         ),

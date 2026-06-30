@@ -1904,7 +1904,7 @@ function App() {
         made = 0,
         streak = 0,
         maxStreak = 0;
-      for (const g of GROUPS) {
+      for (const g of ALL) {
         const pr = mp.matches[g.id];
         if (pr && pr.h != null && pr.a != null) made++;
         const r = results.matches[g.id];

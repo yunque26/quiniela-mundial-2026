@@ -6000,9 +6000,13 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
       // Try to resolve winner
       const resolved = resolveTeam(token, forLoser);
       if (resolved) return {team:resolved, label:null};
-      // Not yet played or draw without penalty result — show both options with flags
+      // Not yet played — resolve home/away recursively (they may be Gan.XX too)
       const prefix = forLoser ? "3er: " : "";
-      return {team:null, label: prefix+tFlag(km.home)+" "+tName(km.home)+" o "+tFlag(km.away)+" "+tName(km.away)};
+      const hInfo = tokenInfo(km.home, false);
+      const aInfo = tokenInfo(km.away, false);
+      const hLabel = hInfo.team ? tFlag(hInfo.team)+" "+tName(hInfo.team) : (hInfo.label || "?");
+      const aLabel = aInfo.team ? tFlag(aInfo.team)+" "+tName(aInfo.team) : (aInfo.label || "?");
+      return {team:null, label: prefix+hLabel+" o "+aLabel};
     }
     // Direct team code
     return {team:token, label:null};

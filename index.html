@@ -4692,7 +4692,8 @@ function PanelView({
 
       let updated = 0, skipped = 0, brandNew = 0;
       const newMatches = {...results.matches};
-      const scorerMap = {}; // name -> {goals, teamCode}
+      const scorerMap = {};
+      const penWinners = {};
 
       for (const g of games) {
         // Only process if score exists (ft = full time)
@@ -4717,11 +4718,10 @@ function PanelView({
         newMatches[match.id] = {h: hScore, a: aScore};
         updated++;
 
-        // Handle penalty shootout winner (score.p = [hPen, aPen])
+        // Accumulate penalty shootout winners
         if (g.score.p) {
           const hPen = g.score.p[0], aPen = g.score.p[1];
-          const penWinner = hPen > aPen ? hCode : aCode;
-          await fbSet("results/ko_winner/"+match.id, penWinner);
+          penWinners[match.id] = hPen > aPen ? hCode : aCode;
         }
 
         // Tally goalscorers from goals1/goals2
@@ -4735,6 +4735,12 @@ function PanelView({
           if (!scorerMap[key]) scorerMap[key] = {goals: 0, team: aCode};
           scorerMap[key].goals++;
         });
+      }
+
+      // Always save pen winners if any found
+      if (Object.keys(penWinners).length > 0) {
+        await fbSet("results/ko_winner", penWinners);
+        setSyncLog(prev => [...prev, `🥅 ${Object.keys(penWinners).length} ganador(es) de penales guardados.`]);
       }
 
       // Save computed scorers (auto, overwrites previous auto-calculated list)

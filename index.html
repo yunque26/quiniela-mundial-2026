@@ -4662,7 +4662,7 @@ function PanelView({
   preds,
   safeKey
 }) {
-  const [tab, setTab] = useState(reqs.length > 0 ? "requests" : "config");
+  const [tab, setTab] = useState((reqs||[]).length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");
   const [cemoji, setCemoji] = useState("🏆");
   const [cmode, setCmode] = useState("dynamic");
@@ -4670,8 +4670,8 @@ function PanelView({
   const [editCmd, setEditCmd] = useState(false);
   const [auditPlayer, setAuditPlayer] = useState("");
   useEffect(() => {
-    if (reqs.length > 0) setTab("requests");
-  }, [reqs.length]);
+    if ((reqs||[]).length > 0) setTab("requests");
+  }, [(reqs||[]).length]);
   const [syncLog, setSyncLog] = useState([]);
   const [syncing, setSyncing] = useState(false);
   const [resultsFilter, setResultsFilter] = useState("upcoming");
@@ -4830,7 +4830,7 @@ function PanelView({
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
   }), "Crear tu primera quiniela"), CreateBox));
-  const tabs = [["requests", reqs.length > 0 ? "Solicitudes (" + reqs.length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"], ["jornada", "🔥 Jornada"], ["audit", "🔍 Auditoría"]];
+  const tabs = [["requests", (reqs||[]).length > 0 ? "Solicitudes (" + (reqs||[]).length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"], ["jornada", "🔥 Jornada"], ["audit", "🔍 Auditoría"]];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", {

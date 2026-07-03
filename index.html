@@ -1328,6 +1328,7 @@ function App() {
     const u2 = fbListen("results", v => {
       if (v) {
         if (!v.ht) v.ht = {};
+        if (!v.ko_winner) v.ko_winner = {};
         setResults(v);
       }
     });
@@ -4753,7 +4754,7 @@ function PanelView({
 
       if (updated > 0) {
         await fbSet("results/matches", newMatches);
-        setResults(prev => ({...prev, matches: newMatches}));
+        setResults(prev => ({...prev, matches: newMatches, ko_winner: {...(prev.ko_winner||{}), ...penWinners}}));
         setSyncLog(prev => [...prev,
           `✅ ${updated} resultado(s) cargados en Firebase.`,
           scorerList.length > 0 ? `⚽ ${scorerList.length} goleador(es) actualizados.` : null,

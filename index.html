@@ -382,6 +382,7 @@ select.bare{-webkit-appearance:none;appearance:none}
 .bm-tbd{color:var(--muted2);font-size:10px;font-style:italic;line-height:1.3}
 .bm-date{font-size:9px;color:var(--muted2);margin-top:3px;text-align:center}
 .bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px;font-weight:700}
+.bm-pen-badge{font-size:8px;font-weight:700;color:var(--muted2);text-align:right;margin-bottom:2px;font-family:var(--mono)}
 
 /* ===== PENALTY SELECTOR ===== */
 .pen-selector{background:rgba(246,197,68,.06);border:1px solid rgba(246,197,68,.25);border-radius:10px;padding:10px;margin-top:8px}
@@ -4696,8 +4697,10 @@ function PanelView({
       for (const g of games) {
         // Only process if score exists (ft = full time)
         if (!g.score || !g.score.ft) { skipped++; continue; }
-        const hScore = g.score.ft[0];
-        const aScore = g.score.ft[1];
+        // Use ET score if available (extra time), otherwise FT
+        const scoreFinal = g.score.et || g.score.ft;
+        const hScore = scoreFinal[0];
+        const aScore = scoreFinal[1];
 
         const hCode = API_TEAM_MAP[g.team1] ?? null;
         const aCode = API_TEAM_MAP[g.team2] ?? null;
@@ -4715,7 +4718,7 @@ function PanelView({
         updated++;
 
         // Handle penalty shootout winner (score.p = [hPen, aPen])
-        if (g.score.p && hScore === aScore) {
+        if (g.score.p) {
           const hPen = g.score.p[0], aPen = g.score.p[1];
           const penWinner = hPen > aPen ? hCode : aCode;
           await fbSet("results/ko_winner/"+match.id, penWinner);
@@ -6024,13 +6027,26 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
   const BracketMatch = ({m}) => {
     const r = results.matches?.[m.id];
     const played = r && r.h != null && r.a != null;
-    const hWin = played && r.h > r.a;
-    const aWin = played && r.a > r.h;
+    const kow = results.ko_winner?.[m.id];
+    const hasPen = played && kow != null;
+    // Winner: if penalties, use ko_winner; otherwise higher score
+    const hWin = played && (hasPen ? kow === m.home : r.h > r.a);
+    const aWin = played && (hasPen ? kow === m.away : r.a > r.h);
     const myPred = preds[safeKey(me)]?.matches?.[m.id];
     const hasPred = myPred && myPred.h != null && myPred.a != null;
     const dl = dayLabel(m.kickoff, tz);
 
-    const TeamRow = ({team, label, win, score}) =>
+    // Score display: "1 (4)" for penalty winner, plain "2" otherwise
+    const scoreDisplay = (score, isPenWinner) => {
+      if (!played) return null;
+      if (hasPen && isPenWinner) {
+        // Show pen score for winner side
+        return score + " ✓";
+      }
+      return score;
+    };
+
+    const TeamRow = ({team, label, win, score, isPenWinner}) =>
       /*#__PURE__*/React.createElement("div", {className:"bm-team"+(win?" winner":"")},
         team
           ? /*#__PURE__*/React.createElement(React.Fragment, null,
@@ -6038,13 +6054,16 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
               /*#__PURE__*/React.createElement("span",{className:"bm-name"}, tName(team))
             )
           : /*#__PURE__*/React.createElement("span",{className:"bm-tbd"}, label || "Por definir"),
-        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(win?" gold":"")}, score)
+        played && /*#__PURE__*/React.createElement("span",{className:"bm-score"+(win?" gold":"")},
+          score, isPenWinner && hasPen && /*#__PURE__*/React.createElement("span",{style:{fontSize:9,marginLeft:2,opacity:.8}}," pen")
+        )
       );
 
     return /*#__PURE__*/React.createElement("div", {className:"bm-card"+(played?" played":"")},
-      /*#__PURE__*/React.createElement(TeamRow,{team:m.home, label:m.homeLabel, win:hWin, score:r?.h}),
+      hasPen && /*#__PURE__*/React.createElement("div",{className:"bm-pen-badge"}, "FT(P)"),
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.home, label:m.homeLabel, win:hWin, score:r?.h, isPenWinner:kow===m.home}),
       /*#__PURE__*/React.createElement("div",{className:"bm-divider"}),
-      /*#__PURE__*/React.createElement(TeamRow,{team:m.away, label:m.awayLabel, win:aWin, score:r?.a}),
+      /*#__PURE__*/React.createElement(TeamRow,{team:m.away, label:m.awayLabel, win:aWin, score:r?.a, isPenWinner:kow===m.away}),
       !played && /*#__PURE__*/React.createElement("div",{className:"bm-date"},
         dl.dow+" "+dl.dnum+" "+dl.mon+" · "+fmtTime(m.kickoff, tz)
       ),

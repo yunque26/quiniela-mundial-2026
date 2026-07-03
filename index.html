@@ -4668,7 +4668,6 @@ function PanelView({
   const [cmode, setCmode] = useState("dynamic");
   const [editSc, setEditSc] = useState(false);
   const [editCmd, setEditCmd] = useState(false);
-  const [auditPlayer, setAuditPlayer] = useState("");
   useEffect(() => {
     if ((reqs||[]).length > 0) setTab("requests");
   }, [(reqs||[]).length]);
@@ -4830,7 +4829,7 @@ function PanelView({
   }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span", {
     className: "bar"
   }), "Crear tu primera quiniela"), CreateBox));
-  const tabs = [["requests", (reqs||[]).length > 0 ? "Solicitudes (" + (reqs||[]).length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"], ["jornada", "🔥 Jornada"], ["audit", "🔍 Auditoría"]];
+  const tabs = [["requests", (reqs||[]).length > 0 ? "Solicitudes (" + (reqs||[]).length + ")" : "Solicitudes"], ["config", "Configuración"], ["results", "Resultados"], ["carta", "📰 Carta"], ["jornada", "🔥 Jornada"]];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "section"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -5470,145 +5469,10 @@ function PanelView({
       style: {width:"100%", marginTop:10},
       onClick: () => { markFeaturedMatch(featuredPick); setFeaturedPick(null); }
     }, "🔥 Confirmar como partido de la jornada")
-  ))),
-
-  // AUDITORÍA
-  tab === "audit" && /*#__PURE__*/React.createElement("div", {className:"section"}, (() => {
-    const player = auditPlayer || (pool.members[0] || "");
-    const played = ALL.filter(g => {
-      const r = results.matches[g.id];
-      return r && r.h != null && r.a != null;
-    }).sort((a,b) => a.kickoff - b.kickoff);
-
-    const key = safeKey(player);
-    const mp = preds[key] || {matches:{}, comodines:{}};
-    const cm = {doble:[], escudo:[], espia:[], ...(mp.comodines||{})};
-    const extraCmd = mp.comodinesExtra || {};
-
-    let totalCalc = 0;
-    const rows = played.map(g => {
-      const r = results.matches[g.id];
-      const pr = mp.matches[g.id];
-      const opt = {doble:(cm.doble||[]).includes(g.id), escudo:(cm.escudo||[]).includes(g.id)};
-      const actualKo = {ko_winner: results.ko_winner?.[g.id]};
-      const s = scoreFull(pr, r, sc, opt, actualKo);
-      const pts = s ? s.pts : 0;
-      totalCalc += pts;
-      const hasPred = pr && pr.h != null && pr.a != null;
-      return {g, r, pr, pts, s, hasPred, opt};
-    });
-
-    const rankPts = standings.find(p => p.name === player)?.pts || 0;
-    const diff = totalCalc - rankPts;
-
-    return /*#__PURE__*/React.createElement(React.Fragment, null,
-      /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🔍 Auditoría de puntos"),
-      /*#__PURE__*/React.createElement("div", {className:"row", style:{gap:8, marginBottom:12}},
-        /*#__PURE__*/React.createElement("select", {
-          className:"bare", value:player,
-          onChange:e=>setAuditPlayer(e.target.value),
-          style:{flex:1}
-        }, pool.members.map(m => /*#__PURE__*/React.createElement("option",{key:m,value:m}, m)))
-      ),
-      /*#__PURE__*/React.createElement("div", {className:"card pad", style:{marginBottom:12, display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, textAlign:"center"}},
-        /*#__PURE__*/React.createElement("div", null,
-          /*#__PURE__*/React.createElement("div",{className:"muted small"}, "Ranking actual"),
-          /*#__PURE__*/React.createElement("div",{style:{fontFamily:"var(--mono)",fontWeight:800,fontSize:20,color:"var(--gold)"}}, rankPts," pts")
-        ),
-        /*#__PURE__*/React.createElement("div", null,
-          /*#__PURE__*/React.createElement("div",{className:"muted small"}, "Calculado"),
-          /*#__PURE__*/React.createElement("div",{style:{fontFamily:"var(--mono)",fontWeight:800,fontSize:20,color:diff===0?"var(--pitch)":"var(--coral)"}}, totalCalc," pts")
-        ),
-        /*#__PURE__*/React.createElement("div", null,
-          /*#__PURE__*/React.createElement("div",{className:"muted small"}, "Diferencia"),
-          /*#__PURE__*/React.createElement("div",{style:{fontFamily:"var(--mono)",fontWeight:800,fontSize:20,color:diff===0?"var(--pitch)":"var(--coral)"}},
-            diff===0 ? "✅ 0" : (diff>0?"+":"")+diff
-          )
-        )
-      ),
-      /*#__PURE__*/React.createElement("div", {style:{overflowX:"auto"}},
-        /*#__PURE__*/React.createElement("table", {className:"standings", style:{fontSize:11,width:"100%"}},
-          /*#__PURE__*/React.createElement("thead", null,
-            /*#__PURE__*/React.createElement("tr", null,
-              /*#__PURE__*/React.createElement("th",{style:{textAlign:"left"}},"Partido"),
-              /*#__PURE__*/React.createElement("th",null,"Real"),
-              /*#__PURE__*/React.createElement("th",null,"Prono"),
-              /*#__PURE__*/React.createElement("th",null,"Cmd"),
-              /*#__PURE__*/React.createElement("th",null,"Pts")
-            )
-          ),
-          /*#__PURE__*/React.createElement("tbody", null,
-            rows.map(({g,r,pr,pts,s,hasPred,opt}) => /*#__PURE__*/React.createElement("tr", {
-              key:g.id,
-              style:{opacity:pts===0&&hasPred?0.5:1}
-            },
-              /*#__PURE__*/React.createElement("td",{style:{textAlign:"left"}},
-                tFlag(g.home)+" "+tName(g.home).substring(0,6)+" v "+tName(g.away).substring(0,6)+" "+tFlag(g.away)
-              ),
-              /*#__PURE__*/React.createElement("td",null, r.h+"-"+r.a),
-              /*#__PURE__*/React.createElement("td",null,
-                hasPred
-                  ? /*#__PURE__*/React.createElement("span",{style:{color:pts>0?"var(--pitch)":"var(--coral)"}}, pr.h+"-"+pr.a)
-                  : /*#__PURE__*/React.createElement("span",{className:"muted2"}, "—")
-              ),
-              /*#__PURE__*/React.createElement("td",null,
-                opt.doble ? "🃏" : opt.escudo ? "🛡" : ""
-              ),
-              /*#__PURE__*/React.createElement("td",null,
-                /*#__PURE__*/React.createElement("b",{style:{color:pts>0?"var(--gold)":"var(--muted2)"}}, pts)
-              )
-            ))
-          )
-        )
-      ),
-      /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginTop:8,textAlign:"center"}},
-        played.length+" partidos jugados · "+rows.filter(r=>r.hasPred).length+" pronósticos hechos · "+rows.filter(r=>r.pts>0).length+" con puntos"
-      ),
-      /*#__PURE__*/React.createElement("button",{
-        className:"btn primary",style:{width:"100%",marginTop:12},
-        onClick:()=>{
-          const medal = i => i===0?"🥇":i===1?"🥈":i===2?"🥉":"  "+(i+1)+".";
-          let txt = "🏆 Quiniela Alfonzo · Mundial 2026\n";
-          txt += "━━━━━━━━━━━━━━━━━━━━━━\n";
-          txt += "📊 TABLA GENERAL\n";
-          standings.forEach((p,i) => {
-            txt += medal(i)+" "+p.name.padEnd(12)+" "+String(p.pts).padStart(3)+" pts";
-            if(p.champOk) txt += " 👑";
-            txt += "\n";
-          });
-          txt += "\n━━━━━━━━━━━━━━━━━━━━━━\n";
-          txt += "🔍 DETALLE: "+player+"\n";
-          txt += "━━━━━━━━━━━━━━━━━━━━━━\n";
-          rows.forEach(({g,r,pr,pts,s,hasPred,opt})=>{
-            const home = tName(g.home||"").substring(0,8);
-            const away = tName(g.away||g.label||"").substring(0,8);
-            const real = r.h+"-"+r.a;
-            const prono = hasPred ? pr.h+"-"+pr.a : "—";
-            const cmd = opt.doble?"🃏":opt.escudo?"🛡️":"";
-            const ptsStr = pts>0?"✅ +"+pts+" pts":"❌  0 pts";
-            txt += tFlag(g.home||"")+home+" vs "+tFlag(g.away||"")+away+"\n";
-            txt += "  Real: "+real+" | Prono: "+prono+(cmd?" "+cmd:"")+"\n";
-            txt += "  "+ptsStr+"\n";
-          });
-          txt += "━━━━━━━━━━━━━━━━━━━━━━\n";
-          txt += "Total calculado: "+totalCalc+" pts | Ranking: "+rankPts+" pts";
-          if(diff!==0) txt += " ⚠️ Diferencia: "+diff;
-          txt += "\n⚽ yunque26.github.io/quiniela-mundial-2026";
-          navigator.clipboard.writeText(txt).then(()=>flash("📋 Reporte copiado al portapapeles")).catch(()=>{
-            const el=document.createElement("textarea");
-            el.value=txt;document.body.appendChild(el);el.select();
-            document.execCommand("copy");document.body.removeChild(el);
-            flash("📋 Reporte copiado");
-          });
-        }
-      }, "📋 Copiar reporte de "+player)
-    );
-  })())
+  )));
 }
 
-/* =========================================================
-   FLASH VIEW
-   ========================================================= */
+
 function FlashView({pool, me, isMaster, isAdmin, canPlay, setModal, flashBets, flashVotes, goleadores,
   createFlash, closeFlash, resolveFlash, deleteFlash, voteFlash, betPozo, now,
   polls, pollVotes, createPoll, votePoll, closePoll, deletePoll, safeKey,

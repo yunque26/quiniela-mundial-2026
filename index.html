@@ -4668,6 +4668,7 @@ function PanelView({
   const [cmode, setCmode] = useState("dynamic");
   const [editSc, setEditSc] = useState(false);
   const [editCmd, setEditCmd] = useState(false);
+  const [auditPlayer, setAuditPlayer] = useState("");
   useEffect(() => {
     if (reqs.length > 0) setTab("requests");
   }, [reqs.length]);
@@ -5473,13 +5474,13 @@ function PanelView({
 
   // AUDITORÍA
   tab === "audit" && /*#__PURE__*/React.createElement("div", {className:"section"}, (() => {
-    const [auditPlayer, setAuditPlayer] = useState(pool.members[0] || "");
+    const player = auditPlayer || (pool.members[0] || "");
     const played = ALL.filter(g => {
       const r = results.matches[g.id];
       return r && r.h != null && r.a != null;
     }).sort((a,b) => a.kickoff - b.kickoff);
 
-    const key = safeKey(auditPlayer);
+    const key = safeKey(player);
     const mp = preds[key] || {matches:{}, comodines:{}};
     const cm = {doble:[], escudo:[], espia:[], ...(mp.comodines||{})};
     const extraCmd = mp.comodinesExtra || {};
@@ -5497,14 +5498,14 @@ function PanelView({
       return {g, r, pr, pts, s, hasPred, opt};
     });
 
-    const rankPts = standings.find(p => p.name === auditPlayer)?.pts || 0;
+    const rankPts = standings.find(p => p.name === player)?.pts || 0;
     const diff = totalCalc - rankPts;
 
     return /*#__PURE__*/React.createElement(React.Fragment, null,
       /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🔍 Auditoría de puntos"),
       /*#__PURE__*/React.createElement("div", {className:"row", style:{gap:8, marginBottom:12}},
         /*#__PURE__*/React.createElement("select", {
-          className:"bare", value:auditPlayer,
+          className:"bare", value:player,
           onChange:e=>setAuditPlayer(e.target.value),
           style:{flex:1}
         }, pool.members.map(m => /*#__PURE__*/React.createElement("option",{key:m,value:m}, m)))
@@ -5576,7 +5577,7 @@ function PanelView({
             txt += "\n";
           });
           txt += "\n━━━━━━━━━━━━━━━━━━━━━━\n";
-          txt += "🔍 DETALLE: "+auditPlayer+"\n";
+          txt += "🔍 DETALLE: "+player+"\n";
           txt += "━━━━━━━━━━━━━━━━━━━━━━\n";
           rows.forEach(({g,r,pr,pts,s,hasPred,opt})=>{
             const home = tName(g.home||"").substring(0,8);
@@ -5600,7 +5601,7 @@ function PanelView({
             flash("📋 Reporte copiado");
           });
         }
-      }, "📋 Copiar reporte de "+auditPlayer)
+      }, "📋 Copiar reporte de "+player)
     );
   })())
 }

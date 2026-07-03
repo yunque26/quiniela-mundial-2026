@@ -2134,14 +2134,9 @@ function App() {
           if (newOnes.length > 0) {
             nextSeen[pKey] = currentIds;
             changed = true;
-            // Only auto-notify if this isn't the very first calculation (prevIds existed)
             if (seen[pKey] !== undefined) {
               for (const b of newOnes) {
-                notifyAll(
-                  "🏅 ¡Nueva insignia desbloqueada!",
-                  p.name + " consiguió: " + b.emoji + " " + b.name,
-                  "🏅"
-                );
+                notifyAll("🏅 ¡Nueva insignia desbloqueada!", p.name + " consiguió: " + b.emoji + " " + b.name, "🏅");
               }
             }
           }
@@ -2149,9 +2144,7 @@ function App() {
         if (changed) await fbSet(seenKey, nextSeen);
       } catch (e) { /* ignore */ }
     })();
-  }, [pool?.id, JSON.stringify(standings.map(p => p.name + ":" + p.badges.map(b=>b.id).join(",")))]);
-
-
+  }, [pool?.id, standings.length]);
   async function createFlash(q, opts, goles, tipo="flash") {
     const bet = {id: uid(), q: q.trim(), opts, goles: parseInt(goles)||0, ts: Date.now(), status:"open", correct:null, tipo};
     await getDb().ref("flash").push(bet);
@@ -4658,9 +4651,7 @@ function PanelView({
   clearFeaturedMatch,
   coAdmins,
   toggleCoAdmin,
-  isMasterDev,
-  preds,
-  safeKey
+  isMasterDev
 }) {
   const [tab, setTab] = useState((reqs||[]).length > 0 ? "requests" : "config");
   const [cname, setCname] = useState("");

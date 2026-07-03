@@ -4746,9 +4746,8 @@ function PanelView({
       }
 
       if (updated > 0) {
-        const next = {...results, matches: newMatches};
-        await fbSet("results", next);
-        setResults(next);
+        await fbSet("results/matches", newMatches);
+        setResults(prev => ({...prev, matches: newMatches}));
         setSyncLog(prev => [...prev,
           `✅ ${updated} resultado(s) cargados en Firebase.`,
           scorerList.length > 0 ? `⚽ ${scorerList.length} goleador(es) actualizados.` : null,

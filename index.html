@@ -1798,7 +1798,7 @@ function App() {
         ...r,
         matches: nm
       };
-      fbSet("results", next);
+      fbSet("results/matches/"+matchId, nm[matchId]);
       return next;
     });
   }
@@ -1819,7 +1819,7 @@ function App() {
         ...r,
         matches: nm
       };
-      fbSet("results", next);
+      getDb().ref("results/matches/"+matchId).remove();
       return next;
     });
   }
@@ -1829,7 +1829,7 @@ function App() {
         ...r,
         champion: teamId || null
       };
-      fbSet("results", next);
+      fbSet("results/champion", teamId || null);
       return next;
     });
   }
@@ -1843,7 +1843,7 @@ function App() {
         ...r,
         ht
       };
-      fbSet("results", next);
+      fbSet("results/ht", ht);
       return next;
     });
     flash(open ? "Entretiempo abierto" : "Entretiempo cerrado");

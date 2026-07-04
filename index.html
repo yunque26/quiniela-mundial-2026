@@ -384,6 +384,28 @@ select.bare{-webkit-appearance:none;appearance:none}
 .bm-pred{font-size:9px;color:var(--sky);text-align:center;margin-top:2px;font-weight:700}
 .bm-pen-badge{font-size:8px;font-weight:700;color:var(--muted2);text-align:right;margin-bottom:2px;font-family:var(--mono)}
 
+/* ===== HORIZONTAL BRACKET ===== */
+.hbracket{display:flex;align-items:center;gap:0;min-width:700px;padding:8px 16px}
+.hb-round{display:flex;flex-direction:column;gap:6px;min-width:140px}
+.hb-round--final{min-width:150px}
+.hb-round-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);text-align:center;margin-bottom:4px;font-family:var(--disp)}
+.hb-connector-col{display:flex;flex-direction:column;width:24px;flex-shrink:0;align-self:stretch}
+.hb-connector-pair{flex:1;position:relative;border-right:2px solid var(--line);border-top:2px solid var(--line);border-bottom:2px solid var(--line);border-radius:0 6px 6px 0;margin:10px 0}
+.hb-connector-pair--qf{margin:26px 0}
+.hb-connector-pair--sf{margin:80px 0}
+.hbm-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 7px;min-width:130px;transition:border-color .2s}
+.hbm-card--played{border-color:rgba(21,168,90,.35)}
+.hbm-card--final{min-width:140px;border-color:rgba(246,197,68,.4);background:rgba(246,197,68,.04)}
+.hbm-team{display:flex;align-items:center;gap:4px;padding:2px 0;font-size:10px;font-weight:600}
+.hbm-win{color:var(--gold);font-weight:800}
+.hbm-flag{font-size:13px;flex-shrink:0}
+.hbm-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px}
+.hbm-score{font-family:var(--mono);font-weight:800;font-size:13px;margin-left:auto;flex-shrink:0;padding-left:3px}
+.hbm-score--win{color:var(--gold)}
+.hbm-div{height:1px;background:var(--line);margin:1px 0}
+.hbm-pen{font-size:7px;color:var(--muted2);font-family:var(--mono);text-align:right;line-height:1}
+.hbm-pred{font-size:8px;color:var(--sky);text-align:center;margin-top:2px;font-weight:700}
+
 /* ===== PENALTY SELECTOR ===== */
 .pen-selector{background:rgba(246,197,68,.06);border:1px solid rgba(246,197,68,.25);border-radius:10px;padding:10px;margin-top:8px}
 .pen-label{font-size:10px;font-weight:700;color:var(--gold);text-align:center}
@@ -777,14 +799,14 @@ const KO_RAW = [
   ["Octavos", "MEX vs ENG", "2026-07-05T20:00", "Estadio Azteca, Ciudad de México", 92],
   ["Octavos", "POR vs ESP", "2026-07-06T15:00", "AT&T Stadium, Dallas", 93],
   ["Octavos", "USA vs BEL", "2026-07-06T20:00", "Lumen Field, Seattle", 94],
-  ["Octavos", "Gan.91 vs Gan.92", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95],
-  ["Octavos", "SUI vs Gan.87", "2026-07-07T16:00", "BC Place, Vancouver", 96],
+  ["Octavos", "ARG vs EGY", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95],
+  ["Octavos", "SUI vs COL", "2026-07-07T16:00", "BC Place, Vancouver", 96],
   ["Cuartos", "Gan.89 vs Gan.90", "2026-07-09T16:00", "Gillette Stadium, Boston", 97],
   ["Cuartos", "Gan.93 vs Gan.94", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98],
   ["Cuartos", "Gan.91 vs Gan.92", "2026-07-11T17:00", "Hard Rock Stadium, Miami", 99],
   ["Cuartos", "Gan.95 vs Gan.96", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100],
   ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101],
-  ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T19:00", "MetLife Stadium, Nueva York/NJ", 102],
+  ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102],
   ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T15:00", "Hard Rock Stadium, Miami", 103],
   ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]
 ];
@@ -6089,25 +6111,87 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
 
   return /*#__PURE__*/React.createElement("div", null,
     /*#__PURE__*/React.createElement("div", {className:"filterbar", style:{marginBottom:10, marginTop:8}},
-      /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="bracket"?" active":""), onClick:()=>setBracketTab("bracket")}, "⚔️ Bracket"),
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="r32"?" active":""), onClick:()=>setBracketTab("r32")}, "🔸 32avos"),
+      /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="bracket"?" active":""), onClick:()=>setBracketTab("bracket")}, "🏆 Bracket"),
       /*#__PURE__*/React.createElement("button",{className:"fb"+(bracketTab==="stats"?" active":""), onClick:()=>setBracketTab("stats")}, "📊 Stats")
     ),
 
-    bracketTab === "bracket" && /*#__PURE__*/React.createElement("div", {className:"section"},
-      /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "⚔️ Fase Eliminatoria"),
+
+    bracketTab === "r32" && /*#__PURE__*/React.createElement("div", {className:"section"},
+      /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🔸 32avos de Final"),
       /*#__PURE__*/React.createElement("p",{className:"muted small",style:{marginBottom:12}},
-        "🎯 Tu pronóstico · 🏆 Ganador resaltado · equipos se actualizan con cada resultado"
+        "🎯 Tu pronóstico · 🏆 Ganador resaltado"
       ),
-      /*#__PURE__*/React.createElement(Round, {title:"🔸 32avos de Final", matches:r32}),
-      /*#__PURE__*/React.createElement(Round, {title:"⚡ Octavos de Final", matches:r16}),
-      qf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🔥 Cuartos de Final", matches:qf}),
-      sf.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🌟 Semifinales", matches:sf}),
-      fin.length > 0 && /*#__PURE__*/React.createElement(Round, {title:"🏆 Final y 3er Puesto", matches:fin})
+      /*#__PURE__*/React.createElement(Round, {title:"🔸 32avos de Final ("+r32.filter(m=>{const r=results.matches?.[m.id];return r&&r.h!=null}).length+"/16)", matches:r32})
+    ),
+
+    bracketTab === "bracket" && /*#__PURE__*/React.createElement("div", {style:{overflowX:"auto", paddingBottom:16}},
+      /*#__PURE__*/React.createElement("p",{className:"muted small",style:{textAlign:"center",padding:"8px 0"}},
+        "← Desliza para ver el bracket completo →"
+      ),
+      /*#__PURE__*/React.createElement("div", {className:"hbracket"},
+        // Round of 16
+        /*#__PURE__*/React.createElement("div", {className:"hb-round"},
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "⚡ Octavos"),
+          r16.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
+        ),
+        /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
+          [0,1,2,3].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair"}))
+        ),
+        // Quarters
+        /*#__PURE__*/React.createElement("div", {className:"hb-round"},
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🔥 Cuartos"),
+          qf.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
+        ),
+        /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
+          [0,1].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair hb-connector-pair--qf"}))
+        ),
+        // Semis
+        /*#__PURE__*/React.createElement("div", {className:"hb-round"},
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🌟 Semis"),
+          sf.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
+        ),
+        /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
+          [0].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair hb-connector-pair--sf"}))
+        ),
+        // Final
+        /*#__PURE__*/React.createElement("div", {className:"hb-round hb-round--final"},
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🏆 Final"),
+          fin.filter(m=>m.stage==="Final").map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}, isFinal:true})),
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title",style:{marginTop:12}}, "🥉 3er Lugar"),
+          fin.filter(m=>m.stage==="3er puesto").map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
+        )
+      )
     ),
 
     bracketTab === "stats" && /*#__PURE__*/React.createElement(StatsView, {
       pool, standings, preds, results, sc, me, setModal, isMaster, safeKey, tz, wcScorers
     })
+  );
+}
+
+function HBMatch({m, results, preds, safeKey, me, ko_winners, isFinal}) {
+  const r = results.matches?.[m.id];
+  const played = r && r.h != null && r.a != null;
+  const kow = ko_winners[m.id];
+  const hWin = played && (kow ? kow === m.home : r.h > r.a);
+  const aWin = played && (kow ? kow === m.away : r.a > r.h);
+  const myPred = preds[safeKey(me)]?.matches?.[m.id];
+  const hasPred = myPred && myPred.h != null && myPred.a != null;
+
+  const TeamRow = ({team, label, win, score}) =>
+    /*#__PURE__*/React.createElement("div", {className:"hbm-team"+(win?" hbm-win":"")},
+      /*#__PURE__*/React.createElement("span",{className:"hbm-flag"}, team ? tFlag(team) : "🏳️"),
+      /*#__PURE__*/React.createElement("span",{className:"hbm-name"}, team ? tName(team) : (label||"?")),
+      played && /*#__PURE__*/React.createElement("span",{className:"hbm-score"+(win?" hbm-score--win":"")}, score)
+    );
+
+  return /*#__PURE__*/React.createElement("div", {className:"hbm-card"+(isFinal?" hbm-card--final":"")+(played?" hbm-card--played":"")},
+    kow && /*#__PURE__*/React.createElement("div",{className:"hbm-pen"}, "FT(P)"),
+    /*#__PURE__*/React.createElement(TeamRow,{team:m.home, label:m.homeLabel, win:hWin, score:r?.h}),
+    /*#__PURE__*/React.createElement("div",{className:"hbm-div"}),
+    /*#__PURE__*/React.createElement(TeamRow,{team:m.away, label:m.awayLabel, win:aWin, score:r?.a}),
+    !played && hasPred && /*#__PURE__*/React.createElement("div",{className:"hbm-pred"}, "🎯 "+myPred.h+"-"+myPred.a)
   );
 }
 

@@ -801,12 +801,12 @@ const KO_RAW = [
   ["Octavos", "USA vs BEL", "2026-07-06T20:00", "Lumen Field, Seattle", 94],
   ["Octavos", "ARG vs EGY", "2026-07-07T12:00", "Mercedes-Benz Stadium, Atlanta", 95],
   ["Octavos", "SUI vs COL", "2026-07-07T16:00", "BC Place, Vancouver", 96],
-  ["Cuartos", "Gan.89 vs Gan.90", "2026-07-09T16:00", "Gillette Stadium, Boston", 97],
-  ["Cuartos", "Gan.93 vs Gan.94", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98],
-  ["Cuartos", "Gan.91 vs Gan.92", "2026-07-11T17:00", "Hard Rock Stadium, Miami", 99],
-  ["Cuartos", "Gan.95 vs Gan.96", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100],
+  ["Cuartos", "FRA vs MAR", "2026-07-09T16:00", "Gillette Stadium, Foxborough", 97],
+  ["Cuartos", "ESP vs BEL", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98],
+  ["Cuartos", "NOR vs ENG", "2026-07-11T17:00", "Hard Rock Stadium, Miami Gardens", 99],
+  ["Cuartos", "ARG vs SUI", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100],
   ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101],
-  ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102],
+  ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "MetLife Stadium, Nueva York/NJ", 102],
   ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T15:00", "Hard Rock Stadium, Miami", 103],
   ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]
 ];
@@ -1981,10 +1981,11 @@ function App() {
         }
       }
       let champOk = false;
-      if (results.champion && mp.champion === results.champion) {
-        champOk = true;
-        pts += sc.champion;
-      }
+      // Champion bonus disabled - can still be selected but won't add points
+      // if (results.champion && mp.champion === results.champion) {
+      //   champOk = true;
+      //   pts += sc.champion;
+      // }
       return {
         name: mem,
         pts,

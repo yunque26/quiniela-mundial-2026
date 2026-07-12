@@ -811,11 +811,11 @@ const KO_RAW = [
   ["Octavos", "SUI vs COL", "2026-07-07T16:00", "BC Place, Vancouver", 96],
   ["Cuartos", "FRA vs MAR", "2026-07-09T16:00", "Gillette Stadium, Foxborough", 97],
   ["Cuartos", "ESP vs BEL", "2026-07-10T15:00", "SoFi Stadium, Los Ángeles", 98],
-  ["Cuartos", "NOR vs ENG", "2026-07-11T17:00", "Hard Rock Stadium, Miami Gardens", 99],
+  ["Cuartos", "ENG vs NOR", "2026-07-11T17:00", "Hard Rock Stadium, Miami Gardens", 99],
   ["Cuartos", "ARG vs SUI", "2026-07-11T21:00", "Arrowhead Stadium, Kansas City", 100],
-  ["Semifinal", "Gan.97 vs Gan.98", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101],
-  ["Semifinal", "Gan.99 vs Gan.100", "2026-07-15T15:00", "MetLife Stadium, Nueva York/NJ", 102],
-  ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T15:00", "Hard Rock Stadium, Miami", 103],
+  ["Semifinal", "FRA vs ESP", "2026-07-14T15:00", "AT&T Stadium, Dallas", 101],
+  ["Semifinal", "ENG vs ARG", "2026-07-15T15:00", "Mercedes-Benz Stadium, Atlanta", 102],
+  ["3er puesto", "Perd.101 vs Perd.102", "2026-07-18T17:00", "Hard Rock Stadium, Miami Gardens", 103],
   ["Final", "Gan.101 vs Gan.102", "2026-07-19T15:00", "MetLife Stadium, Nueva York/NJ", 104]
 ];
 const ET = "-04:00";
@@ -1751,8 +1751,8 @@ function App() {
     flash("Campeón guardado");
   }
 
-  // Podio: {campeon, subcampeon, semi1, semi2} - locked before QF
-  const PODIO_LOCK = new Date("2026-07-09T20:00:00Z"); // Jul 9 4pm ET = 8pm UTC
+  // Campeon predictor - lock before semis (Jul 14 3pm ET = 7pm UTC)
+  const PODIO_LOCK = new Date("2026-07-14T19:00:00Z");
   const podioClosed = now >= PODIO_LOCK;
 
   async function setPodio(field, teamId) {
@@ -2010,14 +2010,11 @@ function App() {
       // Champion bonus disabled - can still be selected but won't add points
       // if (results.champion && mp.champion === results.champion) { ... }
 
-      // Podio scoring
+      // Campeon predictor scoring (+4 pts)
       const myPodio = mp.podio || {};
       const resPodio = results.podio || {};
       let podioOk = {};
-      if (resPodio.campeon && myPodio.campeon === resPodio.campeon) { pts += 3; podioOk.campeon = true; }
-      if (resPodio.subcampeon && myPodio.subcampeon === resPodio.subcampeon) { pts += 1; podioOk.subcampeon = true; }
-      if (resPodio.semi1 && (myPodio.semi1 === resPodio.semi1 || myPodio.semi1 === resPodio.semi2 || myPodio.semi2 === resPodio.semi1 || myPodio.semi2 === resPodio.semi2)) { pts += 1; podioOk.semi1 = true; }
-      if (resPodio.semi2 && myPodio.semi2 !== myPodio.semi1 && !podioOk.semi1 && (myPodio.semi2 === resPodio.semi1 || myPodio.semi2 === resPodio.semi2)) { pts += 1; podioOk.semi2 = true; }
+      if (resPodio.campeon && myPodio.campeon === resPodio.campeon) { pts += 4; podioOk.campeon = true; }
 
       // Goleador scoring (+2 pts)
       const myGoleador = mp.goleador || null;
@@ -3507,7 +3504,7 @@ function HomeView({
     /*#__PURE__*/React.createElement("div",{className:"podium-pts"}, p.pts),
     /*#__PURE__*/React.createElement("div",{className:"podium-sub"}, "pts"),
     p.name===me && /*#__PURE__*/React.createElement("span",{className:"chip green",style:{fontSize:8,marginTop:4}},"TÚ")
-  )))), /*#__PURE__*/React.createElement(PodioPredictor, {pool, preds, me, safeKey, setPodio, setGoleador, podioClosed, results}),
+  )))), /*#__PURE__*/React.createElement(CampeonPredictor, {pool, preds, me, safeKey, setPodio, podioClosed}),
   carta && /*#__PURE__*/React.createElement("div", {className:"section"},
     /*#__PURE__*/React.createElement("div", {className:"carta-card"},
       /*#__PURE__*/React.createElement("div", {className:"carta-title"}, "💡 ¿Sabías que...?"),
@@ -3837,70 +3834,39 @@ function NoPool({
 }
 
 /* =========================================================
-   PODIO PREDICTOR
+   CAMPEON PREDICTOR — ¿Quién gana el Mundial? (+4 pts)
    ========================================================= */
-function PodioPredictor({pool, preds, me, safeKey, setPodio, setGoleador, podioClosed, results}) {
+function CampeonPredictor({pool, preds, me, safeKey, setPodio, podioClosed}) {
   if (!pool || !me) return null;
   const key = safeKey(me);
   const myPreds = preds[key] || {};
-  const myPodio = myPreds.podio || {};
-  const myGoleador = myPreds.goleador || null;
-
-  // QF teams
-  const QF_TEAMS = ["FRA","MAR","ESP","BEL","NOR","ENG","ARG","SUI"];
-  const GOLEADORES = ["Mbappé (FRA)","Haaland (NOR)","Messi (ARG)","Kane (ENG)","Lewandowski","Yamal (ESP)","Dembélé (FRA)","Álvarez (ARG)"];
-
-  const PodioSlot = ({label, field, emoji, pts}) => {
-    const val = myPodio[field];
-    return /*#__PURE__*/React.createElement("div", {className:"podio-slot"},
-      /*#__PURE__*/React.createElement("div",{className:"podio-slot-label"}, emoji+" "+label+" (+"+pts+"pt"+(pts>1?"s":"")+")"),
-      /*#__PURE__*/React.createElement("div",{className:"podio-slot-teams"},
-        QF_TEAMS.map(t => /*#__PURE__*/React.createElement("button",{
-          key:t,
-          className:"podio-team-btn"+(val===t?" selected":""),
-          disabled:podioClosed || (val!==t && Object.values(myPodio).includes(t) && val!==t),
-          onClick:()=>!podioClosed && setPodio(field, val===t ? null : t)
-        }, tFlag(t)+" "+tName(t)))
-      )
-    );
-  };
-
+  const myCampeon = myPreds.podio?.campeon || null;
+  const SF_TEAMS = ["FRA","ESP","ENG","ARG"];
   return /*#__PURE__*/React.createElement("div", {className:"section"},
-    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🏆 Predictor de Podio"),
+    /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement("span",{className:"bar"}), "🏆 ¿Quién gana el Mundial?"),
     podioClosed
-      ? /*#__PURE__*/React.createElement("div",{className:"chip coral",style:{marginBottom:8,display:"inline-block"}}, "🔒 Cerrado — pronósticos bloqueados")
+      ? /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginBottom:8}},
+          "🔒 Cerrado · "+(myCampeon ? "Tu pick: "+tFlag(myCampeon)+" "+tName(myCampeon)+" · Vale 4 pts si gana" : "No hiciste tu pick")
+        )
       : /*#__PURE__*/React.createElement("div",{className:"muted small",style:{marginBottom:10,color:"var(--coral)"}},
-          "⏰ Cierra antes del primer Cuarto de Final · "+
-          "Máximo "+6+" pts posibles"
+          "⏰ Cierra antes de las Semis · Vale 4 pts · No importa si es en penales"
         ),
-    /*#__PURE__*/React.createElement("div",{className:"podio-grid"},
-      /*#__PURE__*/React.createElement(PodioSlot,{label:"Campeón",field:"campeon",emoji:"🥇",pts:3}),
-      /*#__PURE__*/React.createElement(PodioSlot,{label:"Subcampeón",field:"subcampeon",emoji:"🥈",pts:1}),
-      /*#__PURE__*/React.createElement(PodioSlot,{label:"Semifinalista",field:"semi1",emoji:"🥉",pts:1}),
-      /*#__PURE__*/React.createElement(PodioSlot,{label:"Semifinalista",field:"semi2",emoji:"🥉",pts:1})
+    /*#__PURE__*/React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
+      SF_TEAMS.map(t => /*#__PURE__*/React.createElement("button",{
+        key:t,
+        className:"podio-team-btn"+(myCampeon===t?" selected":""),
+        disabled:podioClosed,
+        style:{padding:"12px 8px",fontSize:14},
+        onClick:()=>!podioClosed && setPodio("campeon", myCampeon===t ? null : t)
+      }, tFlag(t)+" "+tName(t)))
     ),
-    /*#__PURE__*/React.createElement("div",{className:"podio-slot",style:{marginTop:10}},
-      /*#__PURE__*/React.createElement("div",{className:"podio-slot-label"}, "⚽ Goleador del torneo (+2 pts)"),
-      /*#__PURE__*/React.createElement("div",{className:"podio-slot-teams",style:{flexWrap:"wrap"}},
-        GOLEADORES.map(g => /*#__PURE__*/React.createElement("button",{
-          key:g,
-          className:"podio-team-btn"+(myGoleador===g?" selected":""),
-          disabled:podioClosed,
-          onClick:()=>!podioClosed && setGoleador(myGoleador===g ? null : g)
-        }, g))
-      )
-    ),
-    myPodio.campeon && /*#__PURE__*/React.createElement("div",{className:"card pad",style:{marginTop:10,background:"rgba(246,197,68,.06)",border:"1px solid rgba(246,197,68,.2)"}},
-      /*#__PURE__*/React.createElement("div",{className:"muted small",style:{textAlign:"center"}},
-        "🥇 "+tFlag(myPodio.campeon)+" "+tName(myPodio.campeon),
-        myPodio.subcampeon ? " · 🥈 "+tFlag(myPodio.subcampeon)+" "+tName(myPodio.subcampeon) : "",
-        myPodio.semi1 ? " · 🥉 "+tFlag(myPodio.semi1)+" "+tName(myPodio.semi1) : "",
-        myPodio.semi2 ? " · "+tFlag(myPodio.semi2)+" "+tName(myPodio.semi2) : "",
-        myGoleador ? " · ⚽ "+myGoleador : ""
-      )
-    )
+    myCampeon && /*#__PURE__*/React.createElement("div",{
+      className:"muted small",
+      style:{textAlign:"center",marginTop:8,color:"var(--gold)",fontWeight:700}
+    }, "⭐ Apostaste por "+tFlag(myCampeon)+" "+tName(myCampeon)+" — Vale 4 pts si gana")
   );
 }
+
 
 function PredictView({
   me,
@@ -6247,35 +6213,19 @@ function BracketView({results, pool, standings, preds, sc, me, setModal, isMaste
         "← Desliza para ver el bracket completo →"
       ),
       /*#__PURE__*/React.createElement("div", {className:"hbracket"},
-        // Round of 16
-        /*#__PURE__*/React.createElement("div", {className:"hb-round"},
-          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "⚡ Octavos"),
-          r16.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
-        ),
-        /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
-          [0,1,2,3].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair"}))
-        ),
-        // Quarters
-        /*#__PURE__*/React.createElement("div", {className:"hb-round"},
-          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🔥 Cuartos"),
-          qf.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
-        ),
-        /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
-          [0,1].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair hb-connector-pair--qf"}))
-        ),
         // Semis
         /*#__PURE__*/React.createElement("div", {className:"hb-round"},
-          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🌟 Semis"),
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🌟 Semifinales"),
           sf.map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
         ),
         /*#__PURE__*/React.createElement("div",{className:"hb-connector-col"},
           [0].map(i=>/*#__PURE__*/React.createElement("div",{key:i,className:"hb-connector-pair hb-connector-pair--sf"}))
         ),
-        // Final
+        // Final + 3er
         /*#__PURE__*/React.createElement("div", {className:"hb-round hb-round--final"},
           /*#__PURE__*/React.createElement("div",{className:"hb-round-title"}, "🏆 Final"),
           fin.filter(m=>m.stage==="Final").map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}, isFinal:true})),
-          /*#__PURE__*/React.createElement("div",{className:"hb-round-title",style:{marginTop:12}}, "🥉 3er Lugar"),
+          /*#__PURE__*/React.createElement("div",{className:"hb-round-title",style:{marginTop:16}}, "🥉 3er Lugar"),
           fin.filter(m=>m.stage==="3er puesto").map(m => /*#__PURE__*/React.createElement(HBMatch, {key:m.id, m, results, preds, safeKey, me, ko_winners:results.ko_winner||{}}))
         )
       )
